@@ -81,6 +81,12 @@ namespace DragonMoba.Domain
             {
                 if (!e.Alive || e.Kind == EntityKind.Core) continue;
                 if (e.Kind == EntityKind.Hero && e.Id != PlayerId) ThinkBot(e);
+                if (e.Kind == EntityKind.Hero && e.Id == PlayerId && e.AttackMoveActive &&
+                    e.AttackTargetId == 0 && !e.Charging)
+                {
+                    var acquired = NearestEnemy(e, e.AttackRange + 2.5f, false);
+                    if (acquired != null) e.AttackTargetId = acquired.Id;
+                }
                 if (e.Kind == EntityKind.Minion) ThinkMinion(e);
                 if (e.Kind == EntityKind.Tower) ThinkTower(e, dt);
             }
@@ -128,6 +134,7 @@ namespace DragonMoba.Domain
                     hero.Charging = false;
                     hero.ChargeSeconds = 0;
                     hero.AttackTargetId = 0;
+                    hero.AttackMoveActive = false;
                     hero.Destination = ClampWalkable(hero, V2.Clamp(cmd.Position));
                     return true;
                 case CommandKind.Attack:
@@ -136,11 +143,13 @@ namespace DragonMoba.Domain
                     hero.Charging = false;
                     hero.ChargeSeconds = 0;
                     hero.AttackTargetId = target.Id;
+                    hero.AttackMoveActive = false;
                     // A target order replaces an old ground-move destination.
                     hero.Destination = hero.Position;
                     return true;
                 case CommandKind.Charge:
                     hero.Charging = cmd.Pressed;
+                    hero.AttackMoveActive = false;
                     hero.ChargeSeconds = 0;
                     hero.Destination = hero.Position;
                     hero.AttackTargetId = 0;
@@ -155,8 +164,16 @@ namespace DragonMoba.Domain
                     return Sell(hero, cmd.ItemId);
                 case CommandKind.Stop:
                     hero.Charging = false;
+                    hero.AttackMoveActive = false;
                     hero.AttackTargetId = 0;
                     hero.Destination = hero.Position;
+                    return true;
+                case CommandKind.AttackMove:
+                    hero.Charging = false;
+                    hero.ChargeSeconds = 0f;
+                    hero.AttackTargetId = 0;
+                    hero.AttackMoveActive = true;
+                    hero.Destination = ClampWalkable(hero,V2.Clamp(cmd.Position));
                     return true;
                 default:
                     return false;
@@ -432,7 +449,7 @@ namespace DragonMoba.Domain
             if (entity.AttackTargetId != 0 && (victim == null || !victim.Alive || victim.Team == entity.Team))
             {
                 entity.AttackTargetId = 0;
-                entity.Destination = entity.Position;
+                if (!entity.AttackMoveActive) entity.Destination = entity.Position;
                 victim = null;
             }
             var destination = entity.Destination;
