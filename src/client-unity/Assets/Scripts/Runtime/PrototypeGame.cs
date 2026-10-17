@@ -94,6 +94,12 @@ namespace DragonMoba.Runtime
             if (Input.GetKeyDown(KeyCode.C)) SendCharge(true);
             if (Input.GetKeyUp(KeyCode.C)) SendCharge(false);
             var point = MousePoint();
+            if (Input.GetKey(KeyCode.A) && Input.GetMouseButtonDown(0) && !PointerOverGui())
+            {
+                var accepted = world.Submit(new GameCommand { ActorId = hero.Id,
+                    Kind = CommandKind.AttackMove, Position = new V2(point.x,point.z) });
+                TraceVisual("ATTACK MOVE | accepted=" + accepted + " target=" + point);
+            }
             if (Input.GetMouseButtonDown(1) && !PointerOverGui())
             {
                 // Multiple colliders can be hit: choose the nearest valid enemy rather
@@ -598,7 +604,7 @@ namespace DragonMoba.Runtime
             {
                 GUI.Box(new Rect(12, Screen.height - 218, 350, 198), "CONTROLES (H para ocultar)");
                 GUI.Label(new Rect(25, Screen.height - 189, 326, 165),
-                    "Direito: mover/atacar 1x | S: parar\nQWER: tecnicas | Ctrl+QWER: evoluir\nC: Ki e treino XP | P: loja e receitas\nScroll: zoom | bordas/setas/meio: camera\nEspaco: centralizar | Y: seguir/livre\nEsc: selecao | Enter: reiniciar", smallStyle);
+                    "Direito: mover/atacar | A+esq: atacar-mover | S: parar\nQWER: tecnicas | Ctrl+QWER: evoluir\nC: Ki e treino XP | P: loja e receitas\nScroll: zoom | bordas/setas/meio: camera\nEspaco: centralizar | Y: seguir/livre\nEsc: selecao | Enter: reiniciar", smallStyle);
             }
             if (shopOpen) ShopPanel(hero);
             if (world.Winner.HasValue) EndPanel();
