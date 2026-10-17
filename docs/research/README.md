@@ -8,6 +8,14 @@
 2. **[02 — Especificação implementável dos sistemas de partida](02_SISTEMAS_MOBA_ESPECIFICACAO_IMPLEMENTAVEL.md)**: stats, regen, dano, lifesteal, escudos, abilities, itens/receitas, treinamento com C, seleções, Oozaru, mapa, pathfinding, visão, objetivos, câmera, UI e áudio.
 3. **[03 — Arquitetura, backlog e protocolo de aceite](03_ARQUITETURA_BACKLOG_E_PROTOCOLO_DE_ACEITE.md)**: módulos C#/Unity, migração incremental, diferenças com o código existente, sequência concreta de tickets, contrato de teste, critérios de sucesso e pesquisas pendentes.
 
+## Novos dossiês de auditoria em nível de código
+
+4. **[04 — Combate, atributos, progressão e economia](04_AUDITORIA_PROFUNDA_COMBATE_PROGRESSAO_ECONOMIA.md)**: matriz de evidência Riot 2019–2026, leitura de métodos e números atuais do GameWorld, fórmulas propostas, inventário/receitas, riscos e casos de teste determinísticos. Os cálculos são separados entre regra do nosso código e proposta.
+5. **[05 — Movimento, torres, waves, mapa e câmera](05_AUDITORIA_MOVIMENTO_TORRES_WAVES_MAPA_CAMERA.md)**: confronto com Riot Tech Swarm/A*, patch de waves, colisões e tower aggro da branch DBM-002, riscos específicos de retarget, proposta de pathfinding e testes do mapa original.
+6. **[06 — Auditoria de código-fonte de MOBA open source](06_AUDITORIA_CODIGO_ABERTO_MOBA_CSHARP_UNITY.md)**: leitura real de 13 arquivos C# do projeto MOBA_CSharp_Unity (MIT), incluindo máquina de ataque, agregação de status, item factory, torre, minion e riscos de lógica/performance. Não é alegação de build testado.
+
+Estes dossiês são **mais específicos** que o blueprint v1/v2 e apresentam hipóteses que podem ser refutadas. Ainda existem áreas não auditadas integralmente, como todas as variantes do LoL, artigos pagos integrais, rede/servidor, o restante do código open source e balanceamento real por partidas humanas.
+
 ## Relação com documentos anteriores
 
 - [GAME_DESIGN.md](../specifications/GAME_DESIGN.md) continua sendo a **visão original de produto**, com 15 variantes, fichas, fusão, Oozaru e loja. A pesquisa v2 não o substitui.
