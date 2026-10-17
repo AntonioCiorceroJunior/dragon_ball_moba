@@ -13,6 +13,7 @@ namespace DragonMoba.Runtime
         public AudioClip laser, impact, charge;
         public const int EffectLimit = 24;
         private readonly List<LineRenderer> effects = new List<LineRenderer>();
+        private readonly List<LineRenderer> effectCores = new List<LineRenderer>();
         private readonly List<float> expiry = new List<float>();
         private Material effectMaterial;
         private AudioSource source;
@@ -161,24 +162,49 @@ namespace DragonMoba.Runtime
             {
                 slot=effects.Count; var go=new GameObject("Pooled energy effect"); go.transform.SetParent(transform,false);
                 line=go.AddComponent<LineRenderer>(); line.sharedMaterial=effectMaterial;
-                line.useWorldSpace=true; line.numCapVertices=2; effects.Add(line); expiry.Add(0);
+                line.useWorldSpace=true; line.numCapVertices=6; effects.Add(line); expiry.Add(0);
+                var coreRoot=new GameObject("Inner Ki glow");
+                coreRoot.transform.SetParent(go.transform,false);
+                var core=coreRoot.AddComponent<LineRenderer>();
+                core.sharedMaterial=effectMaterial;
+                core.useWorldSpace=true;
+                core.numCapVertices=6;
+                effectCores.Add(core);
             }
             else { slot=nextEffect++%EffectLimit; line=effects[slot]; }
-            Color color=e.Kind==EventKind.Transform?Color.yellow:e.Kind==EventKind.Damage?new Color(1,.55f,.2f):Color.cyan;
-            line.startColor=line.endColor=color; line.startWidth=line.endWidth=beam?.13f:.09f;
-            line.loop=!beam; line.positionCount=beam?2:24;
+            var coreLine=effectCores[slot];
+            var color=e.Kind==EventKind.Transform?new Color(1f,.71f,.25f,.92f):
+                e.Kind==EventKind.Damage?new Color(1f,.27f,.12f,.89f):
+                e.Kind==EventKind.Charge?new Color(.22f,.77f,1f,.90f):
+                new Color(.12f,.64f,1f,.89f);
+            line.startColor=line.endColor=color;
+            line.startWidth=line.endWidth=beam?.28f:.115f;
+            line.loop=!beam;
+            line.positionCount=beam?2:40;
+            coreLine.startColor=coreLine.endColor=new Color(1f,.96f,.81f,.9f);
+            coreLine.startWidth=coreLine.endWidth=beam?.07f:.035f;
+            coreLine.loop=!beam;
+            coreLine.positionCount=beam?2:40;
             if(beam)
             {
-                line.SetPosition(0,actor==null?center:new Vector3(actor.Position.X,1,actor.Position.Y));
+                var source=actor==null?center:new Vector3(actor.Position.X,1.15f,actor.Position.Y);
                 var target=world.Find(e.TargetId);
-                line.SetPosition(1,e.Kind==EventKind.Attack&&target!=null?new Vector3(target.Position.X,1,target.Position.Y):center);
+                var destination=e.Kind==EventKind.Attack&&target!=null?
+                    new Vector3(target.Position.X,1.05f,target.Position.Y):center;
+                line.SetPosition(0,source);line.SetPosition(1,destination);
+                coreLine.SetPosition(0,source);coreLine.SetPosition(1,destination);
             }
-            else for(int i=0;i<24;i++)
+            else for(int i=0;i<40;i++)
             {
-                float a=i*Mathf.PI*2/24, radius=e.Kind==EventKind.Transform?2f:.55f;
-                line.SetPosition(i,center+new Vector3(Mathf.Cos(a)*radius,0,Mathf.Sin(a)*radius));
+                float a=i*Mathf.PI*2/40f, radius=e.Kind==EventKind.Transform?2.4f:
+                    e.Kind==EventKind.Damage?.75f:1.05f;
+                var at=center+new Vector3(Mathf.Cos(a)*radius,.11f,Mathf.Sin(a)*radius);
+                line.SetPosition(i,at);
+                coreLine.SetPosition(i,at+Vector3.up*.025f);
             }
-            expiry[slot]=Time.time+(e.Kind==EventKind.Transform?.8f:.22f); line.enabled=true;
+            expiry[slot]=Time.time+(e.Kind==EventKind.Transform?.8f:.25f);
+            line.enabled=true;
+            coreLine.enabled=true;
             if(originalSound==null && Time.time>=nextSound &&
                (e.ActorId==world.PlayerId||e.TargetId==world.PlayerId))
             {
@@ -186,7 +212,15 @@ namespace DragonMoba.Runtime
                 if(clip!=null) { source.PlayOneShot(clip,gain[clip]); nextSound=Time.time+.16f; }
             }
         }
-        void Update() { for(int i=0;i<effects.Count;i++) if(Time.time>expiry[i]) effects[i].enabled=false; }
+        void Update()
+        {
+            for(int i=0;i<effects.Count;i++)
+                if(Time.time>expiry[i])
+                {
+                    effects[i].enabled=false;
+                    effectCores[i].enabled=false;
+                }
+        }
         void OnDestroy()
         {
             if(effectMaterial!=null) Destroy(effectMaterial);
