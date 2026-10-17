@@ -25,6 +25,8 @@
 | SHOP-01 | P abrir loja, selecionar categoria, comprar componente | Zeni diminui e stat muda; ícone procedural representa item |
 | SHOP-02 | Comprar 2 luvas + cristal vida; combinar Luvas do Dragão | custo restante = 1700; componentes desaparecem, stats finais sem duplicação |
 | SHOP-03 | Vender item na fonte | devolve 70%, stats antigos desaparecem e HP não excede MaxHP |
+| COUNTER-01 | Comprar Lâmina de Supressão e atingir outro herói | aplica redução de cura de 35% por 3s; debuff expira |
+| TWR-06 | Fazer uma segunda tropa entrar mais perto da torre com primeira tropa viva | torre mantém a primeira até morrer/sair, exceto hero aggro |
 | COMBAT-01 | VAMP_ESSENCE e ataque básico em inimigo | cura apenas dano ao HP; shield bloqueia sustain |
 | COMBAT-02 | HASTE_SHARD, subir Q e conjurar | cooldown de Q diminui conforme haste e Ki é consumido |
 | COMBAT-03 | Ataque-movimento A+clique e S | auto-adquire alvo, realiza básicos repetidos, para ao pressionar S |
@@ -34,11 +36,12 @@
 | CHAR-02 | Goku Criança no nível 16 → Oozaru | forma 3D muito maior, anda mais devagar e não aparece dentro da torre |
 | CHAR-03 | Cell base e transformado | modelo/forma corretos, animações e visuais existentes preservados |
 | CAM-01 | Pan com bordas/setas/meio; Space/Y e zoom | clique/raycast continuam precisos, não recentraliza indevidamente |
+| MAP-UI-01 | Visualizar minimapa e clicar em uma região livre | destaca unidades e desloca a câmera sem deslocar o personagem |
 | HUD-01 | Nome/nível/vida/escudo de dois jogadores | informações verdadeiras e legíveis 1280×720 e 1920×1080 |
 | DBM2-01 | Torre inimiga em alcance, tropas, agressão, W e colisão | aceitação da [DBM-002](TO_CODEX.md) aplicada também na branch integrada |
 | REG-01 | Restart, retorno à seleção, morte/respawn, transformação e basic attack | nenhuma regressão relevante |
 
-**Importante:** ícones são **procedurais simples**; Oozaru é uma **prototipagem com rig reaproveitado**; mapa, jungle, fog, multiplayer e kits finais NÃO são objeto deste lote.
+**Importante:** ícones são **procedurais simples**; Oozaru é uma **prototipagem com rig reaproveitado**; minimapa reflete somente a arena atual e **não tem fog** (todos os heróis aparecem). Novo layout de mapa, jungle, visão real, multiplayer e kits finais NÃO são objeto deste lote.
 
 ## 3. Resolução de falhas
 
