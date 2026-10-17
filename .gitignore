@@ -1,0 +1,55 @@
+# Unity - diretórios regeneráveis
+**/[Ll]ibrary/
+**/[Tt]emp/
+**/[Oo]bj/
+**/[Bb]uild/
+**/[Bb]uilds/
+**/[Ll]ogs/
+**/[Uu]ser[Ss]ettings/
+**/[Mm]emoryCaptures/
+**/[Rr]ecordings/
+**/.vs/
+**/.gradle/
+**/.idea/
+
+# Arquivos gerados pelo Unity/IDE
+**/*.csproj
+**/*.sln
+**/*.slnx
+**/*.user
+**/*.userprefs
+**/*.pidb
+**/*.pdb
+**/*.mdb
+**/*.opendb
+**/*.suo
+**/*.tmp
+**/*.bak
+**/*.log
+
+# Pacotes, downloads e backups locais
+**/ExternalAssets/Staging/
+**/ExternalAssets/Unpacked/
+**/Backups/
+**/*.zip
+**/*.7z
+**/*.rar
+**/*.unitypackage
+
+# Segredos e configurações locais
+.env
+.env.*
+!.env.example
+**/secrets.json
+**/credentials.json
+**/*_private.key
+**/*.pfx
+**/*.pem
+
+# Arquivos gerados pelo sistema operacional
+.DS_Store
+Thumbs.db
+
+# ATENÇÃO: .gitignore não verifica direitos autorais nem segredos no código.
+# Antes do commit, revisar manualmente os assets, licenças e dados.
+# Não ignorar arquivos .meta: são fundamentais ao Unity.
