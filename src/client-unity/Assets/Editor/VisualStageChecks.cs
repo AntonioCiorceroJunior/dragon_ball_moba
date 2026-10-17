@@ -24,6 +24,17 @@ namespace DragonMoba.Editor
             }
             Debug.Log("SELECTION GALLERY PASSED | three visible heroes and arena Super prefab");
         }
+        public static void GroundRoutePaint(Renderer terrain)
+        {
+            var texture=terrain.sharedMaterial.mainTexture as Texture2D;
+            Check(texture!=null,"Paint texture exists");
+            var mid=texture.GetPixelBilinear((40f+72)/144f,(40f+72)/144f);
+            var top=texture.GetPixelBilinear((-63f+72)/144f,.5f);
+            var jungle=texture.GetPixelBilinear((30f+72)/144f,(-15f+72)/144f);
+            Check(mid.r>mid.g*1.05f&&top.r>top.g*1.05f&&jungle.g>jungle.r*1.2f,
+                "Painted mid/top lanes and jungle match the diagonal navigation layout");
+            Debug.Log("GROUND ROUTE PAINT PASSED | texture agrees with diagonal mid/top and jungle");
+        }
         public static void CellRespawn()
         {
             var world = new GameWorld("CELL_Z",ArenaLayout.Training);

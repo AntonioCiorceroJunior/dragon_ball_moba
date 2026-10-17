@@ -102,6 +102,7 @@ namespace DragonMoba.Editor
                         Check(terrainRenderer.enabled&&GeometryUtility.TestPlanesAABB(GeometryUtility.CalculateFrustumPlanes(Camera.main),terrainRenderer.bounds),"Organic terrain active inside camera frustum");
                         Check(terrainRenderer.sharedMaterial.mainTexture is Texture2D,
                             "VISUAL-02: Ground actually displays procedural terrain paint");
+                        VisualStageChecks.GroundRoutePaint(terrainRenderer);
                         Check(RenderSettings.fog, "VISUAL-02: Battlefield atmospheric fog configured");
                         var drone=GameObject.Find("Entity-"+minion.Id+"-"+minion.DisplayName);
                         Check(drone!=null&&drone.GetComponent<MinionFloatAnimation>()!=null,

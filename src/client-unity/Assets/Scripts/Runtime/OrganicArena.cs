@@ -169,17 +169,7 @@ namespace DragonMoba.Runtime
         }
         private static Color PaintSurface(float wx,float wz)
         {
-            // 3 original curved lane strips with high-resolution stone wear.
-            float nearest=100f;
-            for(var index=-1;index<=1;index++)
-            {
-                float lane=index*17f;
-                float curve=.75f*Mathf.Sin(wz*.15f+lane*.1f)*
-                    Mathf.Sin((wz+44f)/88f*Mathf.PI);
-                nearest=Mathf.Min(nearest,Mathf.Abs(wx-lane-curve)-3.1f);
-            }
-            nearest=Mathf.Min(nearest,new Vector2(wx,wz+35f).magnitude-7.1f);
-            nearest=Mathf.Min(nearest,new Vector2(wx,wz-35f).magnitude-7.1f);
+            var nearest=RoadDistance(wx,wz);
             var grassNoise=Mathf.PerlinNoise(wx*.13f+100,wz*.13f+100);
             var leafGrain=Mathf.PerlinNoise(wx*2.1f+25,wz*2.1f+18);
             var grass=Color.Lerp(new Color(.10f,.22f,.15f),
