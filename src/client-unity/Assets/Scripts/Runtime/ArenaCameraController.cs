@@ -7,6 +7,8 @@ namespace DragonMoba.Runtime
         [Range(30,60)] public float elevation = 43f;
         public float defaultZoom = 11.5f, minimumZoom = 8f, maximumZoom = 18f;
         public float panSpeed = 18f, smoothing = .12f;
+        public bool edgeScroll = true;
+        public float edgeThresholdPixels = 17f;
         public Vector2 mapHalfSize = new Vector2(36,44);
         public bool Following { get; private set; } = true;
         public Vector3 Focus { get; private set; }
@@ -45,6 +47,18 @@ namespace DragonMoba.Runtime
                 if(Input.GetKeyDown(KeyCode.Space)) Recenter(hero);
                 Vector2 input = new Vector2((Input.GetKey(KeyCode.RightArrow)?1:0)-(Input.GetKey(KeyCode.LeftArrow)?1:0),
                     (Input.GetKey(KeyCode.UpArrow)?1:0)-(Input.GetKey(KeyCode.DownArrow)?1:0));
+                if (edgeScroll && Screen.width > 0 && Screen.height > 0)
+                {
+                    var mouse = Input.mousePosition;
+                    if (mouse.x >= 0 && mouse.x <= Screen.width &&
+                        mouse.y >= 0 && mouse.y <= Screen.height)
+                    {
+                        if (mouse.x < edgeThresholdPixels) input.x -= 1;
+                        if (mouse.x > Screen.width-edgeThresholdPixels) input.x += 1;
+                        if (mouse.y < edgeThresholdPixels) input.y -= 1;
+                        if (mouse.y > Screen.height-edgeThresholdPixels) input.y += 1;
+                    }
+                }
                 if(input.sqrMagnitude>0) Pan(input.normalized * (panSpeed * Time.unscaledDeltaTime));
                 if(Input.GetMouseButton(2))
                 {
