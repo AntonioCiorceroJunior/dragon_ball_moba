@@ -84,14 +84,16 @@ O material **não** comprova:
 ## 6. Checklist de QA da própria reorganização
 
 Verificar antes do merge:
-- [ ] Índice central encontra GDD, pesquisa, coordenação, assets, plano e status;
-- [ ] Nenhum arquivo de gameplay, cena, asset ou `.meta` mudou;
-- [ ] `TO_CODEX.md` continua DBM-002, sem nova tarefa ou merge;
-- [ ] `FROM_CODEX.md` e `coordination/PROJECT_STATUS.md` preservados (históricos);
-- [ ] Links relativos adicionados existem na árvore da branch;
-- [ ] Pesquisa 01–07 continua acessível nas URLs antigas;
-- [ ] Não existem instruções novas apontando para `prompts/05_COMPILE_PROTOTYPE.md`;
-- [ ] Dados do conflito 660/570 e +82/+24 rotulados com procedência;
-- [ ] GitHub PR doc-only aberto para revisão, sem confundir docs com testes Unity.
+- [x] Índice central encontra GDD, pesquisa, coordenação, assets, plano e status;
+- [x] Nenhum arquivo de gameplay, cena, asset ou `.meta` mudou;
+- [x] `TO_CODEX.md` continua DBM-002, sem nova tarefa ou merge;
+- [x] `FROM_CODEX.md` e `coordination/PROJECT_STATUS.md` preservados (históricos);
+- [x] Links relativos adicionados existem na árvore da branch;
+- [x] Pesquisa 01–07 continua acessível nas URLs antigas;
+- [x] Não existem instruções novas apontando para `prompts/05_COMPILE_PROTOTYPE.md`;
+- [x] Dados do conflito 660/570 e +82/+24 rotulados com procedência;
+- [x] GitHub PR doc-only aberto para revisão, sem confundir docs com testes Unity.
+
+**QA documental executado após as alterações:** 9 documentos de navegação/gestão (incluindo README raiz) e 8 documentos de pesquisa/blueprint conferidos; **0 links locais quebrados** na árvore da branch. Comparação `main...docs/reorganizacao-2026-10-17`: **15 arquivos alterados, todos .md** (nenhum C#, asset ou cena). [PR #3](https://github.com/AntonioCiorceroJunior/dragon_ball_moba/pull/3) criado. Estes controles **não substituem** compilação ou testes Unity.
 
 **Veredicto:** documentação muito mais útil que no início, porém não completamente exaustiva e ainda dependente de implementação/experimentação. O benefício dessa revisão é tornar a próxima tarefa inequívoca e transformar propostas sobre LoL em contratos auditáveis.
