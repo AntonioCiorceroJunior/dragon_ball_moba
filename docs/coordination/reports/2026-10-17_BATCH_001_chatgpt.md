@@ -8,12 +8,12 @@
 
 | Arquivo | Mudanças | Status |
 |---|---|---|
-| `Domain/Definitions.cs` | 24 itens (4 legados + 20 novos), 12 receitas, categorias e atributos, comandos `Sell`, `Stop`, `AttackMove`, forma `kid_oozaru` nível16 | Proposto |
+| `Domain/Definitions.cs` | 25 itens (4 legados + 21 novos), 13 receitas, categorias e atributos, comandos `Sell`, `Stop`, `AttackMove`, forma `kid_oozaru` nível16 | Proposto |
 | `Domain/EntityState.cs` | regen, AS, LifeSteal, SpellVamp, crit, haste, penetração, renda passiva, AttackMoveActive e feedback de treino | Proposto |
 | `Domain/StatCalculator.cs` + .meta | reconstrução de stats por nível/forma/itens, clamp de HP/Ki, regen básica por level, defesa e AS crescentes | Novo |
 | `Domain/GameWorld.cs` | regen HP, renda Zeni após30s, training XP/s escalado, crit determinístico, sustain por dano real, penetração e cooldown com haste, receitas, venda, Stop/AttackMove, QWER diferenciadas, Oozaru raio/caminho seguro | Proposto |
-| `Runtime/PrototypeGame.cs` | seleção obrigatória em jogo normal (fixture de teste preservada), loja rolável com categorias, preço restante e venda, ícones procedurais, HUD regen e XP/s, nameplates, Goku pequeno/Oozaru gigante, A+click, S | Proposto |
-| `Runtime/ArenaCameraController.cs` | edge pan opcional | Proposto |
+| `Runtime/PrototypeGame.cs` | seleção obrigatória em jogo normal (fixture de teste preservada), loja rolável com categorias, preço restante e venda, ícones procedurais, HUD regen e XP/s, nameplates, Goku pequeno/Oozaru gigante, A+click, S e minimapa que focaliza câmera | Proposto |
+| `Runtime/ArenaCameraController.cs` | edge pan opcional e `FocusAt` para clique no minimapa | Proposto |
 | `Runtime/PrimitiveHeroVisual.cs` + .meta | fallback 3D original para heróis sem prefab licenciado disponível | Novo, reserva |
 | `Resources/CharacterForms/GKU_KID/kid_oozaru.prefab` + .meta | cópia técnica do prefab licenciado existente `kid_mastery`, rig humanoid preservado e silhueta suplementar via runtime; **não é arte final de grande macaco** | Provisório |
 | `Editor/DomainSelfTests.cs` | validações de regen, receitas, venda, life steal, haste, Oozaru fora da torre, AttackMove/Stop | Testes adicionados |
@@ -28,7 +28,7 @@
 - `HPRegenPer5`: 6 no nível1, +0,65 por nível, além da cura da fonte 80HP/s. HP/ataque/KiPower preservam +24 HP, +2,8 ataque, +3,1 KiPower por level (não balanceados).
 - Resistências: +0,9 por level; ataque: +1,2% attack speed relativo por level, além de itens; `CritChance` de itens é aplicada com roll determinístico por contagem de ataques (prototipagem, não sistema pseudoaleatório oficial do LoL).
 - `AbilityHaste`: CD = CDbase × 100/(100+haste). 10 haste reduz Q 4,0→3,636s.
-- `LifeSteal`: somente ataques básicos elegíveis, por HP realmente removido; `SpellVamp`: dano Ki de técnicas, por HP realmente removido. Efeitos de Cell em Q/R têm sustain adicional; não há anti-cura/true damage/on-hit/CC completo.
+- `LifeSteal`: somente ataques básicos elegíveis, por HP realmente removido; `SpellVamp`: dano Ki de técnicas, por HP realmente removido. Efeitos de Cell em Q/R têm sustain adicional; item `ANTI_HEAL_BLADE` aplica **35% de redução de cura por 3 segundos** ao danificar herói. Não há ainda true damage/on-hit/CC completo nem resistência a efeitos.
 - Receitas consomem componentes existentes no inventário e cobram só diferença; vender devolve 70% do preço nominal. **Não existe undo**, stacks avançados nem IDs atômicos de transação; são próximos tickets.
 - Treino após Ki cheio: taxa começa em `1.8 + 0.22×(level-1)` XP/s, multiplicador 0,55 após30s. Não foi calibrado por partidas com farm real; a HUD exibe XP/s.
 - Zeni passivo após30s de partida: +3/s enquanto herói vivo. Compras somente na fonte.
@@ -49,6 +49,7 @@
 - **Não finalizado:** novo mapa diagonal top/mid/bot e NavGraph/A*, jungle/objetivos/buffs, fog/wards, torres em tiers/inibidores, quatro tipos de minions, 15 heróis, sistemas de runas, multiplayer/servidor, loja com undo, itens ativos e assets definitivos.
 - Catálogo de itens e QWER têm valores de protótipo, sem playtest TTK, farm/XP/min ou counters humanos. Não dizer que está igual a LoL 2026.
 - Oozaru tem rig humanoide reaproveitado com esculturas simples, não modelo original completo com animações próprias e textura de pelo.
+- Minimap de **três rotas atuais**, clicável, com torres/minions/heróis; não existe ainda fog/ward, portanto revela posições de ambos os times (apenas protótipo offline). Torre mantém o minion alvo vivo até ele sair de alcance, exceto quando herói aciona aggro.
 - A ordem de merge é crítica: PR #4 baseado no PR #2. Quando testes forem aprovados, PR #2 primeiro, depois atualizar base de PR #4 para `main` e mesclar. PR #3 de documentação já está na main e deve permanecer.
 - Pipeline de rendering/câmera é IMGUI e art Built-in; não reescrever cena/render pipeline antes de avaliar build.
 - `scripts/verify_publication.ps1` passa apenas quando baseline corresponde aos fontes; esse mecanismo não substitui licença/segurança completa.
@@ -59,7 +60,7 @@ Executar [TO_CODEX_BATCH_001.md](../TO_CODEX_BATCH_001.md) na branch deste PR e 
 
 ## 6. Definição de conclusão
 
-- [ ] CI de domínio atualizado bem-sucedido no head final.
+- [ ] CI de domínio atualizado bem-sucedido no head final (verificar nova execução após o último commit; não usar resultado antigo).
 - [ ] Publication checker passa com .meta e baseline (sem caminhos privados).
 - [ ] Unity importa sem erros.
 - [ ] Testes domínio/art e Play Mode passam (incluindo Oozaru e 3 personagens).
