@@ -1,53 +1,19 @@
-# Tarefa ativa — DBM-001: validar o PR #1 no Unity e corrigir regressões
+# Tarefa ativa na branch integrada — DBM-002 + BATCH-001
 
-**Status:** CÓDIGO IMPLEMENTADO PELO CHATGPT — AGUARDANDO CODEX / TESTES REAIS  
-**PR:** https://github.com/AntonioCiorceroJunior/dragon_ball_moba/pull/1  
-**Branch do código:** `chatgpt/DBM-001-gameplay`  
-**Base:** `main` (não modificar `main` antes da revisão)  
-**Unity:** 6000.6.6f1 · Built-in · Input Manager legado.
+**Data:** 17/10/2026 · **Branch de validação:** `chatgpt/moba-integrated-systems-2026-10-17` · [PR #4](https://github.com/AntonioCiorceroJunior/dragon_ball_moba/pull/4), empilhado sobre [PR #2](https://github.com/AntonioCiorceroJunior/dragon_ball_moba/pull/2).
 
-## Contexto
+**Instrução operacional vigente neste checkout:**
+[**TO_CODEX_BATCH_001.md**](TO_CODEX_BATCH_001.md).
 
-O ChatGPT já alterou diretamente o código-fonte publicado no GitHub na branch `chatgpt/DBM-001-gameplay` e abriu o PR #1 como rascunho. **Não é necessário reimplementar a tarefa do zero.** O trabalho de Codex agora é: sincronizar, compilar, executar os testes, verificar gameplay com mouse/teclado, corrigir falhas reais e publicar resultados.
+O arquivo de tarefas herdado da DBM-001 estava desatualizado nesta branch (PR #1 já foi integrado à main). Foi substituído por esta referência para impedir que o Codex retome a tarefa antiga.
 
-### Implementado no PR
+## Entrega esperada em uma única rodada do Codex
 
-- `EntityState`: pontos e ranks de habilidade.
-- `Definitions`: comando para evoluir habilidades.
-- `GameWorld`: autorização de upgrade/rank, ultimate nível 6/11/16, auto-upgrade legal do bot, bloqueio do cast rank0, ganhos por rank e preservação do autoataque após cast.
-- `PrototypeGame`: Ctrl+Q/W/E/R, botões +, HUD de ranks/pontos, raycast de inimigos.
-- `DomainSelfTests` / `ArtSmoke`: testes e smoke adaptados.
-- Relatório de implementação (branch): `docs/coordination/reports/2026-10-16_DBM-001_chatgpt-implementation.md`.
+1. Sincronizar a branch acima de maneira segura, sem descartar alterações locais.
+2. Executar publicação, smoke .NET, domínio e arte no Unity 6000.6.6f1, build Windows e testes nativos de DBM-001/DBM-002.
+3. Fazer uma revisão manual da seleção, dos três personagens, lojas/receitas, stats/regen, dano, Ki, torre/colisões, Oozaru provisório, câmera, **minimapa interativo** e ataque-movimento.
+4. Corrigir erros concretos **na mesma branch**, com testes e commits.
+5. Publicar relatório de execução e evidências em `docs/coordination/reports/`, atualizar `FROM_CODEX.md` e `PROJECT_STATUS.md` da branch.
+6. **Não mesclar** PR #2 ou PR #4; aguardar revisão do ChatGPT.
 
-## Passos obrigatórios do Codex
-
-1. Localizar o clone ativo `Repositorio/dragon_ball_moba`. Fazer `git status`; preservar modificações não commitadas, se houver.
-2. Buscar atualizações via `git fetch` e trocar com segurança para a branch existente `chatgpt/DBM-001-gameplay`. Se falta credencial Git HTTPS, usar conector GitHub autorizado. Não criar branch concorrente para reimplementar a mesma tarefa.
-3. Ler `AGENTS.md`, este documento da `main`, o relatório da implementação na branch, e os diffs do PR #1.
-4. Rodar com Unity **fechado no Editor**:
-   ```powershell
-   powershell -NoProfile -ExecutionPolicy Bypass -File scripts/validate_unity.ps1 -Mode VisualPrepare
-   powershell -NoProfile -ExecutionPolicy Bypass -File scripts/validate_unity.ps1 -Mode VisualPlay
-   powershell -NoProfile -ExecutionPolicy Bypass -File scripts/validate_unity.ps1 -Mode VisualBuild
-   ```
-5. Conferir que `DomainSelfTests.RunAll` e o smoke `ArtSmoke` realmente rodam na validação; se algum não rodar, executá-lo explicitamente. Corrigir compilação/testes que falharem. Registrar logs úteis sem caminhos privados.
-6. **Teste manual no executável novo**:
-   - Começa com ponto1 e Q/W/E/R bloqueadas; Q não gasta Ki enquanto bloqueada.
-   - Ctrl+Q desbloqueia Q; uso gasta Ki, tem cooldown.
-   - XP concede pontos; Q rank2 só no nível3; R somente 6/11/16. Botões + funcionam.
-   - Clique direito em inimigo **uma vez**: desloca até o alvo e acerta várias vezes no ritmo correto. Clicar no chão e segurar C cancelam ataques.
-   - Usar técnica não precisa fazer novo clique para voltar a atacar o alvo válido.
-   - Selecionar no corpo do personagem 3D de fato funciona, inclusive após transformação.
-   - Reinício e respawn respeitam ranks/pontos; torres, tropas, loja, transformações continuam funcionando como antes.
-7. Capturar evidências (texto dos eventos, logs e screenshots do Unity/executável quando possível). Corrigir bugs encontrados **na mesma branch**, com commits vinculados ao PR #1.
-8. Criar relatório complementar `docs/coordination/reports/YYYY-MM-DD_DBM-001_codex-validacao.md`, atualizar `docs/coordination/FROM_CODEX.md` e `PROJECT_STATUS.md` **na branch** com resultados concretos, commits, evidências, limitações e próximo passo.
-9. Enviar link do PR e resumo; **não executar merge automaticamente** e não iniciar DBM-002 sem revisão.
-
-## Regras
-
-- Não alterar estrutura do mapa, pipeline de arte, multiplayer, torres/colisões ou inventário nesta tarefa.
-- Testes no domínio não substituem cliques físicos na aplicação. Indicar explicitamente o que foi `passou`, `falhou` ou `não verificado`.
-- Economizar contexto: corrigir os erros encontrados, sem fazer refatorações grandes ou revisitar todos os documentos.
-- Não usar push forçado, reset destrutivo, nem modificar arquivos protegidos de coordenação fora das atualizações permitidas.
-
-**Definição de concluída:** compila, smoke passa, os critérios de gameplay são demonstrados, relatório e commits estão no PR #1; ChatGPT revisa antes do merge.
+**Nota:** o `TO_CODEX.md` da main é administrado separadamente. Esta alteração pertence somente ao PR #4 e não ordena início automático de Codex nem substitui a necessidade de o usuário acionar a execução.

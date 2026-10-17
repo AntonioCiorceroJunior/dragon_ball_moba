@@ -81,6 +81,12 @@ namespace DragonMoba.Domain
             {
                 if (!e.Alive || e.Kind == EntityKind.Core) continue;
                 if (e.Kind == EntityKind.Hero && e.Id != PlayerId) ThinkBot(e);
+                if (e.Kind == EntityKind.Hero && e.Id == PlayerId && e.AttackMoveActive &&
+                    e.AttackTargetId == 0 && !e.Charging)
+                {
+                    var acquired = NearestEnemy(e, e.AttackRange + 2.5f, false);
+                    if (acquired != null) e.AttackTargetId = acquired.Id;
+                }
                 if (e.Kind == EntityKind.Minion) ThinkMinion(e);
                 if (e.Kind == EntityKind.Tower) ThinkTower(e, dt);
             }
@@ -99,8 +105,17 @@ namespace DragonMoba.Domain
                     InRange(e, target, e.AttackRange) && e.AttackCooldown <= 0f && !e.Charging)
                 {
                     e.AttackCooldown = e.AttackInterval;
-                    DealDamage(e, target, e.PhysicalAttack, false);
-                    events.Add(new GameEvent(EventKind.Attack, e.Id, target.Position, "Ataque", e.PhysicalAttack, target.Id));
+                    var raw = e.PhysicalAttack;
+                    if (e.Kind == EntityKind.Hero)
+                    {
+                        // Deterministic pseudo-random crit roll; no UnityEngine.Random
+                        // or variable-frame-time dependency in the domain.
+                        ++e.BasicAttacksIssued;
+                        var roll = ((e.BasicAttacksIssued * 71 + e.Id * 37 + target.Id * 13) % 100) / 100f;
+                        if (roll < e.CritChance) raw *= 1.75f;
+                    }
+                    DealDamage(e, target, raw, false, e.Kind == EntityKind.Hero);
+                    events.Add(new GameEvent(EventKind.Attack, e.Id, target.Position, "Ataque", raw, target.Id));
                 }
             }
             entities.RemoveAll(e => e.Kind == EntityKind.Minion && !e.Alive);
@@ -119,6 +134,7 @@ namespace DragonMoba.Domain
                     hero.Charging = false;
                     hero.ChargeSeconds = 0;
                     hero.AttackTargetId = 0;
+                    hero.AttackMoveActive = false;
                     hero.Destination = ClampWalkable(hero, V2.Clamp(cmd.Position));
                     return true;
                 case CommandKind.Attack:
@@ -127,11 +143,13 @@ namespace DragonMoba.Domain
                     hero.Charging = false;
                     hero.ChargeSeconds = 0;
                     hero.AttackTargetId = target.Id;
+                    hero.AttackMoveActive = false;
                     // A target order replaces an old ground-move destination.
                     hero.Destination = hero.Position;
                     return true;
                 case CommandKind.Charge:
                     hero.Charging = cmd.Pressed;
+                    hero.AttackMoveActive = false;
                     hero.ChargeSeconds = 0;
                     hero.Destination = hero.Position;
                     hero.AttackTargetId = 0;
@@ -142,6 +160,21 @@ namespace DragonMoba.Domain
                     return TryUpgradeAbility(hero, cmd.Slot);
                 case CommandKind.Buy:
                     return Purchase(hero, cmd.ItemId);
+                case CommandKind.Sell:
+                    return Sell(hero, cmd.ItemId);
+                case CommandKind.Stop:
+                    hero.Charging = false;
+                    hero.AttackMoveActive = false;
+                    hero.AttackTargetId = 0;
+                    hero.Destination = hero.Position;
+                    return true;
+                case CommandKind.AttackMove:
+                    hero.Charging = false;
+                    hero.ChargeSeconds = 0f;
+                    hero.AttackTargetId = 0;
+                    hero.AttackMoveActive = true;
+                    hero.Destination = ClampWalkable(hero,V2.Clamp(cmd.Position));
+                    return true;
                 default:
                     return false;
             }
@@ -150,6 +183,7 @@ namespace DragonMoba.Domain
         private EntityState SpawnHero(Team team, string champion, V2 pos)
         {
             var e = EntityState.CreateHero(nextId++, team, champion, pos);
+            StatCalculator.Refresh(e);
             entities.Add(e);
             if (team != Team.Blue) AutoSpendSkillPoints(e);
             return e;
@@ -203,6 +237,8 @@ namespace DragonMoba.Domain
                     hero.Hp = hero.MaxHp;
                     hero.Ki = hero.MaxKi;
                     hero.Shield = 0;
+                    hero.HealingReductionSeconds = 0f;
+                    hero.HealingReductionRate = 0f;
                     hero.Position = BasePosition(hero.Team);
                     hero.Destination = hero.Position;
                     hero.AttackTargetId = 0;
@@ -211,13 +247,31 @@ namespace DragonMoba.Domain
                 }
                 return;
             }
+            // Gentle passive income begins after the opening phase. Keeps expensive
+            // item builds viable without requiring every last hit, but active farming
+            // remains more rewarding than waiting at the fountain.
+            if (elapsed >= 30f)
+            {
+                hero.PassiveZeniRemainder += 3f * dt;
+                var earned = (int)hero.PassiveZeniRemainder;
+                if (earned > 0)
+                {
+                    hero.Zeni += earned;
+                    hero.PassiveZeniRemainder -= earned;
+                }
+            }
             hero.Ki = Math.Min(hero.MaxKi, hero.Ki + hero.KiRegen * dt);
             if (hero.ShieldLifetime > 0f)
             {
                 hero.ShieldLifetime = Math.Max(0f, hero.ShieldLifetime - dt);
                 if (hero.ShieldLifetime == 0f) hero.Shield = 0f;
             }
-            if (NearBase(hero)) hero.Hp = Math.Min(hero.MaxHp, hero.Hp + 80f * dt);
+            // Base regeneration applies anywhere; the fountain adds a separate burst.
+            hero.HealingReductionSeconds = Math.Max(0f,hero.HealingReductionSeconds-dt);
+            if(hero.HealingReductionSeconds <= 0f) hero.HealingReductionRate = 0f;
+            var healingFactor = 1f - hero.HealingReductionRate;
+            hero.Hp = Math.Min(hero.MaxHp, hero.Hp +
+                (hero.HpRegenPer5 / 5f + (NearBase(hero) ? 80f : 0f)) * healingFactor * dt);
             hero.TrainingSeconds = Math.Max(0, hero.TrainingSeconds - (hero.Charging ? 0f : dt * 0.25f));
             if (hero.TrainingBootsRemaining > 0 && !NearBase(hero))
             {
@@ -229,6 +283,7 @@ namespace DragonMoba.Domain
                     events.Add(new GameEvent(EventKind.Purchase, hero.Id, hero.Position, "Treinamento concluido: +8% de velocidade"));
                 }
             }
+            hero.TrainingXpPerSecond = 0f;
             if (!hero.Charging) return;
             hero.Destination = hero.Position;
             hero.AttackTargetId = 0;
@@ -242,7 +297,11 @@ namespace DragonMoba.Domain
             {
                 hero.TrainingSeconds += dt;
                 var multiplier = hero.TrainingSeconds > 30f ? 0.55f : 1f;
-                GrantExperience(hero, 1.8f * multiplier * dt);
+                // Training remains weaker than active lane farming, but gets more
+                // noticeable in later levels. Based on project design, not Riot values.
+                var rate = (1.8f + Math.Max(0, hero.Level - 1) * 0.22f) * multiplier;
+                hero.TrainingXpPerSecond = hero.Level >= 18 ? 0f : rate;
+                GrantExperience(hero, hero.TrainingXpPerSecond * dt);
             }
         }
 
@@ -289,7 +348,8 @@ namespace DragonMoba.Domain
             {
                 case EntityKind.Tower: return TowerBodyRadius;
                 case EntityKind.Core: return CoreBodyRadius;
-                case EntityKind.Hero: return HeroBodyRadius;
+                case EntityKind.Hero: return entity.FormId == "kid_oozaru" ? .95f :
+                    entity.HeroId == "GKU_KID" ? .32f : HeroBodyRadius;
                 case EntityKind.Minion: return MinionBodyRadius;
                 default: return 0f;
             }
@@ -408,7 +468,7 @@ namespace DragonMoba.Domain
             if (entity.AttackTargetId != 0 && (victim == null || !victim.Alive || victim.Team == entity.Team))
             {
                 entity.AttackTargetId = 0;
-                entity.Destination = entity.Position;
+                if (!entity.AttackMoveActive) entity.Destination = entity.Position;
                 victim = null;
             }
             var destination = entity.Destination;
@@ -466,6 +526,13 @@ namespace DragonMoba.Domain
             turret.TowerAggroTargetId = 0;
             turret.TowerAggroSeconds = 0f;
 
+            // Keep firing at the same minion until it dies or leaves range, even
+            // when another minion moves closer. Hero aggression above overrides.
+            var retained = Find(turret.AttackTargetId);
+            if (retained != null && retained.Kind == EntityKind.Minion &&
+                retained.Alive && retained.Team != turret.Team &&
+                InRange(turret,retained,turret.AttackRange))
+                return;
             // Enemy minions always have priority unless an enemy hero provokes
             // the tower by damaging a defended ally. Never target outside range.
             EntityState nearestMinion = null;
@@ -534,24 +601,47 @@ namespace DragonMoba.Domain
             if (actor.Ki < cost) return false;
             if (slot != AbilitySlot.W && slot != AbilitySlot.E && V2.Distance(actor.Position, targetPoint) > 12f) return false;
             actor.Ki -= cost;
-            actor.SkillCooldown[i] = cooldown;
+            actor.SkillCooldown[i] = cooldown * 100f / (100f + actor.AbilityHaste);
             // Casting a skill must not discard the basic-attack order.
-            var abilityName = new[] { "Rajada de Ki", "Impulso", "Barreira", "Explosao Suprema" }[i];
+            var names = actor.HeroId == "GKU_KID" ?
+                new[] { "Bastao Magico", "Salto do Torneio", "Defesa do Kame", "Golpe do Grande Macaco" } :
+                actor.HeroId == "CELL_Z" ?
+                new[] { "Absorcao Celular", "Investida Biologica", "Carapaca", "Explosao Perfeita" } :
+                new[] { "Rajada de Ki", "Transmissao Curta", "Barreira Divina", "Explosao Suprema" };
+            var abilityName = names[i];
             switch (slot)
             {
                 case AbilitySlot.Q:
                     var hit = NearestToPoint(actor.Team, targetPoint, 2.7f, actor.Position, 12f);
-                    if (hit != null) DealDamage(actor, hit,
-                        60f + actor.KiPower * 0.85f + 24f * (actor.SkillRanks[i] - 1), true);
+                    if (hit != null)
+                    {
+                        var bonus = 24f * (actor.SkillRanks[i]-1);
+                        if (actor.HeroId == "GKU_KID")
+                            DealDamage(actor,hit,45f+actor.PhysicalAttack*1.15f+bonus,false);
+                        else if (actor.HeroId == "CELL_Z")
+                        {
+                            var hpBefore = hit.Hp;
+                            if (DealDamage(actor,hit,50f+actor.KiPower*.65f+bonus,true))
+                                actor.Hp=Math.Min(actor.MaxHp,actor.Hp+(hpBefore-hit.Hp)*.16f);
+                        }
+                        else
+                            DealDamage(actor,hit,60f+actor.KiPower*.85f+bonus,true);
+                    }
                     break;
                 case AbilitySlot.W:
                     DashWithoutStructureCollision(actor, targetPoint,
-                        6f + actor.SkillRanks[i] - 1);
+                        (6f + actor.SkillRanks[i] - 1) *
+                        (actor.FormId == "kid_oozaru" ? .65f :
+                         actor.HeroId == "CELL_Z" ? .85f :
+                         actor.HeroId == "GKU_KID" ? 1.15f : 1f));
                     actor.Destination = actor.Position;
                     break;
                 case AbilitySlot.E:
                     actor.Shield = Math.Min(actor.MaxHp * 0.5f,
-                        actor.Shield + 80f + actor.KiPower * 0.5f + 25f * (actor.SkillRanks[i] - 1));
+                        actor.Shield + (actor.HeroId == "CELL_Z" ? 105f :
+                            actor.HeroId == "GKU_KID" ? 65f : 80f) +
+                        actor.KiPower * (actor.HeroId == "CELL_Z" ? .3f : .5f) +
+                        25f * (actor.SkillRanks[i] - 1));
                     actor.ShieldLifetime = 5f;
                     break;
                 case AbilitySlot.R:
@@ -559,8 +649,17 @@ namespace DragonMoba.Domain
                     foreach (var e in targets)
                         if (e.Alive && e.Team != actor.Team && e.Team != Team.Neutral &&
                             V2.Distance(targetPoint, e.Position) <= 4f && V2.Distance(actor.Position, e.Position) <= 12f)
-                            DealDamage(actor, e, 105f + actor.KiPower * 1.3f +
-                                40f * (actor.SkillRanks[i] - 1), true);
+                        {
+                            var raw = actor.HeroId == "GKU_KID" ?
+                                100f + actor.PhysicalAttack*1.2f + 40f*(actor.SkillRanks[i]-1) :
+                                actor.HeroId == "CELL_Z" ?
+                                115f + actor.KiPower*1.1f + 40f*(actor.SkillRanks[i]-1) :
+                                105f + actor.KiPower*1.3f + 40f*(actor.SkillRanks[i]-1);
+                            var hpBefore=e.Hp;
+                            if (DealDamage(actor,e,raw,actor.HeroId!="GKU_KID") &&
+                                actor.HeroId=="CELL_Z")
+                                actor.Hp=Math.Min(actor.MaxHp,actor.Hp+(hpBefore-e.Hp)*.06f);
+                        }
                     break;
             }
             events.Add(new GameEvent(EventKind.Ability, actor.Id, targetPoint, abilityName, 0, actor.Id));
@@ -582,18 +681,37 @@ namespace DragonMoba.Domain
             return chosen;
         }
 
-        public bool DealDamage(EntityState actor, EntityState victim, float raw, bool kiDamage)
+        public bool DealDamage(EntityState actor, EntityState victim, float raw, bool kiDamage,
+            bool basicAttack = false)
         {
             if (actor == null || victim == null || !actor.Alive || !victim.Alive || actor.Team == victim.Team) return false;
             if (victim.Kind == EntityKind.Core && ProtectedCore(victim)) return false;
-            var amount = Catalog.Mitigate(raw, kiDamage ? victim.KiResist : victim.Armor);
+            var resistance = kiDamage ? victim.KiResist : victim.Armor;
+            var penetration = actor.Kind == EntityKind.Hero ?
+                (kiDamage ? actor.KiPenPercent : actor.ArmorPenPercent) : 0f;
+            var amount = Catalog.Mitigate(raw, resistance * (1f - penetration));
             if (victim.Shield > 0)
             {
                 var absorbed = Math.Min(victim.Shield, amount);
                 victim.Shield -= absorbed;
                 amount -= absorbed;
             }
+            var lostHp = Math.Min(victim.Hp, amount);
             victim.Hp = Math.Max(0, victim.Hp - amount);
+            // Sustain is based on HP actually removed, never absorbed shields.
+            if (actor.Kind == EntityKind.Hero && lostHp > 0f)
+            {
+                var vamp = basicAttack ? actor.LifeSteal : kiDamage ? actor.SpellVamp : 0f;
+                if (vamp > 0f)
+                    actor.Hp = Math.Min(actor.MaxHp, actor.Hp +
+                        lostHp * vamp * (1f - actor.HealingReductionRate));
+            }
+            if (actor.Kind == EntityKind.Hero && victim.Kind == EntityKind.Hero &&
+                lostHp > 0f && actor.AntiHealOnHit > 0f)
+            {
+                victim.HealingReductionRate = Math.Max(victim.HealingReductionRate,actor.AntiHealOnHit);
+                victim.HealingReductionSeconds = 3f;
+            }
             if (actor.Kind == EntityKind.Hero && victim.Kind == EntityKind.Hero && amount > 0f)
             {
                 foreach (var defender in entities)
@@ -651,12 +769,9 @@ namespace DragonMoba.Domain
                 hero.Experience -= Catalog.ExperienceForNextLevel(hero.Level);
                 ++hero.Level;
                 ++hero.UnspentSkillPoints;
-                hero.MaxHp += 24;
-                hero.Hp = Math.Min(hero.MaxHp, hero.Hp + 24);
-                hero.PhysicalAttack += 2.8f;
-                hero.KiPower += 3.1f;
-                events.Add(new GameEvent(EventKind.LevelUp, hero.Id, hero.Position, "Nivel " + hero.Level));
                 ApplyForm(hero);
+                StatCalculator.Refresh(hero);
+                events.Add(new GameEvent(EventKind.LevelUp, hero.Id, hero.Position, "Nivel " + hero.Level));
                 if (hero.Id != PlayerId) AutoSpendSkillPoints(hero);
             }
             if (hero.Level == 18) hero.Experience = 0;
@@ -672,33 +787,82 @@ namespace DragonMoba.Domain
                 foreach (var old in def.Forms)
                     if (old.Id == hero.FormId) currentLevel = old.Level;
                 if (stage.Level <= currentLevel) continue;
-                hero.PhysicalAttack += stage.BonusAttack;
-                hero.KiPower += stage.BonusKiPower;
-                hero.MoveSpeed += stage.BonusSpeed;
+                // Stats are rebuilt once by StatCalculator.Refresh after stage changes.
                 hero.FormId = stage.Id;
                 hero.FormName = stage.DisplayName;
+                // A large transformation cannot materialize inside a solid tower.
+                if (IsStructureCollision(hero, hero.Position))
+                {
+                    hero.Position = ClampWalkable(hero, hero.Position);
+                    hero.Destination = hero.Position;
+                    hero.AttackTargetId = 0;
+                }
                 events.Add(new GameEvent(EventKind.Transform, hero.Id, hero.Position, hero.FormName));
             }
+        }
+
+        // Return how much Zeni a player must still pay when combining owned parts.
+        // An ingredient can only be consumed once even if a recipe lists duplicates.
+        public int RemainingItemCost(EntityState hero, string itemId)
+        {
+            var item = Catalog.Item(itemId);
+            if (hero == null || item == null) return -1;
+            var remaining = new List<string>(hero.Inventory);
+            var credit = 0;
+            foreach (var component in item.Components)
+            {
+                if (!remaining.Remove(component)) continue;
+                var part = Catalog.Item(component);
+                if (part != null) credit += part.Price;
+            }
+            return Math.Max(0, item.Price - credit);
         }
 
         private bool Purchase(EntityState hero, string itemId)
         {
             var item = Catalog.Item(itemId);
-            if (item == null || !NearBase(hero) || hero.Inventory.Count >= 6 || hero.Zeni < item.Price) return false;
+            if (item == null || !NearBase(hero)) return false;
             if (item.TrainingBoots && hero.BoughtTrainingBoots) return false;
-            hero.Zeni -= item.Price;
-            hero.MaxKi += item.MaxKi;
-            hero.Ki += item.MaxKi;
-            hero.KiRegen += item.KiRegen;
-            hero.Armor += item.Armor;
-            hero.PhysicalAttack += item.Attack;
-            hero.Inventory.Add(item.Id);
+            var available = new List<string>(hero.Inventory);
+            var consumed = new List<string>();
+            var credit = 0;
+            foreach (var component in item.Components)
+            {
+                if (!available.Remove(component)) continue;
+                var definition = Catalog.Item(component);
+                if (definition == null || definition.TrainingBoots) continue;
+                consumed.Add(component);
+                credit += definition.Price;
+            }
+            var cost = Math.Max(0, item.Price - credit);
+            var slotCountAfter = hero.Inventory.Count - consumed.Count + 1;
+            if (hero.Zeni < cost || slotCountAfter > 6) return false;
+
+            // Atomic mutation only after all checks. The completed item replaces its
+            // ingredients so their modifiers never survive in derived statistics.
+            hero.Zeni -= cost;
+            foreach (var part in consumed) hero.Inventory.Remove(part);
+            hero.Inventory.Add(itemId);
             if (item.TrainingBoots)
             {
                 hero.BoughtTrainingBoots = true;
                 hero.TrainingBootsRemaining = 300f;
             }
-            events.Add(new GameEvent(EventKind.Purchase, hero.Id, hero.Position, "Comprou " + item.Name));
+            StatCalculator.Refresh(hero);
+            events.Add(new GameEvent(EventKind.Purchase, hero.Id, hero.Position,
+                "Comprou " + item.Name + " (" + cost + " Zeni)"));
+            return true;
+        }
+
+        private bool Sell(EntityState hero, string itemId)
+        {
+            if (!NearBase(hero) || string.IsNullOrEmpty(itemId) || !hero.Inventory.Contains(itemId)) return false;
+            var item = Catalog.Item(itemId);
+            if (item == null || item.TrainingBoots) return false;
+            hero.Inventory.Remove(itemId);
+            hero.Zeni += (int)((long)item.Price * 70 / 100);
+            StatCalculator.Refresh(hero);
+            events.Add(new GameEvent(EventKind.Purchase, hero.Id, hero.Position, "Vendeu " + item.Name));
             return true;
         }
 

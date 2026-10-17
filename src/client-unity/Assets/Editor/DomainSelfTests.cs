@@ -67,6 +67,9 @@ namespace DragonMoba.Editor
             TestPersistentAttack();
             TestTowerRangeAndAggro();
             TestStructureCollision();
+            TestDerivedStatsAndEquipment();
+            TestAttackMoveAndStop();
+            Debug.Log("DBM-BATCH DOMAIN PASSED | regen, recipes, selling, lifesteal, haste, forms, attack-move");
             Debug.Log("DBM001 DOMAIN PASSED | locked skills, point conservation, rank gates, repeated attacks, cast resume and respawn persistence");
             Debug.Log("DBM002 DOMAIN PASSED | tower targeting, aggro, range, collision and detour");
         }
@@ -258,7 +261,7 @@ namespace DragonMoba.Editor
             Require(tower.AttackTargetId == 0, "TR-02: Tower releases targets outside range");
 
             hero.Position = hero.Destination = new V2(4, 19);
-            alliedMinion.Position = alliedMinion.Destination = new V2(10, 19);
+            alliedMinion.Position = alliedMinion.Destination = new V2(0, 12);
             world.Tick(GameWorld.FixedStep);
             Require(tower.AttackTargetId == alliedMinion.Id,
                 "TR-03: Tower prioritizes enemy minion even if hero is closer");
@@ -273,6 +276,16 @@ namespace DragonMoba.Editor
             world.Tick(GameWorld.FixedStep);
             Require(tower.AttackTargetId == alliedMinion.Id && tower.TowerAggroTargetId == 0,
                 "TR-05: Tower disengages aggressor who leaves range");
+            EntityState secondMinion = null;
+            foreach (var candidate in world.Entities)
+                if (candidate.Kind == EntityKind.Minion && candidate.Team == Team.Blue &&
+                    candidate.Id != alliedMinion.Id && candidate.Lane == 1)
+                { secondMinion = candidate; break; }
+            Require(secondMinion != null, "TR-06: Another minion exists");
+            secondMinion.Position = secondMinion.Destination = new V2(0f,16f);
+            world.Tick(GameWorld.FixedStep);
+            Require(tower.AttackTargetId == alliedMinion.Id,
+                "TR-06: Tower retains living minion despite a nearer minion arriving");
         }
 
         private static void TestStructureCollision()
@@ -318,6 +331,129 @@ namespace DragonMoba.Editor
             redTower.Hp = 0f; // Controlled fixture only: destroy the blocker for walkability check.
             Require(!world.IsStructureCollision(hero, redTower.Position),
                 "COL-05: Destroyed tower footprint is no longer solid");
+        }
+
+        private static void TestDerivedStatsAndEquipment()
+        {
+            var world = new GameWorld("GKU_KID");
+            var hero = world.Player;
+            Require(hero.HpRegenPer5 >= 6f && Catalog.Item("CAPSULE_SWORD") != null,
+                "STAT-01: Regeneration and expanded item catalog");
+            hero.Position = hero.Destination = new V2(30,-36);
+            hero.Hp = 250f;
+            for (var t=0; t<30; ++t) world.Tick(GameWorld.FixedStep);
+            Require(hero.Hp > 251f && hero.Hp < 252f,
+                "STAT-02: 6 HP per five seconds regenerates outside fountain");
+
+            hero.Position = hero.Destination = new V2(0,-34);
+            hero.Zeni = 20000;
+            Require(world.Submit(new GameCommand{ActorId=hero.Id,Kind=CommandKind.Buy,
+                ItemId="GLOVES"}), "ITEM-01: first glove");
+            Require(world.Submit(new GameCommand{ActorId=hero.Id,Kind=CommandKind.Buy,
+                ItemId="GLOVES"}), "ITEM-01: second glove");
+            Require(world.Submit(new GameCommand{ActorId=hero.Id,Kind=CommandKind.Buy,
+                ItemId="HEALTH_GEM"}), "ITEM-01: crystal");
+            Require(hero.Inventory.Count == 3 && Math.Abs(hero.PhysicalAttack-85f)<.01f,
+                "STAT-03: Both components add their attributes once");
+            Require(world.RemainingItemCost(hero,"DRAGON_GLOVES")==1700,
+                "ITEM-02: Missing combine cost is 1700");
+            Require(world.Submit(new GameCommand{ActorId=hero.Id,Kind=CommandKind.Buy,
+                ItemId="DRAGON_GLOVES"}), "ITEM-03: full recipe purchase");
+            Require(hero.Inventory.Count==1 && hero.Inventory[0]=="DRAGON_GLOVES" &&
+                hero.Zeni==17200 && Math.Abs(hero.PhysicalAttack-100f)<.01f &&
+                hero.MaxHp==770f,
+                "ITEM-03: Recipe consumes ingredients and no ghost bonuses remain");
+            Require(world.Submit(new GameCommand{ActorId=hero.Id,Kind=CommandKind.Sell,
+                ItemId="DRAGON_GLOVES"}), "ITEM-04: Sell finished item");
+            Require(hero.Inventory.Count==0 && hero.PhysicalAttack==55f &&
+                hero.MaxHp==570f && hero.Zeni==19160,
+                "ITEM-04: Selling removes modifiers and credits 70 percent");
+
+            hero.Zeni=20000;
+            Require(world.Submit(new GameCommand{ActorId=hero.Id,Kind=CommandKind.Buy,
+                ItemId="VAMP_ESSENCE"}), "DMG-01: Equip lifesteal");
+            Require(world.Submit(new GameCommand{ActorId=hero.Id,Kind=CommandKind.Buy,
+                ItemId="HASTE_SHARD"}), "SK-07: Equip ability haste");
+            EntityState enemy = null;
+            foreach (var e in world.Entities)
+                if (e.Kind==EntityKind.Hero && e.Team==Team.Red) { enemy=e; break; }
+            Require(enemy!=null, "DMG-01: Enemy fixture exists");
+            hero.Hp=100f;
+            Require(world.DealDamage(hero,enemy,100,false,true) && hero.Hp>104f,
+                "DMG-01: Basic attack lifesteal heals for actual HP damage");
+            enemy.Shield=1000;
+            hero.Hp=100f;
+            Require(world.DealDamage(hero,enemy,100,false,true) && hero.Hp==100f,
+                "DMG-02: Fully shielded damage never grants lifesteal");
+            Require(world.Submit(new GameCommand{ActorId=hero.Id,Kind=CommandKind.UpgradeAbility,
+                Slot=AbilitySlot.Q}), "SK-07: Learn Q");
+            hero.Ki=hero.MaxKi;
+            Require(world.Submit(new GameCommand{ActorId=hero.Id,Kind=CommandKind.Cast,
+                Slot=AbilitySlot.Q,Position=hero.Position}) &&
+                hero.SkillCooldown[0]>3.6f && hero.SkillCooldown[0]<3.7f,
+                "SK-07: +10 ability haste reduces base 4s cooldown correctly");
+
+            var antiWorld = new GameWorld("GKU_KID");
+            var buyer = antiWorld.Player;
+            buyer.Zeni = 4000;
+            Require(antiWorld.Submit(new GameCommand {ActorId=buyer.Id, Kind=CommandKind.Buy,
+                ItemId="ANTI_HEAL_BLADE"}) && buyer.AntiHealOnHit > .34f,
+                "COUNTER-01: Anti-heal item grants damage debuff");
+            EntityState affected=null;
+            foreach (var e in antiWorld.Entities)
+                if(e.Kind==EntityKind.Hero && e.Team==Team.Red) { affected=e;break; }
+            Require(affected!=null,"COUNTER-01: Enemy exists");
+            affected.Position=affected.Destination=new V2(30,-36);
+            affected.MoveSpeed=affected.PhysicalAttack=affected.AttackRange=0;
+            affected.Hp=250f;
+            Require(antiWorld.DealDamage(buyer,affected,40f,false,true) &&
+                affected.HealingReductionRate>.34f && affected.HealingReductionSeconds==3f,
+                "COUNTER-01: Damaging enemy hero reduces healing for three seconds");
+            for (var j=0;j<115;++j) antiWorld.Tick(GameWorld.FixedStep);
+            Require(affected.HealingReductionSeconds==0f && affected.HealingReductionRate==0f,
+                "COUNTER-02: Anti-heal debuff expires without ghost modifiers");
+
+            var apeWorld = new GameWorld("GKU_KID");
+            var kid = apeWorld.Player;
+            kid.Position = kid.Destination = new V2(0,-17.2f); // fits Kid, not giant form.
+            apeWorld.GrantExperience(kid,99999);
+            Require(kid.Level==18 && kid.FormId=="kid_oozaru" &&
+                apeWorld.BodyRadius(kid)>.9f && kid.MoveSpeed<6f &&
+                !apeWorld.IsStructureCollision(kid,kid.Position),
+                "FORM-01: Oozaru grows, slows and transforms outside tower collisions");
+        }
+
+        private static void TestAttackMoveAndStop()
+        {
+            var world = new GameWorld("GKU_KID");
+            var hero=world.Player;
+            EntityState enemy=null;
+            foreach (var e in world.Entities)
+                if (e.Kind==EntityKind.Hero && e.Team==Team.Red) { enemy=e;break; }
+            Require(enemy!=null,"MOVE-01: Enemy hero");
+            hero.Position=hero.Destination=new V2(30,-36);
+            enemy.Position=enemy.Destination=new V2(30,-26);
+            enemy.MoveSpeed=enemy.PhysicalAttack=enemy.AttackRange=0f;
+            enemy.MaxHp=enemy.Hp=5000f;
+            hero.MaxHp=hero.Hp=5000f;
+            Require(world.Submit(new GameCommand{ActorId=hero.Id,
+                Kind=CommandKind.AttackMove,Position=new V2(30,-23)}),
+                "MOVE-01: AttackMove command accepted");
+            var hits=0;
+            for(var i=0;i<260;i++)
+            {
+                world.Tick(GameWorld.FixedStep);
+                foreach(var e in world.DrainEvents())
+                    if(e.Kind==EventKind.Attack && e.ActorId==hero.Id &&
+                        e.TargetId==enemy.Id) hits++;
+                if(hits>=2)break;
+            }
+            Require(hits>=2 && hero.AttackMoveActive,
+                "MOVE-02: AttackMove acquires and repeats attacks without clicking enemy");
+            Require(world.Submit(new GameCommand{ActorId=hero.Id,Kind=CommandKind.Stop}) &&
+                !hero.AttackMoveActive && hero.AttackTargetId==0 &&
+                V2.Distance(hero.Destination,hero.Position)<.001f,
+                "MOVE-03: Stop cancels attack-move and movement");
         }
 
         private static void Require(bool condition, string label)

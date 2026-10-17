@@ -50,6 +50,12 @@ namespace DragonMoba.Editor
             var before=controller.Focus; controller.Pan(new Vector2(3,3)); controller.Tick(hero,false);
             Check(controller.Focus!=before,"Pan moves camera");
             controller.Recenter(hero,true);
+            var minimapFocus=new Vector3(-9f,0f,12f);
+            controller.FocusAt(minimapFocus,true);
+            Check(!controller.Following &&
+                Vector3.Distance(controller.Focus,controller.ClampFocus(minimapFocus))<.001f,
+                "Minimap click sets exact free-camera focus");
+            controller.Recenter(hero,true);
             Check(Math.Abs(camera.transform.eulerAngles.x-43)<.1f,"Less vertical angle");
             Debug.Log("ARENA CAMERA PASSED | orthographic 43 degrees, zoom bounds, pan, map bounds, recenter and follow");
         }

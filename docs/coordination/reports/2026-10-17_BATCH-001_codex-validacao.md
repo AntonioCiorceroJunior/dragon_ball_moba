@@ -1,0 +1,21 @@
+# BATCH-001 — validação Codex, 17/10/2026
+
+Branch `chatgpt/moba-integrated-systems-2026-10-17`; [PR #4](https://github.com/AntonioCiorceroJunior/dragon_ball_moba/pull/4), base [PR #2](https://github.com/AntonioCiorceroJunior/dragon_ball_moba/pull/2). Recebido `06e6472dc6aefcff31e390b6d805c24bc6168b9e`; correções publicadas em [`53e5ef0`](https://github.com/AntonioCiorceroJunior/dragon_ball_moba/commit/53e5ef010ca79fa7098e11c2375b81834ee3a37c). Sem merge; aguardando revisão.
+
+| Comando / camada | Resultado comprovado |
+| --- | --- |
+| GitHub Actions, C# + DomainSmoke | **PASS** no recebido e no corrigido; [CI #61](https://github.com/AntonioCiorceroJunior/dragon_ball_moba/actions/runs/39062341692). Smoke .NET local não repetido; SDK indisponível. |
+| `scripts/verify_publication.ps1 -DomainBaseline docs/coordination/evidence/DBM-BATCH-001/DOMAIN_BASELINE.csv` | **PASS**, 26 hashes CC0, sete licenças, 180 metas e quatro hashes Domain. |
+| `scripts/validate_unity.ps1 -Mode VisualPrepare` | **PASS**, Unity **6000.6.6f1**, projeto `src/client-unity`. |
+| `scripts/validate_unity.ps1 -Mode VisualPlay` | **PASS**; `RunAll` real: DBM001/DBM002/DBM-BATCH DOMAIN PASSED; arte dos três heróis/12 formas, combate, Ki/XP, loja, câmera, respawn/seleção. |
+| `scripts/validate_unity.ps1 -Mode VisualBuild` | **PASS**, Windows x64 Development, 168.574.732 bytes totais, UTC `2026-10-17T19:21:04.8510171Z`. |
+| `scripts/validate_native_gameplay.ps1` | **PASS 21/21**, entradas Windows reais e sonda opt-in; ranks, ataques/cadência, Q, Cell transformado, respawn e reinício. |
+| `scripts/interactive_smoke.ps1`, execução normal sem flag | **PASS no recorte observado**: seleção obrigatória/Kid/Cell/Super, componentes/categoria, receita restante 1700, venda/remoção de HP máximo, treino `+2,2 XP/s`, minimapa/Space; HUD em 1280×720 e 1920×1080. |
+
+**Falhas reproduzidas e corrigidas:** (1) `verify_publication.ps1`: bloco duplicado quebrava parsing; removido. (2) `GameWorld.cs`: `Floor(2800 * .7f)` devolvia **1959** no Mono e **1960** no CLR; cálculo inteiro restitui 70% de modo consistente. Só o hash legítimo de GameWorld foi atualizado no baseline. (3) `ArenaCameraController.cs`: cursor padrão do batch acionava scroll de borda e tirava o herói do enquadramento; leitura de input desativada somente em batch. (4) roteiro nativo: Space após reposicionar fixture, espera por até 42s simulados/120s de relógio e clique na confirmação atual. Antes disso, houve alvo fora da janela, timeout após somente 22,4s simulados e clique de reinício obsoleto. As 21 verificações passaram após os ajustes; nenhuma regra de gameplay foi relaxada.
+
+**Pendências para revisão manual — NOT TESTED:** Oozaru tamanho/velocidade/colisão no executável normal; fechamento da receita completa pela UI e combate com anti-heal/lifesteal contra escudo; retenção/aggro/colisão de torre e ataque-movimento A/S em partida normal; leitura de stats nos níveis 6/11/16. Há cobertura automatizada parcial dessas regras, que não substitui esses aceites visuais. Não se declara partida completa nem desempenho prolongado.
+
+**Evidências publicadas:** [21 resultados](../evidence/DBM-BATCH-001/Native-results.json), [identidade/hash da build](../evidence/DBM-BATCH-001/Build-identity.json) e [build-info](../evidence/DBM-BATCH-001/build-info.json). Capturas locais ignoradas: `src/client-unity/Logs/Interactive-batch001-*.png` (`selection`, `category`, `sell`, `ki`, `map-click/return`, `cell`, `super1080`). Logs completos locais ignorados: `src/client-unity/Logs/Validation-Visual{Prepare,Play,Build}.log`, `BATCH001-{publication-*,sale-*,native-*}.log`, `DBM001-player.log` e `Validation-Interactive-batch001-selection*.log`. Nenhuma exceção gerenciada nesses dois logs de execução normal.
+
+Build anterior preservada em `src/client-unity/Backups/BATCH001-before-validation/`; saídas regeneradas de arte/controlador foram arquivadas ali e restauradas no Git. Licença Unity funcionou fora do sandbox. A retomada do teste sofreu bloqueio temporário da revisão automática por limite de uso, depois executou com sucesso. Publicação pelo conector autenticado; checkpoint local preservado. **Próximo passo:** ChatGPT revisar PR #4 e as pendências; nenhum próximo ticket iniciado.

@@ -1,0 +1,8 @@
+{
+    "sourceCommit":  "53e5ef010ca79fa7098e11c2375b81834ee3a37c",
+    "assembly":  "DragonMobaVisualTest_Data/Managed/Assembly-CSharp.dll",
+    "sha256":  "8C814B3A0DEE8AB0C3709848E883F7D9D4A807D943E411F15F5B05C6F58CB83B",
+    "nativePassed":  21,
+    "nativeTotal":  21,
+    "nativeTestFlag":  "-dbm001-native-test"
+}

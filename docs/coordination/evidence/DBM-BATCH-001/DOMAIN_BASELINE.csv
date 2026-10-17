@@ -1,0 +1,5 @@
+Path,Hash,ApprovedSourceCommit
+Assets/Scripts/Domain/Definitions.cs,041B3FCFCEE1589CE8A721997E867E4045F1B2A47326DA1D95469062A861FA9A,chatgpt/moba-integrated-systems-2026-10-17
+Assets/Scripts/Domain/EntityState.cs,789A3ECA16E3790FACE1BA538CC7C697E2BA5E6A6A40F72BDB33E9D94BA11D82,chatgpt/moba-integrated-systems-2026-10-17
+Assets/Scripts/Domain/GameWorld.cs,9F62426ABCF6F76C96D1C0E0274857BA15EF7A7D0F4B8438184FE390C69292BD,chatgpt/moba-integrated-systems-2026-10-17
+Assets/Scripts/Domain/StatCalculator.cs,71335311C1DFC190D545990C6E6603F5F1A069EFC791F6984826EFC0E8FC71CD,chatgpt/moba-integrated-systems-2026-10-17
