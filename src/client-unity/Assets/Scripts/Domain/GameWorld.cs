@@ -122,6 +122,8 @@ namespace DragonMoba.Domain
                     hero.Charging = false;
                     hero.ChargeSeconds = 0;
                     hero.AttackTargetId = target.Id;
+                    // A target order replaces an old ground-move destination.
+                    hero.Destination = hero.Position;
                     return true;
                 case CommandKind.Charge:
                     hero.Charging = cmd.Pressed;
@@ -131,6 +133,8 @@ namespace DragonMoba.Domain
                     return true;
                 case CommandKind.Cast:
                     return CastAbility(hero, cmd.Slot, cmd.Position);
+                case CommandKind.UpgradeAbility:
+                    return TryUpgradeAbility(hero, cmd.Slot);
                 case CommandKind.Buy:
                     return Purchase(hero, cmd.ItemId);
                 default:
@@ -142,6 +146,7 @@ namespace DragonMoba.Domain
         {
             var e = EntityState.CreateHero(nextId++, team, champion, pos);
             entities.Add(e);
+            if (team != Team.Blue) AutoSpendSkillPoints(e);
             return e;
         }
 
@@ -236,11 +241,53 @@ namespace DragonMoba.Domain
             }
         }
 
+        // Pure domain rules shared by UI, player commands and bot skill allocation.
+        public bool CanUpgradeAbility(EntityState hero, AbilitySlot slot)
+        {
+            if (hero == null || hero.Kind != EntityKind.Hero || hero.UnspentSkillPoints <= 0) return false;
+            var i = (int)slot;
+            if (i < 0 || i >= hero.SkillRanks.Length) return false;
+            var rank = hero.SkillRanks[i];
+            if (slot == AbilitySlot.R)
+                return rank < 3 && hero.Level >= 6 + 5 * rank;
+            return rank < 5 && hero.Level >= 2 * (rank + 1) - 1;
+        }
+
+        private bool TryUpgradeAbility(EntityState hero, AbilitySlot slot)
+        {
+            if (!CanUpgradeAbility(hero, slot)) return false;
+            var i = (int)slot;
+            ++hero.SkillRanks[i];
+            --hero.UnspentSkillPoints;
+            events.Add(new GameEvent(EventKind.SkillUp, hero.Id, hero.Position,
+                slot + " nivel " + hero.SkillRanks[i]));
+            return true;
+        }
+
+        private void AutoSpendSkillPoints(EntityState bot)
+        {
+            // Keep bot skills under the same legality rules as player skills.
+            var priority = new[] { AbilitySlot.R, AbilitySlot.Q, AbilitySlot.E, AbilitySlot.W };
+            while (bot.UnspentSkillPoints > 0)
+            {
+                var allocated = false;
+                foreach (var slot in priority)
+                    if (TryUpgradeAbility(bot, slot)) { allocated = true; break; }
+                if (!allocated) break;
+            }
+        }
+
         private void UpdateMovement(EntityState entity, float dt)
         {
             entity.AttackCooldown = Math.Max(0f, entity.AttackCooldown - (entity.Kind == EntityKind.Hero ? 0f : dt));
             if (entity.Charging) return;
             var victim = Find(entity.AttackTargetId);
+            if (entity.AttackTargetId != 0 && (victim == null || !victim.Alive || victim.Team == entity.Team))
+            {
+                entity.AttackTargetId = 0;
+                entity.Destination = entity.Position;
+                victim = null;
+            }
             var destination = entity.Destination;
             if (victim != null && victim.Alive && victim.Team != entity.Team)
             {
@@ -323,7 +370,8 @@ namespace DragonMoba.Domain
         private bool CastAbility(EntityState actor, AbilitySlot slot, V2 targetPoint)
         {
             var i = (int)slot;
-            if (i < 0 || i > 3 || actor.SkillCooldown[i] > 0 || actor.Charging || !actor.Alive) return false;
+            if (i < 0 || i > 3 || actor.SkillRanks[i] == 0 ||
+                actor.SkillCooldown[i] > 0 || actor.Charging || !actor.Alive) return false;
             var cost = new[] { 20f, 25f, 30f, 50f }[i];
             var cooldown = new[] { 4f, 8f, 12f, 30f }[i];
             if (actor.Ki < cost) return false;
@@ -336,14 +384,17 @@ namespace DragonMoba.Domain
             {
                 case AbilitySlot.Q:
                     var hit = NearestToPoint(actor.Team, targetPoint, 2.7f, actor.Position, 12f);
-                    if (hit != null) DealDamage(actor, hit, 60f + actor.KiPower * 0.85f, true);
+                    if (hit != null) DealDamage(actor, hit,
+                        60f + actor.KiPower * 0.85f + 24f * (actor.SkillRanks[i] - 1), true);
                     break;
                 case AbilitySlot.W:
-                    actor.Position = V2.Clamp(V2.MoveTowards(actor.Position, targetPoint, 6f));
+                    actor.Position = V2.Clamp(V2.MoveTowards(actor.Position, targetPoint,
+                        6f + actor.SkillRanks[i] - 1));
                     actor.Destination = actor.Position;
                     break;
                 case AbilitySlot.E:
-                    actor.Shield = Math.Min(actor.MaxHp * 0.5f, actor.Shield + 80f + actor.KiPower * 0.5f);
+                    actor.Shield = Math.Min(actor.MaxHp * 0.5f,
+                        actor.Shield + 80f + actor.KiPower * 0.5f + 25f * (actor.SkillRanks[i] - 1));
                     actor.ShieldLifetime = 5f;
                     break;
                 case AbilitySlot.R:
@@ -351,7 +402,8 @@ namespace DragonMoba.Domain
                     foreach (var e in targets)
                         if (e.Alive && e.Team != actor.Team && e.Team != Team.Neutral &&
                             V2.Distance(targetPoint, e.Position) <= 4f && V2.Distance(actor.Position, e.Position) <= 12f)
-                            DealDamage(actor, e, 105f + actor.KiPower * 1.3f, true);
+                            DealDamage(actor, e, 105f + actor.KiPower * 1.3f +
+                                40f * (actor.SkillRanks[i] - 1), true);
                     break;
             }
             events.Add(new GameEvent(EventKind.Ability, actor.Id, targetPoint, abilityName, 0, actor.Id));
@@ -431,12 +483,14 @@ namespace DragonMoba.Domain
             {
                 hero.Experience -= Catalog.ExperienceForNextLevel(hero.Level);
                 ++hero.Level;
+                ++hero.UnspentSkillPoints;
                 hero.MaxHp += 24;
                 hero.Hp = Math.Min(hero.MaxHp, hero.Hp + 24);
                 hero.PhysicalAttack += 2.8f;
                 hero.KiPower += 3.1f;
                 events.Add(new GameEvent(EventKind.LevelUp, hero.Id, hero.Position, "Nivel " + hero.Level));
                 ApplyForm(hero);
+                if (hero.Id != PlayerId) AutoSpendSkillPoints(hero);
             }
             if (hero.Level == 18) hero.Experience = 0;
         }
