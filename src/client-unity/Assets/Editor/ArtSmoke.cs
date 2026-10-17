@@ -164,6 +164,10 @@ namespace DragonMoba.Editor
                     foreach(var slot in new[]{AbilitySlot.Q,AbilitySlot.W,AbilitySlot.E,AbilitySlot.R})
                         Check(world.Submit(new GameCommand{ActorId=hero.Id,Kind=CommandKind.UpgradeAbility,Slot=slot}),
                             "Unlock "+slot+" legally");
+                    // The hero may transform at level 6; the form cycle must start
+                    // from the current form rather than expecting level-1 appearance.
+                    formIndex=Catalog.Hero(hero.HeroId).Forms.FindIndex(f=>f.Id==hero.FormId);
+                    Check(formIndex>=0,"Valid form after skill-unlock progression");
                     hero.Ki=hero.MaxKi;
                     Check(world.Submit(new GameCommand{ActorId=hero.Id,Kind=CommandKind.Cast,Slot=AbilitySlot.Q,Position=victim.Position}),"Q accepted");
                     Check(victim.Hp<hp,"Q damages target");
