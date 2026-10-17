@@ -100,6 +100,14 @@ namespace DragonMoba.Editor
                         Check(arena.TerrainVertices>20000&&arena.PlantCount>80,"Organic map actively generated");
                         var terrainRenderer=GameObject.Find("OrganicTerrain").GetComponent<Renderer>();
                         Check(terrainRenderer.enabled&&GeometryUtility.TestPlanesAABB(GeometryUtility.CalculateFrustumPlanes(Camera.main),terrainRenderer.bounds),"Organic terrain active inside camera frustum");
+                        Check(terrainRenderer.sharedMaterial.mainTexture is Texture2D,
+                            "VISUAL-02: Ground actually displays procedural terrain paint");
+                        Check(RenderSettings.fog, "VISUAL-02: Battlefield atmospheric fog configured");
+                        var drone=GameObject.Find("Entity-"+minion.Id+"-"+minion.DisplayName);
+                        Check(drone!=null&&drone.GetComponent<MinionFloatAnimation>()!=null,
+                            "VISUAL-02: Troops use the original animated sentry model");
+                        Check(game.GetComponent<BattleSoundscape>()!=null,
+                            "AUDIO-01: Original battle soundscape attached to presentation");
                         Check(UnityEngine.Object.FindObjectsByType<Renderer>().Where(r=>r.name=="Rota"||r.name=="Rio Central").All(r=>!r.enabled),"Rectangular map no longer rendered");
                         if(hero.HeroId=="GKU_SUPER") Check(view.GetComponent<PlayableCharacterVisual>()!=null&&view.GetComponentsInChildren<SkinnedMeshRenderer>().Any(r=>r.enabled&&GeometryUtility.TestPlanesAABB(GeometryUtility.CalculateFrustumPlanes(Camera.main),r.bounds)),"Styled fighter actually used and inside camera frustum");
                         RaycastHit groundHit;
