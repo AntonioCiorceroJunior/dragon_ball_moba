@@ -1,46 +1,47 @@
-# Centro de pesquisa — Dragon Ball MOBA
+# Biblioteca de pesquisa MOBA — índice por assunto
 
-**Data:** 16/10/2026. **Status:** pesquisa documental e plano de arquitetura auditáveis, sem alterar gameplay.
+**Revisão editorial:** 17/10/2026. Os documentos 01–07 foram preservados nos caminhos originais para não quebrar links e citações compartilhados. **Pesquisa não é especificação aprovada nem código executável.**
 
-## Leitura recomendada em ordem
+**Consulta recomendada:** [Plano mestre atual](../PLANO_MESTRE_ATUAL.md) para ordem de trabalho; [política de precedência](../DOCUMENTOS_FONTE_E_PRECEDENCIA.md) para diferenciar fatos, propostas e histórico; [estado da pesquisa](STATUS_INVESTIGACAO.md) para lacunas e níveis de evidência.
 
-1. **[01 — Fontes auditadas e evolução do LoL](01_FONTES_AUDITADAS_E_EVOLUCAO_MOBA.md)**: separa evidência oficial, artigo técnico, estudo acadêmico, repositório aberto e hipótese. Inclui registro verificável de fontes, metodologia, limites dos papers e aspectos legais.
-2. **[02 — Especificação implementável dos sistemas de partida](02_SISTEMAS_MOBA_ESPECIFICACAO_IMPLEMENTAVEL.md)**: stats, regen, dano, lifesteal, escudos, abilities, itens/receitas, treinamento com C, seleções, Oozaru, mapa, pathfinding, visão, objetivos, câmera, UI e áudio.
-3. **[03 — Arquitetura, backlog e protocolo de aceite](03_ARQUITETURA_BACKLOG_E_PROTOCOLO_DE_ACEITE.md)**: módulos C#/Unity, migração incremental, diferenças com o código existente, sequência concreta de tickets, contrato de teste, critérios de sucesso e pesquisas pendentes.
+## 1. Referências e ciência: por que LoL evoluiu
 
-## Novos dossiês de auditoria em nível de código
+| Documento | Aplicação principal | Limite |
+|---|---|---|
+| [01 — Fontes oficiais, evolução e estudos](01_FONTES_AUDITADAS_E_EVOLUCAO_MOBA.md) | Riot /dev, patches, engineering, papers, métodos e licenças | Mistura textos integrais e abstracts; ler classificação/limitações |
+| [07 — Longitudinal e BalanceLab](07_ESTUDOS_LONGITUDINAIS_BALANCEAMENTO_EXPERIMENTAL.md) | Estudo de patches LoL e postmortem Riot; desenho de experimentos A/B | Não reproduz dataset nem valida nossos personagens com humanos |
 
-4. **[04 — Combate, atributos, progressão e economia](04_AUDITORIA_PROFUNDA_COMBATE_PROGRESSAO_ECONOMIA.md)**: matriz de evidência Riot 2019–2026, leitura de métodos e números atuais do GameWorld, fórmulas propostas, inventário/receitas, riscos e casos de teste determinísticos. Os cálculos são separados entre regra do nosso código e proposta.
-5. **[05 — Movimento, torres, waves, mapa e câmera](05_AUDITORIA_MOVIMENTO_TORRES_WAVES_MAPA_CAMERA.md)**: confronto com Riot Tech Swarm/A*, patch de waves, colisões e tower aggro da branch DBM-002, riscos específicos de retarget, proposta de pathfinding e testes do mapa original.
-6. **[06 — Auditoria de código-fonte de MOBA open source](06_AUDITORIA_CODIGO_ABERTO_MOBA_CSHARP_UNITY.md)**: leitura real de 13 arquivos C# do projeto MOBA_CSharp_Unity (MIT), incluindo máquina de ataque, agregação de status, item factory, torre, minion e riscos de lógica/performance. Não é alegação de build testado.
+## 2. Sistemas de gameplay
 
-Estes dossiês são **mais específicos** que o blueprint v1/v2 e apresentam hipóteses que podem ser refutadas. Ainda existem áreas não auditadas integralmente, como todas as variantes do LoL, artigos pagos integrais, rede/servidor, o restante do código open source e balanceamento real por partidas humanas.
+| Documento | Perguntas que ajuda a responder |
+|---|---|
+| [02 — Especificações de mecânicas](02_SISTEMAS_MOBA_ESPECIFICACAO_IMPLEMENTAVEL.md) | Que sistemas de stats, combate, economia, Ki, seleção, UI, mapa e visão queremos? |
+| [04 — Auditoria de combate, progressão e itens](04_AUDITORIA_PROFUNDA_COMBATE_PROGRESSAO_ECONOMIA.md) | O que o código atual faz em `GameWorld`? Como provar regen, mitigação, receitas e life steal? |
+| [05 — Navegação, torres, waves e câmera](05_AUDITORIA_MOVIMENTO_TORRES_WAVES_MAPA_CAMERA.md) | Como evoluir pathfinding/aggro/mapa e que lacunas restam no PR #2? |
 
-7. **[07 — Pesquisas longitudinais e balanceamento experimental](07_ESTUDOS_LONGITUDINAIS_BALANCEAMENTO_EXPERIMENTAL.md)**: leitura da íntegra do paper de He et al. (2021), cotejo com postmortem Riot de 2025, distinção entre causalidade e correlação, roteiro de experimento A/B e métricas do nosso jogo. Não é uma metanálise de todos os estudos existentes.
+## 3. Engenharia e reuso de código
 
-## Relação com documentos anteriores
+| Documento | Como utilizar |
+|---|---|
+| [06 — Leitura de MOBA C# aberto](06_AUDITORIA_CODIGO_ABERTO_MOBA_CSHARP_UNITY.md) | Exemplos reais de máquina de ataque, stats derivados, itens e minions; **não importar código antigo sem testes/licença** |
+| [03 — Arquitetura e plano de testes da pesquisa v2](03_ARQUITETURA_BACKLOG_E_PROTOCOLO_DE_ACEITE.md) | Contratos e sugestões detalhadas por sistema; **sequência de IDs é histórica/proposta**, não fila ativa |
 
-- [GAME_DESIGN.md](../specifications/GAME_DESIGN.md) continua sendo a **visão original de produto**, com 15 variantes, fichas, fusão, Oozaru e loja. A pesquisa v2 não o substitui.
-- [MOBA_RESEARCH_BLUEPRINT_2026.md](../specifications/MOBA_RESEARCH_BLUEPRINT_2026.md) é uma **proposta preliminar** extensa. A pesquisa v2 corrige referências e distingue o que foi efetivamente verificado. Em caso de conflito de verificação de fonte, prevalece o registro v2; em caso de conflito de produto, registrar decisão antes de implementar.
-- A instrução ativa para o Codex permanece [DBM-002 em TO_CODEX.md](../coordination/TO_CODEX.md); [PR #2](https://github.com/AntonioCiorceroJunior/dragon_ball_moba/pull/2) ainda depende de validação Unity. Não iniciar DBM-003 sem aprovação do fluxo.
+## 4. Documento extenso anterior (não usar como fonte única)
 
-## O que este conjunto não afirma
+[Blueprint MOBA 2026 — preliminar](../specifications/MOBA_RESEARCH_BLUEPRINT_2026.md) foi escrito antes das auditorias mais específicas e permanece para consulta de ideias, tabelas e exemplos. Pode usar IDs de tarefa e valores diferentes do plano vigente. **Em divergências, comparar GDD, código, decisões e [plano consolidado](../PLANO_MESTRE_ATUAL.md), nunca sobrescrever silenciosamente.**
 
-- **Não** lemos o código proprietário completo da Riot, e estes documentos não oferecem acesso a ele.
-- **Não** foram executados testes Unity/Windows, nem partidas humanas nesta pesquisa.
-- O texto integral de vários artigos acadêmicos não estava disponível gratuitamente; as interpretações são fundamentadas em **resumos verificáveis**, marcadas como tal.
-- As propostas de números, nomes de itens, mapa, balanceamento e escalas são nossas, com avaliação quantitativa ainda pendente.
-- A licença de um repositório GitHub não implica automaticamente licença de seus modelos 3D, imagens, vozes e músicas.
-- A existência de documentação não significa que as funcionalidades estão no jogo.
+## 5. O que já é sólido e o que ainda não foi demonstrado
 
-## Próxima porta técnica
+**Material disponível:** fontes históricas Riot com patches identificados; auditoria de métodos do domínio; leitura de classes C# de terceiros; fórmulas candidatas; exemplos de counterbuild; contrato de mapa; matriz de testes.
 
-**DBM-002 → DBM-003A (estatísticas + regeneração de vida)**: primeiro testar/mesclar torres/colisões; depois centralizar cálculo de atributos para permitir espadas, escudos, resistência de Ki, roubo de vida e receitas sem efeitos duplicados.
+**Ainda não comprovado:** acesso ao código proprietário de LoL, leitura integral de todos os estudos citados, simulações de meta e partidas reais do nosso jogo, código novo de HPregen/receitas/vampirismo, IA de visão, teste de unidade/nav de terceiros em Unity6 e licença de personagens/vozes.
 
-## Protocolo de atualização de pesquisa
+Consulte [STATUS_INVESTIGACAO.md](STATUS_INVESTIGACAO.md). Classificação E1/E2 indica evidência documental/estática; E3/E4 exige teste executado. Esta reorganização não alterou o grau real de evidência.
 
-Quando houver novo estudo/patch ou evidência, registrar **data/versão, fonte, afirmação específica, aplicabilidade, mudança no plano e teste para falsificar hipótese**. Não substituir números silenciosamente. A fase de playtesting deverá complementar fontes publicadas com dados coletados do nosso próprio jogo.
+## 6. Método para continuar a pesquisa
 
-## Estado de avanço auditável
+Cada novo dossiê deve declarar: **pergunta, escopo, patch/versão, fonte primária com URL, método/trecho efetivamente consultado, achados, hipóteses, limites e teste falsificável**. Links para páginas pagas não autorizam afirmar leitura integral. Registrar auditoria de bibliografia e resultados de experimento, não apenas novas listas de recursos.
 
-Acompanhe [STATUS_INVESTIGACAO.md](STATUS_INVESTIGACAO.md): matriz por sistema com evidência E1–E5, temas realmente estudados, pesquisas pendentes e limites de validação. Isso evita confundir documentação com teste Unity/Windows ou playtest humano.
+**Próximas pesquisas ainda abertas:** visão/fog/wards, servidor/snapshot/replay, pipeline de rig/VFX/voz e licenças, economia de jungle/objetivos/late game, mais artigos completos e playtests. Elas não bloqueiam a validação da DBM-002.
+
+[Voltar à central](../README.md).
