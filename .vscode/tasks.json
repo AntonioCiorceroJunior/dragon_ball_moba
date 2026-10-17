@@ -1,0 +1,8 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    { "label": "Unity: VisualPrepare", "type": "shell", "command": "powershell", "args": ["-NoProfile", "-ExecutionPolicy", "Bypass", "-File", "${workspaceFolder}/scripts/validate_unity.ps1", "-Mode", "VisualPrepare"], "problemMatcher": [] },
+    { "label": "Unity: VisualPlay", "type": "shell", "command": "powershell", "args": ["-NoProfile", "-ExecutionPolicy", "Bypass", "-File", "${workspaceFolder}/scripts/validate_unity.ps1", "-Mode", "VisualPlay"], "group": "test", "problemMatcher": [] },
+    { "label": "Unity: VisualBuild", "type": "shell", "command": "powershell", "args": ["-NoProfile", "-ExecutionPolicy", "Bypass", "-File", "${workspaceFolder}/scripts/validate_unity.ps1", "-Mode", "VisualBuild"], "group": {"kind":"build", "isDefault":true}, "problemMatcher": [] }
+  ]
+}

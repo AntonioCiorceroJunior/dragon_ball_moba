@@ -1,0 +1,3 @@
+Dragon MOBA: PASSOU — verificacoes basicas de dominio.
+CELL REAL RESPAWN PASSED | 0/736 HP, 15.5 simulated seconds, identity, inventory, base and HP/Ki restored
+VISUALBUILD PASSED | <repo>\src\client-unity\Builds\VisualTest\DragonMobaVisualTest.exe | 168500853 bytes | 2026-10-17T00:21:32.7697390Z

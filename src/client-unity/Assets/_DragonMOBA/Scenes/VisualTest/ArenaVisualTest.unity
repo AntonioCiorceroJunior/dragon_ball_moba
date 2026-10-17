@@ -1,0 +1,235 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!29 &1
+OcclusionCullingSettings:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_OcclusionBakeSettings:
+    smallestOccluder: 5
+    smallestHole: 0.25
+    backfaceThreshold: 100
+  m_SceneGUID: 00000000000000000000000000000000
+  m_OcclusionCullingData: {fileID: 0}
+--- !u!104 &2
+RenderSettings:
+  m_ObjectHideFlags: 0
+  serializedVersion: 10
+  m_Fog: 0
+  m_FogColor: {r: 0.5, g: 0.5, b: 0.5, a: 1}
+  m_FogMode: 3
+  m_FogDensity: 0.01
+  m_LinearFogStart: 0
+  m_LinearFogEnd: 300
+  m_AmbientSkyColor: {r: 0.212, g: 0.227, b: 0.259, a: 1}
+  m_AmbientEquatorColor: {r: 0.114, g: 0.125, b: 0.133, a: 1}
+  m_AmbientGroundColor: {r: 0.047, g: 0.043, b: 0.035, a: 1}
+  m_AmbientIntensity: 1
+  m_AmbientMode: 0
+  m_SubtractiveShadowColor: {r: 0.42, g: 0.478, b: 0.627, a: 1}
+  m_SkyboxMaterial: {fileID: 10304, guid: 0000000000000000f000000000000000, type: 0}
+  m_HaloStrength: 0.5
+  m_FlareStrength: 1
+  m_FlareFadeSpeed: 3
+  m_HaloTexture: {fileID: 0}
+  m_SpotCookie: {fileID: 10001, guid: 0000000000000000e000000000000000, type: 0}
+  m_DefaultReflectionMode: 0
+  m_DefaultReflectionResolution: 128
+  m_ReflectionBounces: 1
+  m_ReflectionIntensity: 1
+  m_CustomReflection: {fileID: 0}
+  m_Sun: {fileID: 0}
+  m_UseRadianceAmbientProbe: 0
+--- !u!157 &3
+LightmapSettings:
+  m_ObjectHideFlags: 0
+  serializedVersion: 13
+  m_BakeOnSceneLoad: 0
+  m_GISettings:
+    serializedVersion: 2
+    m_BounceScale: 1
+    m_IndirectOutputScale: 1
+    m_AlbedoBoost: 1
+    m_EnvironmentLightingMode: 0
+    m_EnableBakedLightmaps: 1
+    m_EnableRealtimeLightmaps: 0
+  m_LightmapEditorSettings:
+    serializedVersion: 12
+    m_Resolution: 2
+    m_BakeResolution: 40
+    m_AtlasSize: 1024
+    m_AO: 0
+    m_AOMaxDistance: 1
+    m_CompAOExponent: 1
+    m_CompAOExponentDirect: 0
+    m_ExtractAmbientOcclusion: 0
+    m_Padding: 2
+    m_LightmapParameters: {fileID: 0}
+    m_LightmapsBakeMode: 1
+    m_TextureCompression: 1
+    m_ReflectionCompression: 2
+    m_MixedBakeMode: 2
+    m_BakeBackend: 2
+    m_PVRSampling: 1
+    m_PVRDirectSampleCount: 32
+    m_PVRSampleCount: 512
+    m_PVRBounces: 2
+    m_PVREnvironmentSampleCount: 256
+    m_PVREnvironmentReferencePointCount: 2048
+    m_PVRFilteringMode: 1
+    m_PVRDenoiserTypeDirect: 2
+    m_PVRDenoiserTypeIndirect: 2
+    m_PVRDenoiserTypeAO: 2
+    m_PVRFilterTypeDirect: 0
+    m_PVRFilterTypeIndirect: 0
+    m_PVRFilterTypeAO: 0
+    m_PVREnvironmentMIS: 1
+    m_PVRCulling: 1
+    m_PVRFilteringGaussRadiusDirect: 1
+    m_PVRFilteringGaussRadiusIndirect: 1
+    m_PVRFilteringGaussRadiusAO: 1
+    m_PVRFilteringAtrousPositionSigmaDirect: 0.5
+    m_PVRFilteringAtrousPositionSigmaIndirect: 2
+    m_PVRFilteringAtrousPositionSigmaAO: 1
+    m_ExportTrainingData: 0
+    m_TrainingDataDestination: TrainingData
+    m_LightProbeSampleCountMultiplier: 4
+  m_LightingDataAsset: {fileID: 20201, guid: 0000000000000000f000000000000000, type: 0}
+  m_LightingSettings: {fileID: 0}
+--- !u!196 &4
+NavMeshSettings:
+  serializedVersion: 2
+  m_ObjectHideFlags: 0
+  m_BuildSettings:
+    serializedVersion: 3
+    agentTypeID: 0
+    agentRadius: 0.5
+    agentHeight: 2
+    agentSlope: 45
+    agentClimb: 0.4
+    ledgeDropHeight: 0
+    maxJumpAcrossDistance: 0
+    minRegionArea: 2
+    manualCellSize: 0
+    cellSize: 0.16666667
+    manualTileSize: 0
+    tileSize: 256
+    buildHeightMesh: 0
+    maxJobWorkers: 0
+    preserveTilesOutsideBounds: 0
+    debug:
+      m_Flags: 0
+  m_NavMeshData: {fileID: 0}
+--- !u!1 &917688765
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 917688767}
+  - component: {fileID: 917688766}
+  - component: {fileID: 917688768}
+  - component: {fileID: 917688769}
+  m_Layer: 0
+  m_Name: Dragon MOBA Prototype
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &917688766
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 917688765}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f66f47b1bd992c743a8ff5e8eeb9458c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::DragonMoba.Runtime.PrototypeGame
+--- !u!4 &917688767
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 917688765}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &917688768
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 917688765}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1ded14092e99bdb4db2aa31eef3c3377, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::DragonMoba.Runtime.ArtPresentation
+  tree: {fileID: 1345314697609081960, guid: 4d107d8b64998a740a74ade4cce4252b, type: 3}
+  bush: {fileID: 7441524613490070013, guid: 89357a6691eb7c34bb9cc236050afb35, type: 3}
+  rock: {fileID: 6719856178519693985, guid: 73a098477bfbed84f82e9e2e18533582, type: 3}
+  stoneMaterial: {fileID: 2100000, guid: 353c55c05059ebb438af7bc1ecd2a791, type: 2}
+  energyMaterial: {fileID: 2100000, guid: 3c46e1b2e8ffc314f894b33530a47533, type: 2}
+  panel: {fileID: 2800000, guid: fdb9815ffdd64694da979116accf26bc, type: 3}
+  bar: {fileID: 2800000, guid: dc52cdab0295bff4287cb7bdfcd5948e, type: 3}
+  keys:
+  - {fileID: 2800000, guid: 2737f9b0e2e696348bba5ddb8c37f428, type: 3}
+  - {fileID: 2800000, guid: 6231d74e6f535f04192a28c6c1d9cb54, type: 3}
+  - {fileID: 2800000, guid: 8acec989705ccdc488b45e17afbb83f2, type: 3}
+  - {fileID: 2800000, guid: dab10dc129210d14fa1114aa4e2d60c0, type: 3}
+  laser: {fileID: 8300000, guid: 83e76b1eacdfda2438727865b3bfc981, type: 3}
+  impact: {fileID: 8300000, guid: 5ef409161d0218247b599e350a9c459a, type: 3}
+  charge: {fileID: 8300000, guid: af6bee1cc12d29940af0edcd3ce91291, type: 3}
+--- !u!114 &917688769
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 917688765}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1802372acc23dea41a88f44e4bbaf1f2, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::DragonMoba.Runtime.OrganicArena
+  ground: {fileID: 2100000, guid: d86295c60cb55e3478d54a3310ada491, type: 2}
+  water: {fileID: 2100000, guid: 02a04e12732135c498d331064fe7e810, type: 2}
+  stone: {fileID: 2100000, guid: 2c9b8f4e18b329c44ad4444fd026dea4, type: 2}
+  energy: {fileID: 2100000, guid: f0ddbbab9be72d54c8e13b02803df37b, type: 2}
+  wood: {fileID: 2100000, guid: 911f95ec7b9bf344da55792792254f8d, type: 2}
+  ring: {fileID: 2100000, guid: 2013de7062d9098408242fc9d9ea28e5, type: 2}
+  tree: {fileID: 586594405460095548, guid: ed96c3c059b877940836e994e390af76, type: 3}
+  bush: {fileID: 8107679875443002639, guid: e986a05b0d1e69f4fa02c37e11f71389, type: 3}
+  rock: {fileID: 6985914254107502533, guid: 4d9b66070484e974e8bf3e92cce97008, type: 3}
+  formIds:
+  - super_base
+  - super_god
+  - super_blue
+  - super_blue_kk
+  - super_ui_sign
+  - super_ui
+  characterForms:
+  - {fileID: 375201925904929162, guid: d696ea1a170a28b4c8650307f867c785, type: 3}
+  - {fileID: 1497284540688720373, guid: 071511fac9a39794688481cb46fb629f, type: 3}
+  - {fileID: 3056494186325787418, guid: c0ca52178cbe69d47849714b2e1b0009, type: 3}
+  - {fileID: 4245856067353235864, guid: 90e68de3f575699459a9fbac5c815501, type: 3}
+  - {fileID: 2970511557203919665, guid: 4dbc1561bd4e9c648b8b9ae0dd12f475, type: 3}
+  - {fileID: 4999093225637784676, guid: 8fe43378a40bbed47b7c063a72558490, type: 3}
+  startDemo: 1
+--- !u!1660057539 &9223372036854775807
+SceneRoots:
+  m_ObjectHideFlags: 0
+  m_Roots:
+  - {fileID: 917688767}

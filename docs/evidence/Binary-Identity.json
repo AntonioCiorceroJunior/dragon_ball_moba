@@ -1,0 +1,9 @@
+{
+    "scene":  "Assets/_DragonMOBA/Scenes/VisualTest/ArenaVisualTest.unity",
+    "buildUtc":  "2026-10-16T23:51:49.0512095Z",
+    "version":  "VISUAL TEST 01 - Organic Arena",
+    "exe":  "<repo>\\src\\client-unity\\Builds\\VisualTest\\DragonMobaVisualTest.exe",
+    "assembly":  "<repo>/src/client-unity/Builds/VisualTest/DragonMobaVisualTest_Data/Managed/Assembly-CSharp.dll",
+    "newAssemblySHA256":  "33251B2F0C9254486374BBC7C3888C7038C085AB53AC233955CF7554636AF4CB",
+    "oldArtAssemblySHA256":  "B1253F2802419C15B24C95FED85979AB11C4AD447F02EB3B33B5A5BBF653ED39"
+}

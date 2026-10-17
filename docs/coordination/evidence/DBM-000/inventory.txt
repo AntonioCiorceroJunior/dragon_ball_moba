@@ -1,0 +1,11 @@
+Source inventory — DBM-000
+Original snapshot: 6f95cb36a64ce93a405c3986bd1ce30c4b9c6fa0
+Remote initial base: 1ba278a263df470a0265f229973561f8792e90df
+Original tracked files: 427; total bytes: 45324908
+Tracked files selected from prototype: 414; source Assets/Packages/ProjectSettings retained
+Excluded: original .git/history, old AGENTS/.gitignore/root README, old task/prompt queue and legacy workflow.
+Not copied: Library, Temp, Logs, Builds, UserSettings, Backups, downloads, Research, external review repos, archives, credentials.
+Largest source file: Assets/_DragonMOBA/Art/Animations/Humanoid.fbx, 20623420 bytes, CC0.
+All 26 imported source/license files match original recorded SHA256; seven local CC0 notices included.
+Seven historical documents/records sanitized for machine-specific user paths; original local files untouched.
+Canonical master documents: docs/specifications/ (six Markdown files, original hashes in IMPORT_SOURCES.csv).

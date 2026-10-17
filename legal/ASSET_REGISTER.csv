@@ -1,0 +1,2 @@
+asset_id,tipo,nome,origem_url,autor,licenca_declarada,licenca_comprovada,autoriza_redistribuicao,contém_ip_terceiros,status,observacoes
+ASSET-000,placeholder,nenhum,,,,nao,nao,nao,PENDENTE,"Não inserir modelos, skins ou sons não auditados"

@@ -1,0 +1,5 @@
+{
+  "dotnet.defaultSolution": "src/client-unity/client-unity.slnx",
+  "files.watcherExclude": { "**/Library/**": true, "**/Temp/**": true, "**/Logs/**": true, "**/Builds/**": true },
+  "search.exclude": { "**/Library": true, "**/Temp": true, "**/Logs": true, "**/Builds": true }
+}

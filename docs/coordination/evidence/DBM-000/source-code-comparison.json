@@ -1,0 +1,78 @@
+[
+    {
+        "path":  "src/client-unity/Assets/Editor/ArtAssets.cs",
+        "unchanged":  true
+    },
+    {
+        "path":  "src/client-unity/Assets/Editor/ArtSceneSetup.cs",
+        "unchanged":  true
+    },
+    {
+        "path":  "src/client-unity/Assets/Editor/ArtSetup.cs",
+        "unchanged":  true
+    },
+    {
+        "path":  "src/client-unity/Assets/Editor/ArtSmoke.cs",
+        "unchanged":  true
+    },
+    {
+        "path":  "src/client-unity/Assets/Editor/CreateArenaScene.cs",
+        "unchanged":  true
+    },
+    {
+        "path":  "src/client-unity/Assets/Editor/DomainSelfTests.cs",
+        "unchanged":  true
+    },
+    {
+        "path":  "src/client-unity/Assets/Editor/PlayModeSmoke.cs",
+        "unchanged":  true
+    },
+    {
+        "path":  "src/client-unity/Assets/Editor/ProjectValidation.cs",
+        "unchanged":  true
+    },
+    {
+        "path":  "src/client-unity/Assets/Editor/VisualReplacement.cs",
+        "unchanged":  true
+    },
+    {
+        "path":  "src/client-unity/Assets/Editor/VisualStageChecks.cs",
+        "unchanged":  true
+    },
+    {
+        "path":  "src/client-unity/Assets/Scripts/Domain/Definitions.cs",
+        "unchanged":  true
+    },
+    {
+        "path":  "src/client-unity/Assets/Scripts/Domain/EntityState.cs",
+        "unchanged":  true
+    },
+    {
+        "path":  "src/client-unity/Assets/Scripts/Domain/GameWorld.cs",
+        "unchanged":  true
+    },
+    {
+        "path":  "src/client-unity/Assets/Scripts/Runtime/ArenaCameraController.cs",
+        "unchanged":  true
+    },
+    {
+        "path":  "src/client-unity/Assets/Scripts/Runtime/ArtPresentation.cs",
+        "unchanged":  true
+    },
+    {
+        "path":  "src/client-unity/Assets/Scripts/Runtime/CharacterPresentation.cs",
+        "unchanged":  true
+    },
+    {
+        "path":  "src/client-unity/Assets/Scripts/Runtime/OrganicArena.cs",
+        "unchanged":  true
+    },
+    {
+        "path":  "src/client-unity/Assets/Scripts/Runtime/PlayableCharacterVisual.cs",
+        "unchanged":  true
+    },
+    {
+        "path":  "src/client-unity/Assets/Scripts/Runtime/PrototypeGame.cs",
+        "unchanged":  true
+    }
+]

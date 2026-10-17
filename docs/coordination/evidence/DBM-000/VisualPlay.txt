@@ -1,0 +1,32 @@
+Dragon MOBA: PASSOU — verificacoes basicas de dominio.
+CELL REAL RESPAWN PASSED | 0/736 HP, 15.5 simulated seconds, identity, inventory, base and HP/Ki restored
+ART MOVEMENT PASSED | GKU_SUPER | bone delta=83,04231
+ART COMBAT PASSED | charge, XP, purchase, attack, Q, E, tower | GKU_SUPER
+ART FORM PASSED | GKU_SUPER/super_base
+ART FORM PASSED | GKU_SUPER/super_god
+ART FORM PASSED | GKU_SUPER/super_blue
+ART FORM PASSED | GKU_SUPER/super_blue_kk
+ART FORM PASSED | GKU_SUPER/super_ui_sign
+ART FORM PASSED | GKU_SUPER/super_ui
+ARENA CAMERA PASSED | orthographic 43 degrees, zoom bounds, pan, map bounds, recenter and follow
+TOWER VISUAL DESTRUCTION PASSED | GKU_SUPER
+ART CHAMPION PASSED | GKU_SUPER | tick=291 | death/respawn, effects<=24, HUD
+ART MOVEMENT PASSED | GKU_KID | bone delta=83,03689
+ART COMBAT PASSED | charge, XP, purchase, attack, Q, E, tower | GKU_KID
+ART FORM PASSED | GKU_KID/kid_base
+ART FORM PASSED | GKU_KID/kid_nimbus
+ART FORM PASSED | GKU_KID/kid_mastery
+ARENA CAMERA PASSED | orthographic 43 degrees, zoom bounds, pan, map bounds, recenter and follow
+TOWER VISUAL DESTRUCTION PASSED | GKU_KID
+ART CHAMPION PASSED | GKU_KID | tick=264 | death/respawn, effects<=24, HUD
+ART MOVEMENT PASSED | CELL_Z | bone delta=83,01373
+ART COMBAT PASSED | charge, XP, purchase, attack, Q, E, tower | CELL_Z
+ART FORM PASSED | CELL_Z/cell_imperfect
+ART FORM PASSED | CELL_Z/cell_semi
+ART FORM PASSED | CELL_Z/cell_perfect
+ARENA CAMERA PASSED | orthographic 43 degrees, zoom bounds, pan, map bounds, recenter and follow
+TOWER VISUAL DESTRUCTION PASSED | CELL_Z
+ART CHAMPION PASSED | CELL_Z | tick=264 | death/respawn, effects<=24, HUD
+SELECTION RESTART PASSED
+ARTPLAY PASSED | Three champions; 12 forms; movement, animation, combat, Ki/XP, shop, camera, death/respawn, selection and bounded VFX.
+VISUALPLAY PASSED | runtime map, wired fighter, QWER and real level forms

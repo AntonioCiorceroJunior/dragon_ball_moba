@@ -1,0 +1,60 @@
+#if UNITY_EDITOR
+using System;
+using System.Linq;
+using DragonMoba.Domain;
+using DragonMoba.Runtime;
+using UnityEngine;
+namespace DragonMoba.Editor
+{
+    public static class VisualStageChecks
+    {
+        public static void CellRespawn()
+        {
+            var world = new GameWorld("CELL_Z");
+            var hero = world.Player;
+            while(hero.Level<5) world.GrantExperience(hero,Catalog.ExperienceForNextLevel(hero.Level)-hero.Experience+.01f);
+            Check(hero.MaxHp==736,"Cell level five max HP");
+            hero.Inventory.Add("KI_CELL");
+            var inventory = hero.Inventory.ToArray();
+            var enemy = world.Entities.First(e=>e.Kind==EntityKind.Hero&&e.Team==Team.Red);
+            Check(world.DealDamage(enemy,hero,100000,false),"Lethal damage");
+            Check(hero.Hp==0&&!hero.Alive,"Cell dead");
+            float duration = hero.RespawnTime;
+            Check(Math.Abs(duration-15.5f)<.001f,"Unmodified respawn duration");
+            Check(!world.Submit(new GameCommand {ActorId=hero.Id,Kind=CommandKind.Move,Position=new V2(10,0)}),"Dead actor cannot move");
+            world.DrainEvents();
+            int count = (int)Math.Ceiling(duration/GameWorld.FixedStep);
+            for(int i=0;i<count-2;i++) world.Tick(GameWorld.FixedStep);
+            Check(!hero.Alive&&hero.RespawnTime>0,"Still dead before real timer elapses");
+            for(int i=0;i<5;i++) world.Tick(GameWorld.FixedStep);
+            Check(hero.Alive&&hero.Hp==hero.MaxHp&&hero.Ki==hero.MaxKi,"Actual timer restores HP/Ki");
+            Check(world.Player==hero&&hero.Inventory.SequenceEqual(inventory),"Identity and inventory preserved");
+            Check(V2.Distance(hero.Position,new V2(0,-34))<.01f,"Respawn at base");
+            Check(world.DrainEvents().Any(e=>e.Kind==EventKind.Respawn&&e.ActorId==hero.Id),"Respawn event");
+            Debug.Log("CELL REAL RESPAWN PASSED | 0/736 HP, 15.5 simulated seconds, identity, inventory, base and HP/Ki restored");
+        }
+        public static void CameraControls(ArenaCameraController controller,Vector3 hero)
+        {
+            if(controller==null) return; // The original scene keeps its baseline camera.
+            var camera = controller.GetComponent<Camera>();
+            float zoom = camera.orthographicSize;
+            controller.Zoom(1000); Check(camera.orthographicSize==controller.minimumZoom,"Minimum zoom");
+            controller.Zoom(-1000); Check(camera.orthographicSize==controller.maximumZoom,"Maximum zoom");
+            controller.Pan(new Vector2(1000,-1000));
+            controller.Tick(hero,false);
+            Check(!controller.Following,"Free camera");
+            Check(controller.Focus==controller.ClampFocus(controller.Focus),"Viewport stays inside map");
+            controller.Zoom(camera.orthographicSize-zoom);
+            controller.Recenter(hero,true);
+            Check(controller.Following&&Vector3.Distance(controller.Focus,controller.ClampFocus(hero))<.001f,"Recenter and follow");
+            var before=controller.Focus; controller.Pan(new Vector2(3,3)); controller.Tick(hero,false);
+            Check(controller.Focus!=before,"Pan moves camera");
+            controller.Recenter(hero,true);
+            Check(Math.Abs(camera.transform.eulerAngles.x-43)<.1f,"Less vertical angle");
+            Debug.Log("ARENA CAMERA PASSED | orthographic 43 degrees, zoom bounds, pan, map bounds, recenter and follow");
+        }
+        static void Check(bool ok,string message) { if(!ok) throw new Exception(message); }
+    }
+}
+#endif
+

@@ -53,3 +53,15 @@ Thumbs.db
 # ATENÇÃO: .gitignore não verifica direitos autorais nem segredos no código.
 # Antes do commit, revisar manualmente os assets, licenças e dados.
 # Não ignorar arquivos .meta: são fundamentais ao Unity.
+
+# DBM-000: pesquisas locais, ferramentas e arquivos pessoais não são fontes.
+**/ExternalAssets/
+**/Research/
+**/external/review/
+**/.codex/
+**/.aws/
+**/secrets/
+**/credentials/
+**/*.p12
+**/*.key
+**/*.log.meta
