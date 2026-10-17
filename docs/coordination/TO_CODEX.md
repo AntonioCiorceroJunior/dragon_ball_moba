@@ -1,4 +1,4 @@
-# Instrução ativa — DBM-002: validar PR #2 (executar após renovação da franquia Codex)
+# Instrução ativa — DBM-002: validar PR #2 no Unity
 
 **Status:** código implementado pelo ChatGPT; AGUARDANDO TESTES UNITY  
 **PR:** https://github.com/AntonioCiorceroJunior/dragon_ball_moba/pull/2  
@@ -6,9 +6,9 @@
 **Base:** `main`; DBM-001 mesclada no commit `067ed1ceebfdb8facb59667afec00fd3c1657883`.  
 **Editor:** Unity 6000.6.6f1, Built-in, Input Manager legado.
 
-## Orçamento do Codex
+## Disponibilidade e escopo
 
-O usuário informou que restam aproximadamente **12% da franquia** e que haverá renovação por volta de **01h12 (horário local)**. **Não execute esta tarefa antes de o usuário acioná-la**; preserve a franquia existente. Este documento é para a próxima janela de validação.
+A franquia de Codex foi informada pelo usuário como **100% disponível em 17/10/2026**. Esse dado é temporário: a execução começa **somente quando o usuário acionar o Codex**, nunca porque o GitHub foi atualizado. Continue a DBM-002 de onde o PR #2 está, sem reimplementar e sem iniciar tarefas do [plano mestre](../PLANO_MESTRE_ATUAL.md) nesta janela.
 
 ## Mudanças já feitas pelo ChatGPT
 
