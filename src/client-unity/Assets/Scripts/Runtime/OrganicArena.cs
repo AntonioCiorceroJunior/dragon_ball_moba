@@ -153,17 +153,69 @@ namespace DragonMoba.Runtime
                 triangles[t++]=b;triangles[t++]=c;triangles[t++]=d;
             }
             var mesh=NewMesh("Organic terrain",vertices,triangles,uv,colors);
-            terrainPaint=new Texture2D(nx,nz,TextureFormat.RGB24,true);
-            terrainPaint.name="Procedural terrain color map — roads, grass and riverbanks";
+            // Paint at a higher frequency than the navigational mesh. The
+            // original shader already supports vertex colors; the new optional
+            // color map introduces stone seams, worn paths and grass variation
+            // without changing collision or mesh density.
+            const int texW=320,texH=400;
+            terrainPaint=new Texture2D(texW,texH,TextureFormat.RGB24,true);
+            terrainPaint.name="Original detailed arena ground paint";
             terrainPaint.wrapMode=TextureWrapMode.Clamp;
             terrainPaint.filterMode=FilterMode.Trilinear;
-            terrainPaint.SetPixels(colors);
+            var pixels=new Color[texW*texH];
+            for(var ty=0;ty<texH;ty++)
+            for(var tx=0;tx<texW;tx++)
+            {
+                var wx=-36f+72f*tx/(texW-1f);
+                var wz=-44f+88f*ty/(texH-1f);
+                pixels[ty*texW+tx]=PaintSurface(wx,wz);
+            }
+            terrainPaint.SetPixels(pixels);
             terrainPaint.Apply(true,false);
             groundPaint.mainTexture=terrainPaint;
             if(groundPaint.HasProperty("_UseTexture"))groundPaint.SetFloat("_UseTexture",1f);
             AddMesh("OrganicTerrain",mesh,groundPaint,scenery);
             TerrainVertices=vertices.Length;
         }
+        private static Color PaintSurface(float wx,float wz)
+        {
+            // 3 original curved lane strips with high-resolution stone wear.
+            float nearest=100f;
+            for(var index=-1;index<=1;index++)
+            {
+                float lane=index*17f;
+                float curve=.75f*Mathf.Sin(wz*.15f+lane*.1f)*
+                    Mathf.Sin((wz+44f)/88f*Mathf.PI);
+                nearest=Mathf.Min(nearest,Mathf.Abs(wx-lane-curve)-3.1f);
+            }
+            nearest=Mathf.Min(nearest,new Vector2(wx,wz+35f).magnitude-7.1f);
+            nearest=Mathf.Min(nearest,new Vector2(wx,wz-35f).magnitude-7.1f);
+            var grassNoise=Mathf.PerlinNoise(wx*.13f+100,wz*.13f+100);
+            var leafGrain=Mathf.PerlinNoise(wx*2.1f+25,wz*2.1f+18);
+            var grass=Color.Lerp(new Color(.10f,.22f,.15f),
+                new Color(.26f,.37f,.22f),grassNoise);
+            grass*=.92f+leafGrain*.16f;
+            var pathNoise=Mathf.PerlinNoise(wx*.95f+19,wz*.95f+20);
+            var sandstone=Color.Lerp(new Color(.41f,.34f,.23f),
+                new Color(.61f,.52f,.35f),pathNoise);
+            var stoneX=wx*1.35f+Mathf.Floor(wz*1.15f)*.43f;
+            var stoneZ=wz*1.15f;
+            var seams=Mathf.Min(Mathf.Abs(Mathf.Repeat(stoneX,1f)-.5f),
+                Mathf.Abs(Mathf.Repeat(stoneZ,1f)-.5f));
+            if(seams<.045f)sandstone*=.74f;
+            var edgeGrain=(Mathf.PerlinNoise(wx*.65f+37,wz*.65f+82)-.5f)*.55f;
+            var road=1f-Mathf.SmoothStep(-.55f,.92f,nearest+edgeGrain);
+            var color=Color.Lerp(grass,sandstone,road);
+            var bank=Mathf.Abs(wz-RiverCenter(wx))-RiverWidth(wx);
+            if(bank<1.5f)
+            {
+                var shore=Color.Lerp(new Color(.18f,.30f,.30f),
+                    new Color(.46f,.45f,.33f),Mathf.Clamp01(bank/1.5f));
+                color=Color.Lerp(color,shore,1f-Mathf.Clamp01(Mathf.Abs(bank)/1.5f));
+            }
+            return color;
+        }
+
         void CreateRiver()
         {
             const int count=145;
