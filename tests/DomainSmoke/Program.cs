@@ -106,12 +106,12 @@ static class Program
         }
         Check(redTower!=null && firstMinion!=null && closerMinion!=null,
             "tower target retention fixtures exist");
-        firstMinion.Position=firstMinion.Destination=new V2(10,19);
+        firstMinion.Position=firstMinion.Destination=new V2(0,12);
         closerMinion.Position=closerMinion.Destination=new V2(10,0);
         towers.Tick(GameWorld.FixedStep);
         Check(redTower.AttackTargetId==firstMinion.Id,
             "tower initially acquires minion in range");
-        closerMinion.Position=closerMinion.Destination=new V2(2,19);
+        closerMinion.Position=closerMinion.Destination=new V2(0,16);
         towers.Tick(GameWorld.FixedStep);
         Check(redTower.AttackTargetId==firstMinion.Id,
             "tower does not retarget when closer minion arrives");
