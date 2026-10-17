@@ -323,5 +323,24 @@ namespace DragonMoba.Runtime
             RenderSettings.fog=false;
         }
     }
-}
 
+    // Floating aura detail on cosmetic shrines. Does not alter gameplay.
+    public sealed class EnergyPulseVisual : MonoBehaviour
+    {
+        private Vector3 originalPosition, originalScale;
+        private float phase;
+        private void Start()
+        {
+            originalPosition=transform.localPosition;
+            originalScale=transform.localScale;
+            phase=(transform.position.x+transform.position.z)*.17f;
+        }
+        private void Update()
+        {
+            var t=Time.time+phase;
+            transform.localPosition=originalPosition+Vector3.up*Mathf.Sin(t*1.6f)*.1f;
+            transform.localScale=originalScale*(1f+.065f*Mathf.Sin(t*2.25f));
+            transform.Rotate(Vector3.up,Time.deltaTime*22f,Space.Self);
+        }
+    }
+}
