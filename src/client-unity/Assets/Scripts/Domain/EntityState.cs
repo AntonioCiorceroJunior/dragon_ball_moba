@@ -38,6 +38,9 @@ namespace DragonMoba.Domain
         public float AbilityHaste;
         public float ArmorPenPercent;
         public float KiPenPercent;
+        public float AntiHealOnHit;
+        public float HealingReductionSeconds;
+        public float HealingReductionRate;
         public int BasicAttacksIssued;
         // Read-only combat feedback, updated during charging/training.
         public float TrainingXpPerSecond;
