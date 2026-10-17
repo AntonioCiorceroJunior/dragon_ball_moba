@@ -100,6 +100,7 @@ try {
  Key 82 $true
  Check ((State).ranks[3] -eq 0) 'R rejected below level 6'
  Fixture 'combat'
+ Key 32 # Recenter after fixture relocation; edge scrolling can leave free camera enabled.
  $s=State
  Click ([int]$s.enemyX) ([int]$s.enemyY) $true
  Check ((State).target -eq (State).enemyId) 'Single right click on 3D enemy body acquires target'
@@ -133,11 +134,12 @@ try {
  $savedRanks=(State).ranks -join ',';$savedPoints=(State).points
  Fixture 'death'
  Check ((State).hp -le 0) 'Controlled death enters real respawn state'
- $deadline=[DateTime]::UtcNow.AddSeconds(42)
- while((State).hp -le 0 -and [DateTime]::UtcNow -lt $deadline){Start-Sleep -Milliseconds 500}
+ $deathTick=(State).tick
+ $deadline=[DateTime]::UtcNow.AddSeconds(120)
+ while((State).hp -le 0 -and (State).tick-$deathTick -lt 42*30 -and [DateTime]::UtcNow -lt $deadline){Start-Sleep -Milliseconds 500}
  Check ((State).hp -gt 0 -and ((State).ranks -join ',') -eq $savedRanks -and (State).points -eq $savedPoints) 'Normal respawn preserves ranks and points'
  Key 27
- Click 640 398
+ Click 825 543 # Confirm the selected champion in the integrated selection screen.
  Check ((State).level -eq 1 -and (State).points -eq 1 -and ((State).ranks -join ',') -eq '0,0,0,0') 'Esc selection and new match reset ranks and points'
  Capture 'restart'
  Write-Output 'DBM001 NATIVE SUITE PASSED'
