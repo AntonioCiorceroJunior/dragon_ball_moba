@@ -32,6 +32,11 @@ namespace DragonMoba.Runtime
             Following = false;
             target = ClampFocus(target + new Vector3(delta.x,0,delta.y));
         }
+        public void FocusAt(Vector3 location)
+        {
+            Following = false;
+            target = ClampFocus(location);
+        }
         public void Recenter(Vector3 hero, bool snap = false)
         {
             Following = true; target = ClampFocus(hero);
