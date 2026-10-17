@@ -180,6 +180,8 @@ namespace DragonMoba.Runtime
         {
             var mouse = new Vector2(Input.mousePosition.x, Screen.height - Input.mousePosition.y);
             if (shopOpen && mouse.x > Screen.width - 340f && mouse.y > 105f) return true;
+            if (!shopOpen && mouse.x > Screen.width - 212f && mouse.y > Screen.height - 255f)
+                return true;
             if (mouse.x < 360f && mouse.y < 195f) return true;
             if (mouse.y > Screen.height - 160f &&
                 mouse.x > Screen.width * .5f - 230f && mouse.x < Screen.width * .5f + 230f) return true;
@@ -607,7 +609,72 @@ namespace DragonMoba.Runtime
                     "Direito: mover/atacar | A+esq: atacar-mover | S: parar\nQWER: tecnicas | Ctrl+QWER: evoluir\nC: Ki e treino XP | P: loja e receitas\nScroll: zoom | bordas/setas/meio: camera\nEspaco: centralizar | Y: seguir/livre\nEsc: selecao | Enter: reiniciar", smallStyle);
             }
             if (shopOpen) ShopPanel(hero);
+            else DrawMinimap();
             if (world.Winner.HasValue) EndPanel();
+        }
+
+        // Map coordinates use the same bounds as the current domain V2.Clamp.
+        // This is a truthful minimap of the current three-lane prototype; the
+        // original diagonal MOBA layout remains a separate map/navigation project.
+        private static Vector2 MapPixel(V2 pos, Rect bounds)
+        {
+            return new Vector2(bounds.xMin + Mathf.Clamp01((pos.X+32f)/64f)*bounds.width,
+                bounds.yMax - Mathf.Clamp01((pos.Y+41f)/82f)*bounds.height);
+        }
+
+        private static void MapDot(Rect map, V2 position, float size, Color tint)
+        {
+            var center=MapPixel(position,map);
+            var before=GUI.color;
+            GUI.color=tint;
+            GUI.DrawTexture(new Rect(center.x-size*.5f,center.y-size*.5f,size,size),
+                Texture2D.whiteTexture);
+            GUI.color=before;
+        }
+
+        private void DrawMinimap()
+        {
+            const float width=185f, height=214f;
+            var left=Mathf.Max(10f,Screen.width-width-13f);
+            var top=Mathf.Max(190f,Screen.height-height-15f);
+            var border=new Rect(left,top,width,height);
+            GUI.Box(border,"MINIMAPA  |  Clique: camera");
+            var region=new Rect(left+8,top+25,width-16,height-33);
+            var before=GUI.color;
+            GUI.color=new Color(.07f,.16f,.14f,.96f);
+            GUI.DrawTexture(region,Texture2D.whiteTexture);
+            GUI.color=new Color(.30f,.28f,.22f,.95f);
+            foreach(var lane in new[]{-17f,0f,17f})
+            {
+                var x=MapPixel(new V2(lane,0),region).x;
+                GUI.DrawTexture(new Rect(x-2,region.y+8,4,region.height-16),Texture2D.whiteTexture);
+            }
+            GUI.color=new Color(.15f,.36f,.48f,.9f);
+            var riverY=MapPixel(new V2(0,0),region).y;
+            GUI.DrawTexture(new Rect(region.x,riverY-3,region.width,6),Texture2D.whiteTexture);
+            GUI.color=before;
+            foreach(var entity in world.Entities)
+            {
+                if(!entity.Alive)continue;
+                var hue=entity.Team==Team.Blue?new Color(.24f,.69f,1f):
+                    entity.Team==Team.Red?new Color(1f,.30f,.35f):Color.yellow;
+                var dotSize=entity.Kind==EntityKind.Hero?9f:
+                    entity.Kind==EntityKind.Core?10f:
+                    entity.Kind==EntityKind.Tower?7f:3f;
+                MapDot(region,entity.Position,dotSize,hue);
+            }
+            MapDot(region,world.Player.Position,11f,Color.white);
+            var ev=Event.current;
+            if(ev.type==EventType.MouseDown && ev.button==0 && region.Contains(ev.mousePosition))
+            {
+                var nx=Mathf.Clamp01((ev.mousePosition.x-region.x)/region.width);
+                var ny=Mathf.Clamp01((region.yMax-ev.mousePosition.y)/region.height);
+                var look=new Vector3(nx*64f-32f,0,ny*82f-41f);
+                var controller=gameCamera!=null?
+                    gameCamera.GetComponent<ArenaCameraController>():null;
+                if(controller!=null)controller.FocusAt(look);
+                ev.Use();
+            }
         }
 
         private static readonly string[] ShopCategories =
