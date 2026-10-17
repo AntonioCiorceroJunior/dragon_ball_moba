@@ -581,8 +581,11 @@ namespace DragonMoba.Runtime
                     GUI.Button(new Rect(x + 76, Screen.height - 107, 24, 24), "+"))
                     Upgrade(slot);
             }
-            GUI.Box(new Rect(Screen.width - 220, 12, 206, 89), "PARTIDA");
-            GUI.Label(new Rect(Screen.width - 208, 38, 188, 55), "Tempo: " + world.Elapsed.ToString("0") + "s\nTropas e torres nas 3 rotas", smallStyle);
+            GUI.Box(new Rect(Screen.width - 236, 12, 222, 96), "ARENA • TEMPORADA PILOTO");
+            var clock=TimeSpan.FromSeconds(Mathf.Max(0,world.Elapsed));
+            GUI.Label(new Rect(Screen.width - 219, 38, 200, 64),
+                "  "+clock.Minutes.ToString("00")+":"+clock.Seconds.ToString("00")+
+                "   •   ZENI "+hero.Zeni+"\nM: som ligado/desligado\nY: camera livre",smallStyle);
             if (Time.time < messageUntil)
                 GUI.Box(new Rect(Screen.width * 0.5f - 240, 16, 480, 42), lastMessage);
             if (showHelp)
@@ -857,11 +860,37 @@ namespace DragonMoba.Runtime
                 if (e.Kind == EntityKind.Hero)
                     GUI.Label(new Rect(rect.x-30, rect.y-37, rect.width+60, 24),
                         e.DisplayName + " Nv." + e.Level, smallStyle);
-                DrawBar(rect, e.Hp / e.MaxHp, e.Team == Team.Blue ? Color.green : Color.red, "");
+                DrawSegmentedHealth(rect,e);
                 if (e.Shield > 0)
                     DrawBar(new Rect(rect.x,rect.y+10,rect.width,4),e.Shield/e.MaxHp,
                         new Color(.37f,.71f,1f),"");
             }
+        }
+
+        private static void DrawSegmentedHealth(Rect rect, EntityState hero)
+        {
+            // One thin pip per 100 maximum HP; thicker markers at 1000 HP.
+            // Indicators show scale without obscuring the remaining health.
+            var old=GUI.color;
+            GUI.color=new Color(.025f,.05f,.07f,.96f);
+            GUI.DrawTexture(rect,Texture2D.whiteTexture);
+            GUI.color=hero.Team==Team.Blue?
+                new Color(.12f,.80f,.56f):new Color(1f,.32f,.30f);
+            var fraction=Mathf.Clamp01(hero.Hp/Mathf.Max(1f,hero.MaxHp));
+            GUI.DrawTexture(new Rect(rect.x+1,rect.y+1,(rect.width-2)*fraction,
+                Mathf.Max(2,rect.height-2)),Texture2D.whiteTexture);
+            var count=Mathf.FloorToInt(hero.MaxHp/100f);
+            for(var step=1;step<=count&&step<=80;step++)
+            {
+                var amount=step*100f;
+                if(amount>=hero.MaxHp)break;
+                var x=rect.x+rect.width*(amount/hero.MaxHp);
+                GUI.color=step%10==0?new Color(1f,.87f,.50f,.95f):
+                    new Color(.02f,.07f,.08f,.8f);
+                GUI.DrawTexture(new Rect(x,rect.y,step%10==0?2f:1f,rect.height),
+                    Texture2D.whiteTexture);
+            }
+            GUI.color=old;
         }
 
         private void DrawBar(Rect rect, float fraction, Color fill, string label)
