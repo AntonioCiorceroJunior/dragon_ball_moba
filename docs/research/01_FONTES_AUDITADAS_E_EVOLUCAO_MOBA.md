@@ -94,6 +94,27 @@ Estudos externos oferecem **método**, não a calibração final do nosso títul
 - **Diversão/clareza:** entrevista curta pós-partida (o que matou você, qual resposta teria ajudado), sem assumir que winrate implica satisfação.
 - **Bots vs humanos:** separar testes de invariantes de avaliação de game feel.
 
+## 3.1 Pesquisa longitudinal DIRETA sobre patches de League of Legends
+
+### [AC12] He et al. — Heterogeneous Effects of Software Patches in a Multiplayer Online Battle Arena Game (FDG 2021)
+
+- **Publicação:** Foundations of Digital Games 2021, DOI [10.1145/3472538.3472550](https://doi.org/10.1145/3472538.3472550). [Artigo completo em HTML](https://arxiv.org/html/2110.14632v1), [registro arXiv](https://arxiv.org/abs/2110.14632).
+- **Situação de leitura:** consultadas as seções do **texto integral acessível**, não apenas resumo. Os números abaixo descrevem o **recorte histórico 2014–2016** do artigo, não a temporada 2026.
+- **Dados:** 1,2 milhão de jogadores únicos, aproximadamente 437 mil partidas; 62 versões entre 4.6 e 6.22. O recorte experimental foca 5v5 ranqueado, dados antes/depois da alteração e efeitos heterogêneos estimados por árvores causais.
+- **Resultado:** mudanças podem atingir **diferentemente** jogadores de habilidades diversas, picks e composições. Mudanças indiretas em campeões que não foram alterados também podem mudar desempenho por sinergias/counters. O estudo relata ampliação da diferença de desempenho entre jogadores mais fortes e mais fracos após certas atualizações, e efeitos associados ao intervalo entre partidas.
+- **Limitações de interpretação:** inferência causal observacional requer hipóteses sobre comparabilidade de partidas antes/depois; um resultado sobre `4.12`, `4.20` ou `6.9` não autoriza inferir magnitudes de 2026. O artigo **não** ensina código C# de MOBA nem prova que "nerf = winrate cai" em qualquer composição.
+- **Aplicação testável:** ao alterar stats/habilidades/receitas, comparar `patch A vs B` com mesmo seed/bot, posição, composição, itemização e nível; depois segmentar jogadores reais por domínio da mecânica, campeões e período de adaptação. Não ajustar o jogo olhando somente winrate global.
+
+### [AC13] Kwak — When the Rule-Maker Runs the World Championship (preprint outubro/2026)
+
+- **Publicação:** [arXiv:2610.07427](https://arxiv.org/abs/2610.07427), enviado em 05/10/2026; **preprint exploratório**, não presumir revisão por pares.
+- **Leitura efetuada:** resumo detalhado disponível; **não** declarar auditoria do método e resultados integrais como se tivessem sido reproduzidos.
+- **Dados informados pelo autor:** dez campeonatos mundiais entre 2016–2025, 1.097 partidas, 215 observações time-ano e 1.090 alterações de campeões em 40 patches.
+- **Achado:** as mudanças próximas de torneios afetam desigualmente as preferências históricas dos times; efeitos sobre vencer campeonatos permanecem **incertos** — a própria pesquisa enfatiza associação, não efeito causal demonstrado.
+- **Aplicação:** `BalanceProfile` versionado; registrar em changelog quem foi afetado e por quê, permitir períodos de estabilização antes de eventos, medir exposição diferencial de jogadores/equipes. Para nosso MVP offline, isso é uma futura regra de governança, **não** bloqueio técnico imediato.
+
+**Por que estes dois estudos importam mais para a pergunta "como o LoL foi mudando":** ambos examinam **alterações reais em LoL ao longo do tempo**, enquanto vários papers da tabela anterior usam Dota2, RTS ou arenas simplificadas para propor métodos. Essa diferença de evidência deve guiar as prioridades da pesquisa.
+
 ## 4. Código aberto: resultados de leitura de README e licenças
 
 | Repo | Evidência verificada | Licença observada | Decisão |
@@ -140,6 +161,8 @@ Estudos externos oferecem **método**, não a calibração final do nosso títul
 - **AC9** — https://arxiv.org/abs/1702.06253
 - **AC10** — https://pmc.ncbi.nlm.nih.gov/articles/PMC7387664/
 - **AC11** — https://aaai.org/papers/ws04-04-001-mda-a-formal-approach-to-game-design-and-game-research/
+- **AC12** — https://arxiv.org/html/2110.14632v1 e https://doi.org/10.1145/3472538.3472550
+- **AC13** — https://arxiv.org/abs/2610.07427
 
 ## 6. IP e publicabilidade
 
