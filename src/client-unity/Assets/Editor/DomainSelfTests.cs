@@ -68,6 +68,8 @@ namespace DragonMoba.Editor
             TestTowerRangeAndAggro();
             TestStructureCollision();
             TestDerivedStatsAndEquipment();
+            TestAttackMoveAndStop();
+            Debug.Log("DBM-BATCH DOMAIN PASSED | regen, recipes, selling, lifesteal, haste, forms, attack-move");
             Debug.Log("DBM001 DOMAIN PASSED | locked skills, point conservation, rank gates, repeated attacks, cast resume and respawn persistence");
             Debug.Log("DBM002 DOMAIN PASSED | tower targeting, aggro, range, collision and detour");
         }
@@ -387,6 +389,39 @@ namespace DragonMoba.Editor
             Require(kid.Level==18 && kid.FormId=="kid_oozaru" &&
                 apeWorld.BodyRadius(kid)>.9f && kid.MoveSpeed<6f,
                 "FORM-01: Oozaru grows body radius and slows movement");
+        }
+
+        private static void TestAttackMoveAndStop()
+        {
+            var world = new GameWorld("GKU_KID");
+            var hero=world.Player;
+            EntityState enemy=null;
+            foreach (var e in world.Entities)
+                if (e.Kind==EntityKind.Hero && e.Team==Team.Red) { enemy=e;break; }
+            Require(enemy!=null,"MOVE-01: Enemy hero");
+            hero.Position=hero.Destination=new V2(30,-36);
+            enemy.Position=enemy.Destination=new V2(30,-26);
+            enemy.MoveSpeed=enemy.PhysicalAttack=enemy.AttackRange=0f;
+            enemy.MaxHp=enemy.Hp=5000f;
+            hero.MaxHp=hero.Hp=5000f;
+            Require(world.Submit(new GameCommand{ActorId=hero.Id,
+                Kind=CommandKind.AttackMove,Position=new V2(30,-23)}),
+                "MOVE-01: AttackMove command accepted");
+            var hits=0;
+            for(var i=0;i<260;i++)
+            {
+                world.Tick(GameWorld.FixedStep);
+                foreach(var e in world.DrainEvents())
+                    if(e.Kind==EventKind.Attack && e.ActorId==hero.Id &&
+                        e.TargetId==enemy.Id) hits++;
+                if(hits>=2)break;
+            }
+            Require(hits>=2 && hero.AttackMoveActive,
+                "MOVE-02: AttackMove acquires and repeats attacks without clicking enemy");
+            Require(world.Submit(new GameCommand{ActorId=hero.Id,Kind=CommandKind.Stop}) &&
+                !hero.AttackMoveActive && hero.AttackTargetId==0 &&
+                V2.Distance(hero.Destination,hero.Position)<.001f,
+                "MOVE-03: Stop cancels attack-move and movement");
         }
 
         private static void Require(bool condition, string label)
