@@ -5,13 +5,14 @@
 
 ## Problema atacado
 
-A arena era um protótipo com terreno visual sujeito a perder a cor de vértice ao usar material Standard, soldados representados por esferas, muitos painéis IMGUI genéricos, feedback de golpes por linhas simples e três áudios importados com poucas variações. O menu normal aparecia antes da montagem visual do mapa.
+A arena era um protótipo cujo shader `DragonMoba/Organic Ground` **já utilizava cores de vértices**; entretanto, a aparência permanecia pouco detalhada pela densidade/variação dessa paleta, soldados apareciam como esferas, havia muitos painéis IMGUI genéricos, efeitos em linha simples e poucos áudios diferentes. O menu aparecia antes da montagem visual do mapa.
 
 ## Alterações reais na branch
 
 | Arquivo | Mudança e finalidade |
 |---|---|
-| `OrganicArena.cs` | Texture2D de superfície gerada das próprias cores do terreno e aplicada como `mainTexture`, UVs normalizados, vegetação preservada, rio azul-turquesa, margem iluminada, santuários e ruínas em pontos de leitura de mapa, luz ambiente e neblina limitadas, lanternas/santuários animados; sem colliders adicionais no domínio |
+| `OrganicArena.cs` | Texture2D **320×400** com variação de grama, pedra, desgaste e margens, integrada ao shader customizado por `_MainTex/_UseTexture` (preservando fallback de vertex colors, iluminação e sombra), UVs normalizados, vegetação preservada, rio azul-turquesa, margem iluminada, santuários e ruínas em pontos de leitura de mapa, luz ambiente e neblina limitadas, lanternas/santuários animados; sem colliders adicionais no domínio |
+| `Art/OrganicGround.shader` | extensão do shader original para misturar sua coloração de vértice com uma textura de pintura opcional; `_UseTexture=1` somente na instância runtime |
 | `CharacterGallery.cs` | galeria real 3D com os três prefabs já importados, pedestais e iluminação suave; só funciona na seleção, desativada na partida |
 | `PrototypeGame.cs` | construção do cenário durante o menu, 3 cards de campeão com informações e confirmação, tropas com modelo distinto, HUD com HP segmentado a cada 100/1000, cronômetro e indicação M para áudio |
 | `MinionVisual.cs` | pequenos drones sentinelas com carapaça, asas, reator de Ki e oscilação sutil, duas cores de time; apenas render/collider de clique |
