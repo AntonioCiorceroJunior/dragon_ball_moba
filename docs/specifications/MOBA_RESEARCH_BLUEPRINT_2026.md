@@ -399,7 +399,7 @@ O protótipo hoje usa coordenadas lógicas aproximadamente `X=-32..32` e `Y=-41.
 - **Objetivo alto:** dinossauro/arauto e dragão voador/barão no quadrante norte do rio. **Objetivo baixo:** guardião elemental/dragão temático próximo do sul do rio. Monstros devem ter silhuetas originais/licenciadas.
 - **Três torres por rota**, gerador/inibidor no interior, **duas torres finais** protegendo o núcleo; requer abrir uma rota para conseguir vencer. Ordem e vulnerabilidade explícitas. **O código atual possui só uma torre por rota/equipe e núcleo**; não confundir adicionar modelos com mudar a estrutura competitiva.
 - Arbustos com ocultação de visão, paredes realmente intransponíveis, entradas múltiplas nas arenas de objetivo, cruzamentos e pontos de ward.
-- Simetria competitiva (comprimento de rota, acessos, tempo a objetivos e espaços de gank), não simetria estética perfeita. Medir diferenças de vitória por lado; pesquisas sobre fairness e atualizações de mapa sugerem testar viés lateral [R5, A1].
+- Simetria competitiva (comprimento de rota, acessos, tempo a objetivos e espaços de gank), não simetria estética perfeita. Medir diferenças de vitória por lado; pesquisas sobre fairness e atualizações de mapa sugerem testar viés lateral [R5, A4].
 
 **Plano de topologia (texto):**
 
@@ -643,3 +643,198 @@ Os estudos [A1–A7] sustentam usar composição de equipe, função, dados hist
 | **[A7] A Gospel for MOBA Game: Ranking-Preserved Hero Change Prediction (IEEE ToG 2022, Dota 2)** | Mudanças constantes de heróis e previsão de ajustes para diversificação e balanceamento | Versionar parâmetros e medir antes/depois por patch; estudo é sobre Dota 2, não fornece regras de LoL. |
 
 **Leitura crítica:** artigos de previsão podem acertar vencedores usando padrões correlacionais sem explicar causalidade do balanceamento. Estudos de meta e draft não substituem playtest de sensação de impacto, câmera e leitura de efeitos. Para engenharia de código, documentação técnica da Unity/Riot e testes próprios são mais úteis do que papers de machine learning.
+
+
+## 12. Plano de execução técnico — ordem exata, dependências e critérios de saída
+
+### 12.1 Regras para executar sem refazer tudo
+
+**PRs pequenos e reversíveis.** Começar cada ticket com inventário do código real e teste reproduzindo o bug; implementar a menor mudança que satisfaça o contrato; registrar comportamento observado no executável. ChatGPT pode produzir código e revisão via GitHub; Codex no VS Code valida Unity/Windows, FPS, animações e input. Não mesclar PR que só "compila" quando seu objetivo é gameplay visual. Nunca migrar versão de Unity, instalar frameworks, importar modelos e alterar combate no mesmo ticket.
+
+**Hierarquia de prioridade:**
+
+1. Correção P0 que impede jogar (colisão, torre, loja falsa, skill bloqueada).
+2. **Infraestrutura de estatísticas e conteúdo** (fundação reutilizável dos próximos itens/heróis).
+3. Experiência de partida completa **com 3 heróis** (seleção, câmera, mapa navegável, item, treino, HUD).
+4. Macroestratégia (waves, visão, objectives, jungle).
+5. Arte/áudio final, roster 15 e otimização.
+6. Só então multiplayer, draft sofisticado, match history, fusão cooperativa e ranqueado.
+
+### 12.2 Ciclos concretos
+
+| Ordem | Ticket / vínculo com fila atual | Implementação focal | Gate de aceite em runtime |
+|---:|---|---|---|
+| 0 | **DBM-002** PR #2 | Torre, aggro, alcance, contorno de torre/núcleo | Unity importa/compila; estrutura não atravessável; torre acerta alvo dentro e não fora; regressões DBM-001 |
+| 1 | **DBM-003A** (fundação para DBM-003) | `DerivedStats` + regen HP/5s e escalonamento base por nível; separar Physical/Ki, mitigação/escudos | HP recupera sozinho fora da base, atributos aumentam por nível, testes de dano físicos/Ki |
+| 2 | **DBM-003B** | Pipeline `DamageResolver` completo: haste, attack speed, crítico, penetração, life steal, spell vamp, anti-cura | Cenários numéricos reproduzíveis, VFX não aplica dano duplo, 0 bugs de bônus duplicado |
+| 3 | **DBM-003C** | `ItemCatalog`, componentes/receitas DAG, 6 slots, compra/venda, undo e GoldLedger | 8 receitas e 20 itens com efeito real; qualquer compra/refund restaura stats corretamente |
+| 4 | **DBM-003D** | Loja com árvore de ingredientes, ícones originais, ferramenta de comparação | Comprar/completar itens por UI sem comandos de debug; ícones sem texto cortado em 1280×720 |
+| 5 | **DBM-004A** (Ki) | Rebalanceamento C: carga vs XP, fadiga contínua, XP por fase, testes anti-AFK | Ki cheio gera XP observável, fonte =0 XP, cancelar não deixa efeito persistente |
+| 6 | **DBM-004B** | VFX/SFX do C, feedback de XP/s e projeção de tempo para level | Aula visual+áudio clara, vocalização com cancelamento e controles de intensidade |
+| 7 | **DBM-005A** (heróis) | `GameSessionFlow` e seleção obrigatória antes de `GameWorld` iniciar | Usuário escolhe 1 de 3 heróis, vê kit/role/modelo e confirma; ESC volta à seleção |
+| 8 | **DBM-005B** | Kit individual P/QWER, passivas e `AbilityData` por herói | Goku Criança, Super e Cell possuem diferenças mecânicas reais e habilidades que escalam |
+| 9 | **DBM-005C** | Goku pequeno, Cell distinto, rigs estáveis; Oozaru somente quando regras e assets permitirem | escala observável e collider válido; foot sliding corrigido; Oozaru grande/lento sem parede atravessada |
+| 10 | **DBM-007A** (câmera/HUD) | Câmera livre/follow, pan bordas, Space, zoom, rotações + nameplates | click-to-move preciso, nameplates legíveis, sem travamento de câmera; 720p/1080p |
+| 11 | **DBM-007B** | HUD de estatísticas, buffs, itens e minimapa que espelha o mapa | informação verdadeira, jogadores ocultos não revelados por UI, UI escalável |
+| 12 | **MAP-001** (novo ticket no backlog, não alterar DBM-002) | Definir grafo do mapa quadrado diagonal, top/mid/bot, selva, rio; mapa blockout 3D | validator de grafo, tempos de rota e spawns equivalentes por lado |
+| 13 | **MAP-002** | Pathfinding/A*, colisor de paredes, hubs jungle, brush, bridge; migração de bot paths | 3 rotas funcionam, sinistras colisões testadas, sem personagem travado em canto |
+| 14 | **MAP-003** | Torre tier1/2/3, gerador/inibidor, torres do núcleo; ondas e AI | partida inteira até vitória ao destruir estruturas na ordem |
+| 15 | **ECON-001** | Minion melee/ranged/siege/super, farm/last hit, assistências, renda, tempo da wave | ouro e XP rastreáveis, congelar/push wave testáveis, sem farm duplicado |
+| 16 | **VISION-001** | brushes, fog, wards, detecção, minimapa/ping e bots respeitando visão | bot não ataca inimigo não visto; nenhum vazamento no HUD |
+| 17 | **OBJ-001** | acampamentos, buffs, dinossauro/arauto, objetivo voador/barão, guardião elemental/dragão | objetivos nascem/resets e concedem buffs sem travar partidas |
+| 18 | **DBM-006** | Efeitos de habilidade/áudio e animação de 3 heróis; hitboxes fiéis | feixes, impactos e Ki legíveis; sons não sobrepostos; perf satisfatória |
+| 19 | **DBM-010** | Testes end-to-end de partida 1v1+bot, regressão, baseline perf, telemetria | vitória/derrota reproduzível, economia/inventário/replay consistentes |
+| 20 | **ROSTER-001...015** | expandir os 15 kits/variantes definidos no GDD, um por entrega | cada campeão passa CI, assets, kit, counters e playtest |
+| 21 | **NET-001 em diante** | servidor autoritativo 2 clientes → 10 jogadores, lobby/draft/reconnect | arquitetura auditada; sem confiar em input do cliente |
+| 22 | **FUSION-001** | mecânica cooperativa dos dois pilotos após multiplayer | contrato de controle, morte/separação, slots, timeouts validados |
+
+**Referência da fila atual:** `docs/coordination/TASK_QUEUE.md` mantém DBM-000 a DBM-010. Os sufixos A/B/C/D **não são tarefas já abertas**: são recortes sugeridos da DBM-003/004/005/007. MAP/ECON/VISION/OBJ/ROSTER são extensões para inserir no backlog após revisão. Não marcar nenhuma como concluída por aparecer na tabela.
+
+### 12.3 Especificações de primeira entrega de cada trilha
+
+**DBM-003A — stats:**
+- Criar `StatId`, `BaseStatGrowth`, `StatModifier`, `DerivedStatSnapshot`.
+- Carregar 3 `ChampionDefinition` reais, incluindo `HPRegenPer5`, attack speed, KiResist e resistências.
+- Atualizar HPRegen no tick e aplicar fontes de regen somente dentro de `HealthSystem`.
+- Adicionar componente de exibição "HP regen" e conferir ganho em Play Mode.
+- Regredir treino C, respawn, transforms, torres, skills e ataques.
+- **Não começar loja/ícones antes do stat calculator estar estável.**
+
+**DBM-003C — recipes:**
+- `ItemCatalog` com 20 itens iniciais e 8 receitas fechadas.
+- `Inventory` armazena `ItemInstance` e slots; comprar receita consome componentes.
+- Implementar `PurchaseResult` tipado: `Success`, `NotAtShop`, `NotEnoughGold`, `InventoryFull`, `InvalidRecipe`, `UniqueLimit`.
+- Testar equipe, créditos, preços, venda e undo, inventário cheio, item com passiva duplicada.
+- **Não avançar para ícones se a compra ainda só renderizar uma caixa sem alterar `DerivedStats`.**
+
+**DBM-004A — C:**
+- Criar `KiChargeState` (`Idle`, `Charging`, `Training`, `Interrupted`) e `TrainingProgressSnapshot`.
+- Ajustar XP/s pelo XP disponível em waves e jungle; documento de balanceamento com comparativo.
+- Testes: 0 XP na fonte, fadiga não reseta facilmente, HP de herói segue regen base separada, todos os 3 heróis e respawn.
+
+**DBM-005A — seleção:**
+- Não destruir a tela antiga antes da nova seleção funcionar; a primeira cena deve exibir `ChampionSelection`.
+- Desabilitar `startDemo` da cena de entrada, verificar bootstrap local/Editor/build.
+- UI com três cartões e prévia de modelos, kit P/QWER, skill description, dificuldade e função.
+- Ao confirmar, instanciar `GameWorld(selectedChampionId)` uma vez; impedir duplo clique/start dupla.
+
+**MAP-001 — blockout:**
+- Entregar **um mapa cinza jogável** com bases diagonais, 3 lanes corretas, rios, selva e pontos de torres. MapValidator antes de árvores e materiais.
+- Testar tempos de deslocamento por 3 percursos e dois lados, distância de turret ranges e interrupção de esquiva de dash, warding.
+- Somente depois pintar, detalhar vegetação, melhorar água e colocar assets definitivos.
+
+### 12.4 Ordem de migração de um arquivo monolítico
+
+A cada pequeno PR:
+
+1. Escrever teste de comportamento atual aprovado e seu novo requisito.
+2. Introduzir interface de serviço (`ICombatResolver`, `IStatCalculator` etc.) no domínio, ou um método dedicado puro.
+3. Migrar **uma** regra da antiga classe para a nova; `GameWorld` fica como adaptador.
+4. Criar teste específico com `GameWorld` e caso-limite; medir regressão em smoke Unity.
+5. Trocar o ponto de chamada em `PrototypeGame` só após a nova API funcionar.
+6. Atualizar dados, tooltip e eventos se a regra mudou.
+7. Atualizar relatório, status e documentos de balanceamento; **não apagar dados antigos de validação**.
+
+**Exemplo de fronteiras relevantes**:
+
+- `DamageResolver.Resolve(DamageRequest, CombatantsSnapshot)` nunca instancia GameObject.
+- `EconomyService.Buy(entity, itemId)` calcula custo/resultado, não desenha item.
+- `KiTrainingSystem.Tick(entity, matchTick)` retorna `XpGainEvent`, não anima aura.
+- `NavigationService.FindPath(start, goal, radius, movementFlags)` fornece waypoints, não move a câmera.
+- `ChampionPresentation.ApplyForm(formId, animationProfile, visualScale)` nunca muda HP sem evento do domínio.
+
+### 12.5 Gates de qualidade e Definition of Done
+
+| Gate | Automatização recomendada | Recusa se... |
+|---|---|---|
+| G0 Source/License | `verify_publication.ps1`, hash de asset, `.meta`, baseline atualizado | asset sem licença, credencial ou fonte faltando |
+| G1 Domain | `DomainSelfTests` / testes determinísticos de stats, XP, receipt, target | regra inválida muta estado, falha fórmula/rounding |
+| G2 Play | `VisualPrepare` + `VisualPlay` com 3 heróis | cena falha, rig quebra, referência nula |
+| G3 Build | `VisualBuild` + identidade do assembly e build-info | build falha, diferença de versão não documentada |
+| G4 Native | `validate_native_gameplay.ps1` adaptado à tarefa, mouse e teclado reais | só houve chamada direta ao domínio, sem interação real |
+| G5 Gameplay | rodada assistida/manual quando necessário, vídeo ou screenshots, bugs | câmera injogável, alvo invisível, habilidade não percebida |
+| G6 Performance | 5–10 min de combate, minions e habilidades, frame times e leaks | regressão relevante não explicada/medida |
+
+**Atenção aos scripts existentes:** `verify_publication.ps1` valida hashes de domínio contra referência por tarefa; futuras alterações legítimas precisam atualizar a referência **sem reescrever silenciosamente as antigas**. O scanner de licenças é verificação direcionada, não prova legal absoluta.
+
+## 13. Casos de aceitação transversais — bug reports reproduzíveis
+
+| ID | Cenário no jogo | Resultado exigido |
+|---|---|---|
+| STAT-01 | Goku Criança nível 1 recebe dano e espera 10s fora da base | recupera vida pela regen base, nunca acima de MaxHP |
+| STAT-02 | Goku evolui de nível 1 a 6 | HP, regen e ataque sobem segundo tabela, transformação separada |
+| DMG-01 | 100 físico contra Armor100 | 50 antes do escudo |
+| DMG-02 | 100 Ki contra KiResist100 | 50 antes do escudo; Armor não altera este dano |
+| DMG-03 | ataque remove 100 HP com 10% life steal | cura 10 HP; zero se só acertou escudo |
+| DMG-04 | escudo temporário + anti-cura | escudo absorve até zero, cura reduzida conforme debuff |
+| ITEM-01 | compra duas luvas + cristal e combina Luvas do Dragão | custo restante 1700; ingredientes saem, item final entra e soma só stats finais |
+| ITEM-02 | equipar/remover espada | life steal começa/termina imediatamente sem buff fantasma |
+| ITEM-03 | inventário cheio e compra inválida | Zeni não é debitado |
+| KI-01 | manter C depois de Ki 100% fora da fonte | XP/s e tempo estimado aparecem e nível avança gradualmente |
+| KI-02 | usar C na fonte, sofrer dano ou soltar | nenhuma XP indevida/áudio residual |
+| CHAR-01 | escolher Cell na tela inicial | entra como Cell, com seu kit e modelo distintos |
+| CHAR-02 | Goku Criança ao lado de Goku Super | diferença nítida de escala, collider e barra/nameplate |
+| CHAR-03 | Oozaru em corredor estreito | transformação rejeitada ou posição segura; nunca preso dentro de parede |
+| CAM-01 | usuário faz pan, clica em inimigo e usa Q | câmera não recenter à força; hitbox/seleção corretas |
+| MAP-01 | minions cruzam pontes das três rotas | nenhuma tropa teleporta, desvia pelo percurso válido |
+| MAP-02 | dois lados chegam a objetivos análogos | tempo de percurso dentro da tolerância definida por teste |
+| SHOP-01 | usuário abre loja fora da base | itens/receitas visíveis, compra desabilitada e explicada |
+| HUD-01 | level up com ponto | '+' aparece, tooltip rank/dano atualiza e nomeplate mantém alinhamento |
+| AUDIO-01 | Ki começa e termina | grito/aura iniciam após validação e cessam imediatamente ao cancelar |
+| END-01 | derrota após abrir caminho da rota | estado final único, bots param, UI mostra estatísticas reais |
+
+## 14. Fontes e links para estudo posterior
+
+### 14.1 Fontes oficiais de jogo e decisões de design (Riot)
+
+- **[R1] League of Legends — How to Play**, estrutura 5v5, Nexus, torres, selva, XP, habilidades e itens: https://www.leagueoflegends.com/en-us/how-to-play/
+- **[R2] Patch 26.1 Notes (jan. 2026)**, missões de função, rewards, visão e alterações de Jungle: https://www.leagueoflegends.com/en-us/news/game-updates/patch-26-1-notes/
+- **[R3] /dev: 2024 Item Changes (29/11/2023)**, power budget de itens: https://www.leagueoflegends.com/en-us/news/dev/dev-2024-item-changes/
+- **[R4] Patch 14.1 Notes (09/01/2024)**, retirada de míticos, novas receitas e mapa: https://www.leagueoflegends.com/en-us/news/game-updates/patch-14-1-notes/
+- **[R5] /dev: Season 2024 Map Changes (23/11/2023)**, simetria, ganks e caminhos: https://www.leagueoflegends.com/en-sg/news/dev/dev-season-2024-map-changes/
+- **[R6] /dev: Champion Balance Framework (30/05/2019)**, critérios por faixa e presença: https://www.leagueoflegends.com/en-us/news/dev/dev-champion-balance-framework/
+- **[R7] Preseason Item Shop Update (2020)**, busca, categorias, ícones e clareza: https://www.leagueoflegends.com/en-us/news/dev/preseason-item-shop-update/
+- **[R8] Quick Gameplay Thoughts: Champion Counterplay (14/05/2021)**: https://www.leagueoflegends.com/en-us/news/dev/quick-gameplay-thoughts-may-14/
+- **[R9] Patch 12.22 Notes (2022)**, sugestões de habilidade e ajuste de XP: https://www.leagueoflegends.com/en-us/news/game-updates/patch-12-22-notes/
+- **[R10] /dev: 2025 Season One Gameplay Preview**, recompensas por objetivos e snowball: https://www.leagueoflegends.com/en-us/news/dev/dev-2025-season-one-gameplay-preview/
+- **[R11] Patch 9.23 Notes (2019)**, farm/tempo da selva: https://www.leagueoflegends.com/en-us/news/game-updates/patch-9-23-notes/
+- **[R12] Patch 26.20 Notes (06/10/2026)**, mudanças em itens e clareza de scoreboard: https://www.leagueoflegends.com/en-us/news/game-updates/league-of-legends-patch-26-20-notes/
+- **[R13] Clarity in League (2021)**, silhueta, hitbox e legibilidade das habilidades: https://www.leagueoflegends.com/en-us/news/dev/clarity-in-league/
+- **[R14] /dev: Behind the Scenes of VFX Updates (2022)**, prioridades de hitbox e ruído visual: https://www.leagueoflegends.com/en-us/news/dev/dev-behind-the-scenes-of-vfx-updates/
+- **[R15] Ask Riot: Manaless Champions (2021)**, recursos como forma de ritmar troca/descanso: https://www.leagueoflegends.com/en-us/news/dev/ask-riot-manaless-champions/
+- **[R16] /dev: Balance Framework Update (2020)**, grupos de público e metas: https://www.leagueoflegends.com/en-us/news/dev/dev-balance-framework-update/
+
+### 14.2 Engenharia e código (T)
+
+- **[T1] Riot Technology — Determinism in LoL: Unified Clock (2017)**, relógio/simulação/determinismo: https://technology.riotgames.com/node/73
+- **[T2] Unity 6 — NavMeshAgent / NavMeshObstacle**, navegação, raios, obstáculos: https://docs.unity3d.com/ja/current/ScriptReference/AI.NavMeshAgent.html e https://docs.unity3d.com/cn/6000.0/ScriptReference/AI.NavMeshObstacle.html
+- **[T3] Unity — Netcode for GameObjects**, visão geral e versões disponíveis: https://docs.unity3d.com/ja/current/Manual/com.unity.netcode.gameobjects.html
+- **[T4] MOBA_CSharp_Unity (MIT declarado)**, arquitetura de servidor, data-driven, visão e pathfinding: https://github.com/yasgamesdev/MOBA_CSharp_Unity
+- **[T5] unity-moba (GPL-3.0 declarada)**, múltiplos mapas e serviços: https://github.com/DevZhav/unity-moba
+- **[T6] Unity DOTS / Netcode samples**, amostras, não obrigação de migração: https://github.com/Unity-Technologies/EntityComponentSystemSamples
+- **[T7] Clash (MIT declarado)**, gameplay MOBA com dependência legada: https://github.com/bensalilijames/Clash
+- **[T8] MOBA_Unity (MIT declarado)**, protótipo Unity 2019: https://github.com/InFaNsO/MOBA_Unity
+
+### 14.3 Estudos acadêmicos (A)
+
+- **[A1] Champion Recommendation System of League of Legends**, ICTC/IEEE (2020), DOI **10.1109/ICTC49870.2020.9289546**. https://ieeexplore.ieee.org/document/9289546/
+- **[A2] CUPID: Improving Battle Fairness and Position Satisfaction in Online MOBA Games with a Re-matchmaking System**, PACM HCI / ACM (2024), DOI **10.1145/3686978**. https://doi.org/10.1145/3686978
+- **[A3] Metagame Autobalancing for Competitive Multiplayer Games**, IEEE CoG (2020), DOI **10.1109/CoG47356.2020.9231762**. https://ieeexplore.ieee.org/document/9231762/
+- **[A4] Simulation-Driven Balancing of Competitive Game Levels With Reinforcement Learning**, IEEE Transactions on Games (2024), DOI **10.1109/TG.2024.3399536**. https://ieeexplore.ieee.org/document/10528885/
+- **[A5] Role-Sensitive Analysis of Positional Contributions and Win Prediction in MOBA Esports**, IEEE Access (2025), DOI **10.1109/ACCESS.2025.3607328**. https://ieeexplore.ieee.org/document/11153635/
+- **[A6] What makes an ideal team? Analysis of Popular Multiplayer Online Battle Arena (MOBA) games**, Entertainment Computing (2023), DOI **10.1016/j.entcom.2022.100523**. https://www.sciencedirect.com/science/article/pii/S1875952122000477
+- **[A7] A Gospel for MOBA Game: Ranking-Preserved Hero Change Prediction in Dota 2**, IEEE Transactions on Games (2022), DOI **10.1109/TG.2021.3123583**. https://scholarworks.brandeis.edu/esploro/outputs/journalArticle/A-Gospel-for-MOBA-Game-Ranking-Preserved/9924144022401921
+- **[A8] Toward Automated Game Balance: A Systematic Engineering Design Approach**, IEEE CoG (2021), DOI **10.1109/CoG52621.2021.9619032**. https://ieeexplore.ieee.org/document/9619032/
+
+### 14.4 Fonte própria do projeto (P)
+
+- **[P1]** [GAME_DESIGN.md](GAME_DESIGN.md), documento mestre de personagens, progressão, itens, mapa, Oozaru, fusão e QA.
+- **[P2]** [TECH_ARCHITECTURE.md](TECH_ARCHITECTURE.md), orientação arquitetural histórica, não estado executável atual.
+- **[P3]** [Art pipeline](ART_PIPELINE.md), diretrizes de licenças, rigs, formas e assets.
+- **[P4]** [Projeto e relatórios DBM-000/DBM-001/DBM-002](../coordination/), fonte do estado de código/execução. **DBM-002 ainda não recebeu comprovação de Unity no momento desta redação.**
+
+## 15. Conclusão e decisão de implementação
+
+**O próximo investimento de engenharia depois da validação da DBM-002 deve ser DBM-003A: estatísticas, regeneração de HP e cálculo de atributos por fontes.** Sem isso, comprar espadas, escudos e itens de roubo de vida será cosmético ou produzirá regras incorretas. Em seguida: dano completo e receitas; depois Ki/treinamento, seleção e kits próprios, câmera e mapa redesenhados a partir do grafo. Manter arte final e online fora dos PRs de fundamento.
+
+Este documento é um **plano de arquitetura**. O projeto só poderá ser declarado semelhante a um MOBA completo quando a partida executar de forma integrada os sistemas aqui definidos e cumprir testes. O roteiro evita tanto uma reconstrução total quanto a perpetuação de um protótipo com efeitos bonitos e mecânicas superficiais.
