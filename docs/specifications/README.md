@@ -1,35 +1,34 @@
-# Especificações do Dragon Ball MOBA
+# Documentos de produto e design — Dragon Ball MOBA
 
-Este diretório guarda documentos de design e engenharia que orientam o desenvolvimento.
+**Revisão:** 17/10/2026. Esta pasta concentra a **visão de jogo** e guias de especialidade. Eles descrevem objetivos de produto e engenharia, não garantem funcionalidades presentes no executável.
 
-## Importação inicial pelo Codex (DBM-000)
+## Fonte de design principal
 
-Localizar na pasta local `DragonBall_Moba` os documentos mestres e guias já produzidos (Word, Markdown, instruções de integração de assets e relatórios técnicos). Trazer **preferencialmente as versões Markdown mais recentes**, mantendo o conteúdo e registrando as fontes originais. Evitar arquivos duplicados, pacotes ZIP enormes e documentos que contenham informações privadas.
+**[GAME_DESIGN.md](GAME_DESIGN.md)** — documento mestre: experiência, telas, 15 variantes, kits, Ki, formas, Oozaru, compra/receitas, mapa, minions, visão, objetivos, fusão, multiplayer futuro e QA. **Preservado integralmente**; valores como HP de personagem são metas/sementes até uma decisão registrada, não automaticamente os números do código.
 
-Sugestão de organização:
+## Guias complementares
 
-- `GAME_DESIGN.md` — regras, personagens, interface, loja, mapa, progressão, transformações e fusões.
-- `TECH_ARCHITECTURE.md` — Unity/C#, arquitetura, código reutilizável, rede, testes e integração.
-- `ART_PIPELINE.md` — modelos, rigs, animações, VFX e licenças.
-- `CODEX_WORKFLOW.md` — desenvolvimento incremental e economia de contexto.
+| Documento | Finalidade | Ressalva |
+|---|---|---|
+| [TECH_ARCHITECTURE.md](TECH_ARCHITECTURE.md) | arquitetura e tecnologias historicamente propostas | intenção antiga pode mencionar ferramentas/pipelines distintos do runtime Unity Built-in |
+| [ART_PIPELINE.md](ART_PIPELINE.md) | modelos, rigs, animação, integração e licenças | manifesto real está em [ASSET_MANIFEST.md](../ASSET_MANIFEST.md) |
+| [VISUAL_DIRECTIVES.md](VISUAL_DIRECTIVES.md) | direção visual e apresentação | não prova integração de todo modelo/skin |
+| [ASSETS_PRIORITARIOS.md](ASSETS_PRIORITARIOS.md) | seleção/prioridades de assets | recursos desejados, **não** necessariamente importados |
+| [CODEX_WORKFLOW.md](CODEX_WORKFLOW.md) | práticas históricas de trabalho incremental | protocolo atual é [coordination/README.md](../coordination/README.md) |
+| [IMPORT_SOURCES.csv](IMPORT_SOURCES.csv) | proveniência dos arquivos importados na DBM-000 | preservar para auditoria |
+| [MOBA_RESEARCH_BLUEPRINT_2026.md](MOBA_RESEARCH_BLUEPRINT_2026.md) | plano preliminar extenso e exemplos | não é a arquitetura ou fila executável vigente |
 
-**Não inventar conteúdo ausente:** importar os documentos existentes e informar no relatório o que ficou pendente.
+## Arquitetura e pesquisa vigentes
 
-## Documentos importados — DBM-000
+- **[PLANO_MESTRE_ATUAL.md](../PLANO_MESTRE_ATUAL.md)** — consolidação de arquitetura e ordem de implementação, sem substituir o GDD.
+- **[Biblioteca de pesquisa](../research/README.md)** — evidência Riot, artigos e código aberto, auditoria de gameplay e limitações.
+- **[DOCUMENTOS_FONTE_E_PRECEDENCIA.md](../DOCUMENTOS_FONTE_E_PRECEDENCIA.md)** — divergências entre valores do GDD, código real e blueprint, com decisões ainda em aberto.
+- **[STATUS_ATUAL.md](../STATUS_ATUAL.md)** — funcionalidades comprovadas e PRs ainda pendentes.
 
-- [GAME_DESIGN.md](GAME_DESIGN.md): documento mestre de design, origem docs/GDD_MASTER.md do protótipo local.
-- [TECH_ARCHITECTURE.md](TECH_ARCHITECTURE.md): guia de arquitetura, origem docs/ARCHITECTURE_GUIDE.md.
-- [ART_PIPELINE.md](ART_PIPELINE.md): direção e critérios de arte, origem DragonBall_MOBA_Art_Starter_v1/docs/ART_DIRECTION.md.
-- [VISUAL_DIRECTIVES.md](VISUAL_DIRECTIVES.md): diretrizes visuais posteriores preservadas no protótipo.
-- [ASSETS_PRIORITARIOS.md](ASSETS_PRIORITARIOS.md): seleção planejada do kit de arte; não é uma lista de recursos efetivamente importados.
-- [CODEX_WORKFLOW.md](CODEX_WORKFLOW.md): fluxo anterior de trabalho incremental e economia de contexto.
+## Histórico de importação
 
-Conteúdo histórico preservado; propostas de URP, rede e arte não descrevem automaticamente o estado implementado. O projeto atual usa Built-in. AGENTS.md e docs/coordination/ têm precedência para tarefas e handoff. O uso real de recursos está em [ASSET_MANIFEST.md](../ASSET_MANIFEST.md).
+Na DBM-000, documentos mestres em Word/Markdown e arquivos de arte foram importados de versões locais; o Markdown foi priorizado e ZIPs duplicados não foram publicados. Esse procedimento está concluído e documentado em [relatório DBM-000](../coordination/reports/2026-10-16_DBM-000_publicacao-inicial.md). Não repetir tarefas de importação automaticamente.
 
-Proveniência e hashes originais: [IMPORT_SOURCES.csv](IMPORT_SOURCES.csv). Fontes Word/ZIP duplicadas não foram publicadas. Os documentos importados não concedem direitos sobre personagens ou marcas citados.
+Os documentos de trabalho não concedem direito de redistribuir personagens ou marcas de Dragon Ball/LoL.
 
-## Pesquisa de referência e roadmap (16/10/2026)
-
-- **[MOBA_RESEARCH_BLUEPRINT_2026.md](MOBA_RESEARCH_BLUEPRINT_2026.md)** — pesquisa técnica e científica do League of Legends, evolução de mecânicas, fórmulas de stats/dano/regeneração, itens e receitas, treinamento de Ki, seleção e kits de personagens, Oozaru, topologia do mapa, câmera, arquitetura modular, testes e ordem de implementação. **Documento de proposta, não código já implementado.** Complementa o GAME_DESIGN; respeitar o PR DBM-002 pendente antes de iniciar DBM-003.
-
-**Revisão posterior:** [Pesquisa MOBA v2 — auditoria de fontes, especificação de mecânicas e arquitetura testável](../research/README.md). Ela complementa o documento mestre e sinaliza limites de evidência do blueprint inicial.
+[Central de documentação](../README.md).
