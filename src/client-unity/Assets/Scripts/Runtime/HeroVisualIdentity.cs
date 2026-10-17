@@ -66,9 +66,9 @@ namespace DragonMoba.Runtime
             for(var side=-1;side<=1;side+=2)
             {
                 Piece(root,head,"Eye white",Primitive(PrimitiveType.Sphere),new Vector3(side*(ape?.19f:.135f),.13f,front+.012f),
-                    new Vector3(ape?.21f:.16f,.105f,.038f),white,unit);
+                    new Vector3(ape?.21f:cell?.14f:kid?.16f:.14f,cell?.06f:.105f,.038f),white,unit);
                 Piece(root,head,"Eye pupil",Primitive(PrimitiveType.Sphere),new Vector3(side*(ape?.19f:.135f),.13f,front+.035f),
-                    new Vector3(.055f,.073f,.018f),pupil,unit);
+                    new Vector3(cell?.07f:.055f,cell?.038f:.073f,.018f),pupil,unit);
                 Piece(root,head,"Eyebrow",Primitive(PrimitiveType.Cube),new Vector3(side*.135f,.205f,front+.015f),
                     new Vector3(.19f,.042f,.035f),dark,unit,Quaternion.Euler(0,0,side*-12));
                 Piece(root,head,"Ear",Primitive(PrimitiveType.Sphere),new Vector3(side*(ape?.42f:.31f),.075f,0),
@@ -125,6 +125,18 @@ namespace DragonMoba.Runtime
                     var gold=Mat("nimbus-gold",new Color(1f,.72f,.11f));
                     for(var i=0;i<5;i++)
                         Piece(root,root.transform,"Nimbus cloud",Primitive(PrimitiveType.Sphere),new Vector3((i-2)*.28f,.08f,(i%2)*.17f),new Vector3(.72f,.28f,.72f),gold,unit);
+                }
+            }
+            else
+            {
+                var tag=root.GetComponent<PlayableCharacterVisual>();
+                var hair=Mat("super-identity-hair-"+form,tag==null?new Color(.025f,.025f,.04f):tag.hairColor);
+                Piece(root,head,"Super hair cap",Primitive(PrimitiveType.Sphere),new Vector3(0,.32f,-.035f),new Vector3(.59f,.27f,.54f),hair,unit);
+                for(var i=0;i<7;i++)
+                {
+                    var side=i%3-1;
+                    Piece(root,head,"Super hair silhouette",Spike(),new Vector3(side*.17f,.31f+(i/3)*.05f,-.06f),
+                        new Vector3(.15f,.35f+(i%2)*.12f,.16f),hair,unit,Quaternion.Euler(-10+i*4,0,-side*33));
                 }
             }
         }

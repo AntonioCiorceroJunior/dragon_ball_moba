@@ -10,6 +10,11 @@ namespace DragonMoba.Runtime
         private readonly List<Material> ownedMaterials=new List<Material>();
         private readonly List<Transform> heroes=new List<Transform>();
         private GameObject root;
+        private int viewportWidth,viewportHeight;
+        private static float Spacing()
+        {
+            return (Mathf.Min(920f,Screen.width-34f)+10f)/3f*15f/Mathf.Max(1,Screen.height);
+        }
         public void Show()
         {
             FrameCamera();
@@ -28,7 +33,7 @@ namespace DragonMoba.Runtime
             };
             for(int i=0;i<3;i++)
             {
-                var x=(i-1)*6.4f;
+                var x=(i-1)*Spacing();
                 var anchor=new GameObject("Hero showcase "+i).transform;
                 anchor.SetParent(root.transform,false);
                 anchor.position=new Vector3(x,100.1f,-4f);
@@ -94,6 +99,12 @@ namespace DragonMoba.Runtime
         private void Update()
         {
             if(root==null||!root.activeSelf)return;
+            if(viewportWidth!=Screen.width||viewportHeight!=Screen.height)
+            {
+                for(var i=0;i<heroes.Count;i++)if(heroes[i]!=null)
+                    heroes[i].parent.position=new Vector3((i-1)*Spacing(),100.1f,-4f);
+                viewportWidth=Screen.width;viewportHeight=Screen.height;
+            }
             for(var i=0;i<heroes.Count;i++)
             {
                 if(heroes[i]!=null)
