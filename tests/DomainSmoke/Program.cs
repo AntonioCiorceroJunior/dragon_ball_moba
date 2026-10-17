@@ -59,9 +59,12 @@ static class Program
 
         var apeWorld=new GameWorld("GKU_KID");
         var kid=apeWorld.Player;
+        kid.Position=kid.Destination=new V2(0,-17.2f);
         apeWorld.GrantExperience(kid,99999);
         Check(kid.Level==18 && kid.FormId=="kid_oozaru" &&
-            apeWorld.BodyRadius(kid)>.9 && kid.MoveSpeed<6,"Oozaru is larger and slower");
+            apeWorld.BodyRadius(kid)>.9 && kid.MoveSpeed<6 &&
+            !apeWorld.IsStructureCollision(kid,kid.Position),
+            "Oozaru grows, slows and never transforms inside a tower");
 
         var combat=new GameWorld("GKU_KID");
         var actor=combat.Player;
