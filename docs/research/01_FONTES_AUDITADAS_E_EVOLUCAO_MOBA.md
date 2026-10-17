@@ -50,6 +50,26 @@ A Riot descreve que diferentes lados tinham vantagens de gank, posicionamento, b
 4. Ajustar geometria e indicadores **antes** de vegetação/art final.
 5. Evitar copiar o desenho geométrico exato, logos, skins ou assets do Summoner's Rift.
 
+## 1.4 Postmortem oficial: o que aconteceu APÓS o lançamento de 2025
+
+**[FO14] Riot — /dev: How the Season 1 Changes Landed (07/02/2025)**, [fonte oficial](https://www.leagueoflegends.com/en-us/news/dev/dev-how-the-season-1-changes-landed/). Este texto é particularmente relevante porque compara **intenção, resultados reais e correções**:
+
+- **Feats of Strength:** o primeiro abate como meta gerou percepção de aleatoriedade e pressão individual. A Riot mudou para **3 eliminações somadas da equipe** no patch 25.S1.2. *Aplicação:* recompensas de missão não devem depender demais de uma única jogada irreversível; exigir contribuição coletiva e possibilidade de recuperação.
+- **Snowball:** a Riot divulgou que a chance de vitória após primeira torre foi **70,4% (14.24) versus 70,3% (25.S1.2)**. Isso é **associação** entre primeiro objetivo e vitória, não impacto causal isolado do sistema, pois várias coisas mudaram simultaneamente. *Aplicação:* além de olhar quantidade de kills, comparar taxa de comeback e probabilidade de vitória condicionada à vantagem.
+- **Atakhan:** intenção de nascer em duas formas com distribuição alvo de **50–70% de Ruinous**; resultado inicial foi **~85% Ruinous / 15% Voracious**, levando à correção do spawn. *Aplicação:* objetivos dinâmicos exigem telemetria de frequência, posição, tempo e impacto, com distribuição-alvo especificada.
+- **Mapa/arte:** feedback de cenário excessivamente escuro e cansativo levou a ajustes planejados, apesar de ausência de grandes incidentes de clareza percebidos internamente. *Aplicação:* legibilidade visual exige testes com humanos, resolução e contraste — não apenas screenshots bonitas.
+- **Adaptação:** a Riot ressalta que os dados de mudanças sistêmicas evoluem ao longo de dias/semanas enquanto jogadores aprendem. *Aplicação:* coletar dados em janela de adaptação e não reverter uma alteração pelo primeiro dia sem examinar riscos graves.
+
+**Status:** leitura da página completa feita; é um relato de desenvolvimento da própria Riot, **não estudo experimental independente**. Data e números se referem ao começo de 2025.
+
+## 1.5 Ritmo de waves, torres e composições — fontes oficiais que mostram efeitos cruzados
+
+- **[FO15] Patch 13.10 (16/05/2023)** — [fonte oficial](https://www.leagueoflegends.com/en-us/news/game-updates/patch-13-10-notes/): a Riot ajustou a coincidência temporal de waves no mid e laterais para aumentar o custo do roam e reduziu a troca de alvo de minions durante tower dives. **Inferência de design:** variar timing de waves muda segurança de ganks, controle de lane e economia, mesmo sem tocar no dano dos personagens. Uma mudança na loja obrigou compensações nas estatísticas de campeões após observar efeitos indiretos.
+- **[FO16] Patch 26.1 (jan/2026)** — [fonte oficial](https://www.leagueoflegends.com/en-us/news/game-updates/patch-26-1-notes/): além das missões de função, a Riot aumentou a frequência de waves no mid/late game (25s a partir de 14:00; 20s a partir de 30:00), redistribuiu ouro/XP e modificou resiliência/ataque a torres. **Inferência de design:** acelerar waves sem revisar recompensas por unidade provoca inflação de XP/ouro. Essas temporizações são de modo/patch específicos, **não valores que vamos copiar cegamente**.
+- **[FO17] Patch 14.18 (2024)** — [fonte oficial](https://www.leagueoflegends.com/en-us/news/game-updates/patch-14-18-notes/): fortificação de torre contra estratégias de lane swap em competição. **Inferência de design:** proteção de estruturas nos minutos iniciais pode moderar snowball, mas depende de padrões reais de mapa e função.
+
+**Consequência arquitetural:** `WaveSchedule`, `TowerPolicy` e `RewardTables` devem ser conjuntos data-driven **versionados conjuntamente**. Ao alterar intervalo de spawn, executar testes de ganho de ouro/XP por minuto, carga de simulação, push/time-to-tower e exposição ao gank.
+
 ## 2. Engenharia primária: o que sabemos e o que não sabemos
 
 ### [ET1] Determinismo / relógio
@@ -142,6 +162,10 @@ Estudos externos oferecem **método**, não a calibração final do nosso títul
 - **FO11** — Patch 26.1 Notes (07/01/2026): https://www.leagueoflegends.com/en-us/news/game-updates/patch-26-1-notes/
 - **FO12** — Patch 26.20 Notes (out/2026): https://www.leagueoflegends.com/en-us/news/game-updates/league-of-legends-patch-26-20-notes/
 - **FO13** — 2021 Item Choice Deep Dive (contextual): https://www.leagueoflegends.com/en-us/news/dev/quick-gameplay-thoughts-feb-26/
+- **FO14** — Postmortem temporada 2025: https://www.leagueoflegends.com/en-us/news/dev/dev-how-the-season-1-changes-landed/
+- **FO15** — Patch 13.10 (minions + itens): https://www.leagueoflegends.com/en-us/news/game-updates/patch-13-10-notes/
+- **FO16** — Patch 26.1 (waves/economia): https://www.leagueoflegends.com/en-us/news/game-updates/patch-26-1-notes/
+- **FO17** — Patch 14.18 (torres): https://www.leagueoflegends.com/en-us/news/game-updates/patch-14-18-notes/
 - **ET1** — Determinism / Unified Clock (2017): https://technology.riotgames.com/node/73 e https://www.riotgames.com/en/news/determinism-league-legends-implementation
 - **ET2** — The Tech Behind Swarm (2025): https://www.riotgames.com/en/news/the-tech-behind-swarm
 - **ET3** — Riot Developer Portal, Data Dragon e política de IP: https://developer.riotgames.com/docs/lol
