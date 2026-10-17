@@ -272,6 +272,18 @@ namespace DragonMoba.Runtime
                 visual = GameObject.CreatePrimitive(primitive);
                 visual.AddComponent<PlaceholderVisual>();
             }
+            if (state.Kind == EntityKind.Hero)
+            {
+                if (state.FormId == "kid_oozaru")
+                {
+                    visual.transform.localScale = Vector3.one * 2.45f;
+                    SculptOozaru(visual);
+                }
+                else if (state.HeroId == "GKU_KID")
+                    visual.transform.localScale = Vector3.one * .80f;
+                else if (state.HeroId == "CELL_Z")
+                    visual.transform.localScale = Vector3.one * 1.05f;
+            }
             visual.name = "Entity-" + state.Id + "-" + state.DisplayName;
             var handle = visual.GetComponent<EntityHandle>();
             if (handle == null) handle = visual.AddComponent<EntityHandle>();
@@ -286,6 +298,34 @@ namespace DragonMoba.Runtime
                 danger.Initialize(state, organic != null ? organic.ring : null);
             }
             return visual;
+        }
+
+        private static void SculptOozaru(GameObject root)
+        {
+            // Temporary original silhouette additions on an existing licensed Humanoid
+            // rig. A dedicated giant ape mesh/animation should replace this prototype.
+            var pieces = new[] {
+                new { Name = "Oozaru focinho", P = new Vector3(0,1.57f,.4f),
+                    S = new Vector3(.48f,.30f,.42f), Color = new Color(.51f,.31f,.21f) },
+                new { Name = "Oozaru sobrancelha E", P = new Vector3(-.22f,1.83f,.33f),
+                    S = new Vector3(.32f,.15f,.20f), Color = new Color(.25f,.13f,.07f) },
+                new { Name = "Oozaru sobrancelha D", P = new Vector3(.22f,1.83f,.33f),
+                    S = new Vector3(.32f,.15f,.20f), Color = new Color(.25f,.13f,.07f) },
+                new { Name = "Oozaru peitoral", P = new Vector3(0,1.08f,.20f),
+                    S = new Vector3(.82f,.70f,.32f), Color = new Color(.43f,.28f,.19f) },
+                new { Name = "Oozaru cauda", P = new Vector3(0,.72f,-.54f),
+                    S = new Vector3(.20f,1.17f,.24f), Color = new Color(.35f,.20f,.12f) }
+            };
+            foreach (var p in pieces)
+            {
+                var part = GameObject.CreatePrimitive(PrimitiveType.Sphere);
+                part.name = p.Name;
+                part.transform.SetParent(root.transform,false);
+                part.transform.localPosition=p.P;part.transform.localScale=p.S;
+                var collider=part.GetComponent<Collider>();
+                if(collider!=null) Destroy(collider);
+                part.GetComponent<Renderer>().material.color=p.Color;
+            }
         }
 
         private static Vector3 Position(V2 pos, EntityKind kind)
