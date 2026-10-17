@@ -38,8 +38,8 @@
 
 ## 3. Evidências nesta fase
 
-- Revisão estática de arquivos C#, verificação lexical de delimitadores e cruzamento de itens/ingredientes: catálogo com **24 IDs únicos**, **12 receitas** e sem componentes inexistentes nas definições escritas.
-- GitHub Actions `Dragon MOBA pure C# domain smoke` executou compilações .NET8 e testes com resultado **success** nas primeiras execuções verificadas. Resultado final deve ser consultado novamente após a última alteração, e não presumido.
+- Revisão estática de arquivos C#, verificação lexical de delimitadores e cruzamento de itens/ingredientes: catálogo com **25 IDs únicos**, **13 receitas** e sem componentes inexistentes nas definições escritas.
+- GitHub Actions `Dragon MOBA pure C# domain smoke`: `success` nos **dois runs do commit b465d113** (39060414683 e 39060413218), com .NET8, incluindo os testes adicionados. Um primeiro run em commit anterior falhou por **fixture inválida de torre sob fogo cruzado** (39059967699), corrigida mudando posições e confirmada por CI posterior. A evidência não substitui Unity/Windows. Links: [run validado A](https://github.com/AntonioCiorceroJunior/dragon_ball_moba/actions/runs/39060414683) e [run validado B](https://github.com/AntonioCiorceroJunior/dragon_ball_moba/actions/runs/39060413218).
 - `DomainSelfTests` adicional foi **escrito**, mas nenhum Unity Editor nem build Windows desta branch foi rodado aqui.
 - Não há screenshots do executável atual nem evidência de impacto de balanceamento em partida real.
 - PR #2 continua sem prova Unity; validação integrada será feita no mesmo checkout, em uma rodada Codex.
@@ -60,7 +60,7 @@ Executar [TO_CODEX_BATCH_001.md](../TO_CODEX_BATCH_001.md) na branch deste PR e 
 
 ## 6. Definição de conclusão
 
-- [ ] CI de domínio atualizado bem-sucedido no head final (verificar nova execução após o último commit; não usar resultado antigo).
+- [x] Compilação e smoke .NET8 do domínio aprovados no commit `b465d113`; após alterar documentos revalidar o hash do código antes da integração.
 - [ ] Publication checker passa com .meta e baseline (sem caminhos privados).
 - [ ] Unity importa sem erros.
 - [ ] Testes domínio/art e Play Mode passam (incluindo Oozaru e 3 personagens).
