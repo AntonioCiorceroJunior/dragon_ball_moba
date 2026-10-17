@@ -17,6 +17,15 @@ namespace DragonMoba.Runtime
         private readonly Dictionary<string, AudioClip> clips = new Dictionary<string, AudioClip>();
         private float nextAttack, nextHit, nextCharge;
         private bool muted;
+        private AudioClip licensedBlast, licensedHit, licensedCharging;
+        // Layer vetted audio assets already bundled with the game with the
+        // original synthesized foundation, instead of removing good samples.
+        public void SetExistingClips(AudioClip blast,AudioClip hit,AudioClip charge)
+        {
+            licensedBlast=blast;
+            licensedHit=hit;
+            licensedCharging=charge;
+        }
         private void Awake()
         {
             music = gameObject.AddComponent<AudioSource>();
@@ -115,6 +124,10 @@ namespace DragonMoba.Runtime
         {
             if(muted || effects==null || !clips.TryGetValue(key,out var clip))return;
             effects.PlayOneShot(clip,Mathf.Clamp01(soundVolume*gain));
+            var sample=key=="Blast"?licensedBlast:
+                key=="Impact"?licensedHit:key=="Charge"?licensedCharging:null;
+            if(sample!=null)
+                effects.PlayOneShot(sample,Mathf.Clamp01(soundVolume*gain*.62f));
         }
         public void Confirm() { Play("Purchase",.75f); }
         public void React(GameEvent ev, GameWorld world)
