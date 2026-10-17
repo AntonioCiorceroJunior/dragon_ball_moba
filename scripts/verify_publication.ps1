@@ -39,6 +39,7 @@ foreach ($asset in $imported) {
 }
 if (-not $DomainBaseline) {
     $candidates = @(
+        (Join-Path $repo 'docs/coordination/evidence/DBM-BATCH-001/DOMAIN_BASELINE.csv'),
         (Join-Path $repo 'docs/coordination/evidence/DBM-002/DOMAIN_BASELINE.csv'),
         (Join-Path $repo 'docs/coordination/evidence/DBM-001/DOMAIN_BASELINE.csv'),
         (Join-Path $project 'docs/art/DOMAIN_BASELINE.csv')
@@ -54,5 +55,5 @@ if ($licenseFiles.Count -ne 7) { throw 'Expected seven included asset license no
 foreach ($license in $licenseFiles) {
     if ([IO.File]::ReadAllText($license.FullName) -notmatch 'CC0') { throw "Review license notice: $($license.Name)" }
 }
-Write-Output "PUBLICATION CHECK PASSED | files=$($paths.Count) | bytes=$totalBytes | metas=$metaCount | verifiedCC0Files=$($imported.Count) | licenses=$($licenseFiles.Count) | domain=3 baseline verified"
+Write-Output "PUBLICATION CHECK PASSED | files=$($paths.Count) | bytes=$totalBytes | metas=$metaCount | verifiedCC0Files=$($imported.Count) | licenses=$($licenseFiles.Count) | domain=$(@(Import-Csv -LiteralPath $DomainBaseline).Count) baseline verified"
 Write-Output 'Scope: source inventory, common private-content patterns, size limits, file metas, package JSON, included CC0 notices and imported hashes. This is not a comprehensive security audit or a gameplay test.'
