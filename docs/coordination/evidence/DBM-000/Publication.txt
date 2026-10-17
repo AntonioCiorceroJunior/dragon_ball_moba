@@ -1,0 +1,7 @@
+Snapshot immediately before adding this proof file:
+PUBLICATION CHECK PASSED | files=449 | bytes=46222957 | metas=176 | verifiedCC0Files=26 | licenses=7 | domain=3 unchanged
+Scope: source inventory, common private-content patterns, size limits, file metas, package JSON, included CC0 notices and imported hashes. This is not a comprehensive security audit or a gameplay test.
+
+CHECKOUT ROUNDTRIP PASSED | 26 imported asset/license SHA256 hashes preserved
+PROTECTED COORDINATION PASSED | six remote instruction files unchanged
+REPORT LINKS PASSED | nine local report links exist

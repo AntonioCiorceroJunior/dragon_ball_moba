@@ -3,3 +3,5 @@
 *.cs text eol=lf
 *.unity text eol=lf
 *.prefab text eol=lf
+# Preserve original licensed notices byte-for-byte across checkout platforms.
+src/client-unity/Assets/_DragonMOBA/Art/**/LICENSE*.txt -text
