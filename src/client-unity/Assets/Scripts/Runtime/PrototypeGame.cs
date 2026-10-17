@@ -280,6 +280,8 @@ namespace DragonMoba.Runtime
             }
             if (visual == null && state.Kind == EntityKind.Hero)
                 visual = PrimitiveHeroVisual.Create(state);
+            if (visual == null && state.Kind == EntityKind.Minion)
+                visual = MinionVisual.Create(state);
             if (visual == null)
             {
                 var primitive = state.Kind == EntityKind.Hero ? PrimitiveType.Capsule :
