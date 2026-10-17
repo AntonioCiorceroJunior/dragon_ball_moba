@@ -25,7 +25,7 @@ namespace DragonMoba.Domain
             float kiRegen = 2f;
             float attackSpeed = .012f * levels;
             float lifeSteal = 0f, spellVamp = 0f, crit = 0f, haste = 0f;
-            float armorPen = 0f, kiPen = 0f;
+            float armorPen = 0f, kiPen = 0f, antiHeal = 0f;
             // Historical form bonuses are incremental for every unlocked stage.
             foreach (var stage in def.Forms)
             {
@@ -54,6 +54,7 @@ namespace DragonMoba.Domain
                 armorPen += item.ArmorPenPercent;
                 kiPen += item.KiPenPercent;
                 speed += item.MoveSpeed;
+                antiHeal += item.AntiHealOnHit;
             }
             hero.MaxHp = Math.Max(1f, maxHp);
             hero.MaxKi = Math.Max(1f, maxKi);
@@ -75,6 +76,7 @@ namespace DragonMoba.Domain
             hero.AbilityHaste = Math.Max(0f, haste);
             hero.ArmorPenPercent = Math.Min(.6f, Math.Max(0f, armorPen));
             hero.KiPenPercent = Math.Min(.6f, Math.Max(0f, kiPen));
+            hero.AntiHealOnHit = Math.Min(.6f,Math.Max(0f,antiHeal));
         }
     }
 }
