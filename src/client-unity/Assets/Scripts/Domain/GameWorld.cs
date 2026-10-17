@@ -377,8 +377,8 @@ namespace DragonMoba.Domain
             if (actor.Ki < cost) return false;
             if (slot != AbilitySlot.W && slot != AbilitySlot.E && V2.Distance(actor.Position, targetPoint) > 12f) return false;
             actor.Ki -= cost;
-            actor.SkillCooldown[i] = cooldown * 100f / 100f;
-            actor.AttackTargetId = 0;
+            actor.SkillCooldown[i] = cooldown;
+            // Casting a skill must not discard the basic-attack order.
             var abilityName = new[] { "Rajada de Ki", "Impulso", "Barreira", "Explosao Suprema" }[i];
             switch (slot)
             {
