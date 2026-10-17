@@ -50,7 +50,7 @@ A Riot descreve que diferentes lados tinham vantagens de gank, posicionamento, b
 4. Ajustar geometria e indicadores **antes** de vegetação/art final.
 5. Evitar copiar o desenho geométrico exato, logos, skins ou assets do Summoner's Rift.
 
-## 1.4 Postmortem oficial: o que aconteceu APÓS o lançamento de 2025
+### 1.4 Postmortem oficial: o que aconteceu APÓS o lançamento de 2025
 
 **[FO14] Riot — /dev: How the Season 1 Changes Landed (07/02/2025)**, [fonte oficial](https://www.leagueoflegends.com/en-us/news/dev/dev-how-the-season-1-changes-landed/). Este texto é particularmente relevante porque compara **intenção, resultados reais e correções**:
 
@@ -62,7 +62,7 @@ A Riot descreve que diferentes lados tinham vantagens de gank, posicionamento, b
 
 **Status:** leitura da página completa feita; é um relato de desenvolvimento da própria Riot, **não estudo experimental independente**. Data e números se referem ao começo de 2025.
 
-## 1.5 Ritmo de waves, torres e composições — fontes oficiais que mostram efeitos cruzados
+### 1.5 Ritmo de waves, torres e composições — fontes oficiais que mostram efeitos cruzados
 
 - **[FO15] Patch 13.10 (16/05/2023)** — [fonte oficial](https://www.leagueoflegends.com/en-us/news/game-updates/patch-13-10-notes/): a Riot ajustou a coincidência temporal de waves no mid e laterais para aumentar o custo do roam e reduziu a troca de alvo de minions durante tower dives. **Inferência de design:** variar timing de waves muda segurança de ganks, controle de lane e economia, mesmo sem tocar no dano dos personagens. Uma mudança na loja obrigou compensações nas estatísticas de campeões após observar efeitos indiretos.
 - **[FO16] Patch 26.1 (jan/2026)** — [fonte oficial](https://www.leagueoflegends.com/en-us/news/game-updates/patch-26-1-notes/): além das missões de função, a Riot aumentou a frequência de waves no mid/late game (25s a partir de 14:00; 20s a partir de 30:00), redistribuiu ouro/XP e modificou resiliência/ataque a torres. **Inferência de design:** acelerar waves sem revisar recompensas por unidade provoca inflação de XP/ouro. Essas temporizações são de modo/patch específicos, **não valores que vamos copiar cegamente**.
@@ -114,7 +114,7 @@ Estudos externos oferecem **método**, não a calibração final do nosso títul
 - **Diversão/clareza:** entrevista curta pós-partida (o que matou você, qual resposta teria ajudado), sem assumir que winrate implica satisfação.
 - **Bots vs humanos:** separar testes de invariantes de avaliação de game feel.
 
-## 3.1 Pesquisa longitudinal DIRETA sobre patches de League of Legends
+### 3.2 Pesquisa longitudinal DIRETA sobre patches de League of Legends
 
 ### [AC12] He et al. — Heterogeneous Effects of Software Patches in a Multiplayer Online Battle Arena Game (FDG 2021)
 

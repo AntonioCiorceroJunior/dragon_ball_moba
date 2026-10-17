@@ -218,7 +218,7 @@ O nome `LoL` não justifica copiar valores. Números do nosso GDD: preço Luvas 
 
 `Report{hypothesis,baseline,experiment,seed,gameVersion,observedMetrics,uncertainty,screenshots,regressions,rolloutDecision}`. Documento vivo; uma alteração só é "concluída" com código, evidência, diferença no executável e teste. Gamification de indicadores bonitos sem jogo funcional não resolve satisfação.
 
-## 6.4 Desenho de experimento entre patches — derivado de pesquisa longitudinal real sobre LoL
+### 6.4 Desenho de experimento entre patches — derivado de pesquisa longitudinal real sobre LoL
 
 O estudo de **He et al. (FDG 2021, AC12)** analisa 437 mil partidas e 62 versões históricas de LoL, mostrando impacto heterogêneo de patches por composição e habilidade dos jogadores. O preprint de **Kwak (out/2026, AC13)** mostra a necessidade de comunicar efeitos desiguais de mudanças antes de competições, sem comprovar causalidade nas vitórias.
 

@@ -8,7 +8,7 @@ Protótipo offline de MOBA em Unity e C# com Ki, progressão e transformações.
 2. Use **Unity 6000.6.6f1**, Windows Build Support para compilar Windows, pipeline **Built-in** e **Input Manager legado**.
 3. Abra `Assets/_DragonMOBA/Scenes/VisualTest/ArenaVisualTest.unity` e pressione **Play**. O mapa é gerado em execução. Confira **VISUAL TEST 01 - Organic Arena**.
 
-O início usa o campeão lógico GKU_SUPER com humanoide genérico CC0 animado. Esc retorna à seleção; botão direito move/ataca; Q/W/E/R usam técnicas; C carrega Ki; P abre a loja; H mostra ajuda. As regras atuais não equivalem a habilidades, autoataque ou uma partida completa já aprovados — veja DBM-001.
+O início usa o campeão lógico GKU_SUPER com humanoide genérico CC0 animado. Esc retorna à seleção; botão direito move/ataca; Q/W/E/R usam técnicas; C carrega Ki; P abre a loja; H mostra ajuda. A **DBM-001** de pontos de habilidade e autoataques foi integrada à main e possui testes nativos registrados. O mapa, economia, visão, kits exclusivos e partida completa seguem em evolução; a **DBM-002** de torres/colisões aguarda validação em PR separado.
 
 Na raiz do clone, com esse projeto fechado no Editor:
 
@@ -27,7 +27,11 @@ Todos os assets necessários do subconjunto CC0 foram incluídos, com `.meta` e 
 
 Abra a raiz deste clone no VS Code. `.vscode/` contém tarefas VisualPrepare/VisualPlay/VisualBuild e configuração para anexar o depurador ao Unity. O Unity gera a solução em `src/client-unity`. `global.json` mantém a seleção local de SDK 8.0.318 usado anteriormente; outros ambientes podem ajustar a localização do SDK sem instalar dependências globais nesta tarefa.
 
+- **[Comece aqui: central de documentação atual](docs/README.md)**.
+- **[Estado atual e PRs](docs/STATUS_ATUAL.md)**.
+- **[Plano mestre de arquitetura e implementação](docs/PLANO_MESTRE_ATUAL.md)**.
 - [Documentos mestres e proveniência](docs/specifications/README.md).
+- [Pesquisa de LoL, MOBAs e código aberto](docs/research/README.md).
 - [Manifesto de assets e licenças](docs/ASSET_MANIFEST.md).
 - [Galeria histórica real do protótipo](docs/evidence/Comparison.html), anterior à publicação DBM-000.
 - [Relatório completo do trabalho anterior](docs/RELATORIO_COMPLETO_DO_TRABALHO.md), com caminhos pessoais substituídos por marcadores.

@@ -1,5 +1,7 @@
 # Estado transparente da investigação MOBA
 
+> **Revisão editorial de 17/10/2026:** mantemos os níveis E1–E5 atribuídos como **classificações da pesquisa produzida**, não como auditoria acadêmica independente nem certificação de que todos os links e papers foram lidos integralmente. Leia a [revisão documental](../REVISAO_DOCUMENTAL_2026-10-17.md) e o [plano mestre](../PLANO_MESTRE_ATUAL.md). Teste Unity da DBM-002 permanece pendente na `main`.
+
 **Data:** 2026-10-16 · **Propriedade:** ChatGPT + verificações futuras Codex/Unity.  
 **Objetivo:** impedir que uma bibliografia extensa ou um documento longamente escrito seja confundido com pesquisa exaustiva, código pronto ou jogo validado.
 
