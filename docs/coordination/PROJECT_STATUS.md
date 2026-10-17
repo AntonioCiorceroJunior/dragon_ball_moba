@@ -2,8 +2,10 @@
 
 **Última atualização:** 2026-10-16 — Codex, DBM-000.  
 **Estado:** projeto-fonte Unity e documentos mestres importados; cópia limpa compilada e testada.  
-**Commit dos fontes:** `04e33a986c7c545c5ae855f7ba4ef1a246ec9a8f`; commit posterior contém o handoff e o ajuste de preservação das licenças.  
+**Commit dos fontes:** `04e33a986c7c545c5ae855f7ba4ef1a246ec9a8f`; **handoff verificado no clone remoto:** `684b5e467a48211b2d88fda98e47daef0d38f519`.  
 **Relatório:** [DBM-000 — publicação inicial](reports/2026-10-16_DBM-000_publicacao-inicial.md).
+
+**Conferência posterior:** [clone novo do GitHub](reports/2026-10-16_DBM-000_verificacao-remota.md) passou nas verificações de publicação e integridade. O commit desta atualização contém apenas documentação e provas adicionais.
 
 ## Projeto e execução
 
@@ -23,9 +25,10 @@
 | Play Mode na cópia limpa | Três campeões/12 formas, animação, combate, Ki/XP, compra, câmera, tropas, torres, morte/respawn, seleção e reinício passaram |
 | Compilação Windows x64 Development | VisualBuild passou; [build-info](evidence/DBM-000/build-info.json) |
 | Executável recém-compilado | Abriu em 1280 × 720; [captura real](evidence/DBM-000/Executable-1280x720.png) |
-| Código preservado | 19 arquivos C# iguais ao original; três hashes de domínio iguais |
+| Código preservado | No clone remoto, 19 arquivos C# com o mesmo conteúdo; 14 iguais byte a byte e cinco apenas normalizados de CRLF para LF; três hashes de domínio iguais |
 | Publicação e licenças | Scanner de padrões comuns, tamanhos, `.meta`, pacotes, sete licenças e 26 hashes CC0 passou; checkout dos hashes passou |
 | Integridade remota | Árvore do commit dos fontes igual ao índice revisado: `06dfbbb6653deb2adfa7706d3574fdf1f9c9ab6e` |
+| Clone independente da main | Passou: 450 arquivos, 176 `.meta`, 26 hashes CC0, sete licenças e três hashes de domínio; snapshot `684b5e4` |
 
 Evidências resumidas em [evidence/DBM-000/](evidence/DBM-000/). Logs completos ficam locais em `src/client-unity/Logs/`; não foram publicados por conterem dados do ambiente. A verificação de padrões comuns não constitui auditoria completa de segurança.
 

@@ -1,0 +1,97 @@
+[
+    {
+        "path":  "src/client-unity/Assets/Editor/ArtAssets.cs",
+        "sameBytes":  true,
+        "sameText":  true
+    },
+    {
+        "path":  "src/client-unity/Assets/Editor/ArtSceneSetup.cs",
+        "sameBytes":  false,
+        "sameText":  true
+    },
+    {
+        "path":  "src/client-unity/Assets/Editor/ArtSetup.cs",
+        "sameBytes":  true,
+        "sameText":  true
+    },
+    {
+        "path":  "src/client-unity/Assets/Editor/ArtSmoke.cs",
+        "sameBytes":  false,
+        "sameText":  true
+    },
+    {
+        "path":  "src/client-unity/Assets/Editor/CreateArenaScene.cs",
+        "sameBytes":  true,
+        "sameText":  true
+    },
+    {
+        "path":  "src/client-unity/Assets/Editor/DomainSelfTests.cs",
+        "sameBytes":  true,
+        "sameText":  true
+    },
+    {
+        "path":  "src/client-unity/Assets/Editor/PlayModeSmoke.cs",
+        "sameBytes":  true,
+        "sameText":  true
+    },
+    {
+        "path":  "src/client-unity/Assets/Editor/ProjectValidation.cs",
+        "sameBytes":  true,
+        "sameText":  true
+    },
+    {
+        "path":  "src/client-unity/Assets/Editor/VisualReplacement.cs",
+        "sameBytes":  true,
+        "sameText":  true
+    },
+    {
+        "path":  "src/client-unity/Assets/Editor/VisualStageChecks.cs",
+        "sameBytes":  true,
+        "sameText":  true
+    },
+    {
+        "path":  "src/client-unity/Assets/Scripts/Domain/Definitions.cs",
+        "sameBytes":  true,
+        "sameText":  true
+    },
+    {
+        "path":  "src/client-unity/Assets/Scripts/Domain/EntityState.cs",
+        "sameBytes":  true,
+        "sameText":  true
+    },
+    {
+        "path":  "src/client-unity/Assets/Scripts/Domain/GameWorld.cs",
+        "sameBytes":  true,
+        "sameText":  true
+    },
+    {
+        "path":  "src/client-unity/Assets/Scripts/Runtime/ArenaCameraController.cs",
+        "sameBytes":  true,
+        "sameText":  true
+    },
+    {
+        "path":  "src/client-unity/Assets/Scripts/Runtime/ArtPresentation.cs",
+        "sameBytes":  false,
+        "sameText":  true
+    },
+    {
+        "path":  "src/client-unity/Assets/Scripts/Runtime/CharacterPresentation.cs",
+        "sameBytes":  false,
+        "sameText":  true
+    },
+    {
+        "path":  "src/client-unity/Assets/Scripts/Runtime/OrganicArena.cs",
+        "sameBytes":  true,
+        "sameText":  true
+    },
+    {
+        "path":  "src/client-unity/Assets/Scripts/Runtime/PlayableCharacterVisual.cs",
+        "sameBytes":  true,
+        "sameText":  true
+    },
+    {
+        "path":  "src/client-unity/Assets/Scripts/Runtime/PrototypeGame.cs",
+        "sameBytes":  false,
+        "sameText":  true
+    }
+]

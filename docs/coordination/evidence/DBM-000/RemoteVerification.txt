@@ -1,0 +1,7 @@
+REMOTE MAIN VERIFIED | 684b5e467a48211b2d88fda98e47daef0d38f519
+REMOTE TREE VERIFIED | 4a969ce1f833b021f77768797f6b4875b6ffc643
+PUBLICATION CHECK PASSED | files=450 | bytes=46236943 | metas=176 | verifiedCC0Files=26 | licenses=7 | domain=3 unchanged
+Scope: source inventory, common private-content patterns, size limits, file metas, package JSON, included CC0 notices and imported hashes. This is not a comprehensive security audit or a gameplay test.
+REMOTE CODE COMPARISON PASSED | 19 same normalized text, 14 same bytes, five CRLF-to-LF only, domain hashes unchanged
+REMOTE PROTECTED COORDINATION PASSED | six original instruction files unchanged
+LOCAL MAIN SYNCHRONIZED | git fetch and fast-forward; working tree clean before this documentation-only follow-up
