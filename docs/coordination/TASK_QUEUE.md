@@ -20,3 +20,7 @@ Use somente uma tarefa ativa de cada vez. ChatGPT publica a instrução concreta
 - Uma tarefa só vira **CONCLUÍDA** com commit, relatório e evidência de testes.
 - Bloqueios ficam em `FROM_CODEX.md`; ChatGPT decide o próximo escopo.
 - Não mudar prioridades silenciosamente.
+
+## Relação com a pesquisa e o plano consolidado (17/10/2026)
+
+O [plano mestre](../PLANO_MESTRE_ATUAL.md) descreve recortes sugeridos `DBM-003A/B/C/D` e propostas `MAP`, `WAVE`, `SKILL`, `VISION` etc. **Nenhum deles foi automaticamente ativado ou teve seu ID aprovado apenas por constar em documento de pesquisa.** A numeração formal desta tabela prevalece: DBM-005 continua rigs/anim e DBM-007 continua HUD/loja/minimapa/seleção. A fila só muda mediante decisão de coordenação registrada.
