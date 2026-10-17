@@ -459,3 +459,187 @@ Minimapa gerado do **grafo real do mapa**: torres, bases, objetivos, unidades vi
 - Visão: cones/áreas circulares + obstrução, brush como regra de ocultação, wards com duração, detecção, minimapa, pings e neblina de guerra. Bots jamais usam posições de inimigos não revelados.
 - Selva: acampamentos, HP/armor, leash/reset, XP/Zeni, buffs, pathing e respawn; jungler decide gank vs farm; risco/benefício dos objetivos.
 - Objetivos maiores dão vantagem significativa **temporária** (buff, empowerment de minions, cerco), sem eliminar a chance de counterplay. Em 2026, a Riot também usou missões de posição para incentivar funções; só adaptar essa camada após métricas sólidas de renda e XP [R2].
+
+
+## 9. Arquitetura proposta: evoluir o código atual sem recomeçar
+
+### 9.1 Diagnóstico do código versionado
+
+| Arquivo atual | Estado concreto da leitura | Evolução necessária |
+|---|---|---|
+| `Assets/Scripts/Domain/Definitions.cs` | `GameCommand`, `CommandKind`, `EventKind`, `HeroDefinition`, `ItemDefinition`, `Catalog` | Separar definições autorais de contratos de comando/evento; schemas completos |
+| `Assets/Scripts/Domain/EntityState.cs` | Estado de combate, nível, XP, Ki, inventário simples, ranks, posição e cooldowns | `StatBlock`, `StatusEffectCollection`, `ItemInstance`, `MovementState`, `ChampionVariantState` |
+| `Assets/Scripts/Domain/GameWorld.cs` | Tick 30Hz, spawn, torres, AI básica, damage/XP, loja, form, Ki; classe monolítica | Extrair sistemas gradualmente, preservando testes e comportamento público |
+| `Assets/Scripts/Runtime/PrototypeGame.cs` | Input, câmera, GUI, spawn de visual e efeitos coligados | `GameSessionFlow`, `InputCommandMapper`, `HUDPresenter`, `EntityViewFactory` |
+| `Assets/Scripts/Runtime/OrganicArena.cs` | Terreno, rio e vegetação procedurais; coordenadas retas e mapa de teste | `MapDefinition`, `MapSceneLoader`, `NavMap`, `MapVisualPresentation` |
+| `Assets/Scripts/Runtime/CharacterPresentation.cs` | Sincronização de aparência/animações | `ChampionView`, perfis de rig e locomotion por forma |
+| `Assets/Editor/DomainSelfTests.cs` | Testes determinísticos executados pelo Unity Editor | Expandir testes focados por sistema, fixtures tipadas e invariantes |
+| `Assets/Editor/ArtSmoke.cs` | Smoke Play Mode e visuais | Separar testes básicos, progressão, navegação, HUD, mapa e build |
+
+**Recomendação:** arquitetura modular em C# puro, com adapters Unity e dados serializados. O domínio permanece fonte da verdade do jogo. **Não introduzir ECS/DOTS ou substituir o render pipeline por obrigação arquitetural.** A Unity disponibiliza DOTS/Netcode [T6], mas os custos de conversão precisam ser comprovados por perfil de performance, não deduzidos do tamanho do projeto.
+
+### 9.2 Esboço de módulos — sem movimentar tudo nesta entrega
+
+```text
+src/client-unity/Assets/
+  Game/
+    Config/              BalanceProfile, ChampionData, ItemData, MapData
+    Domain/
+      Contracts/         GameCommand, DomainEvent, Identifiers, enums
+      Combat/            DamageResolver, Mitigation, Healing, Shields, StatusEffects
+      Stats/             StatDefinitions, StatCalculator, StatSnapshot, GrowthTables
+      Abilities/         AbilityDefinitions, CastStateMachine, CooldownSystem
+      Economy/           ItemCatalog, RecipeResolver, Inventory, GoldLedger
+      Progression/       XPSystem, SkillRanks, KiTraining, FormSystem
+      Movement/          CommandQueue, PathService interface, CollisionResolver
+      World/             WorldState, MatchClock, TickPipeline, Teams, WinCondition
+      AI/                MinionBrain, TowerTargeting, JungleBrain, ChampionBot
+      Vision/            FogOfWar, SightGrid, BrushSystem, WardSystem
+    Application/
+      Session/           SessionStateMachine, ChampionSelection, MatchBootstrap
+      PresentationAPI/   ReadOnlySnapshots, EventProjection, Tooltips
+    UnityAdapters/
+      Input/             MouseInput, Hotkeys, UI blocking
+      Navigation/        NavMesh importer, 2D walkability cache
+      Rendering/         ChampionView, CharacterScaler, VFX, Nameplates
+      UI/                ChampionSelectUI, HUD, ShopUI, Minimap, Results
+      Audio/             AudioCueRegistry, KiVocalization, Mixer
+      Build/             SceneBootstrap, validation hooks
+    Tests/
+      Domain/            Progression, Damage, Recipes, Ki, Tower, Movement
+      Integration/       Input to command, scene, view, shop
+      Regression/        fixed seed, recorded match, restore/load
+```
+
+**Atenção:** esse layout é alvo, **não operação imediata de mover centenas de arquivos**. Primeiro criar novos módulos ao redor das APIs existentes, migrar uma responsabilidade por PR, deixar `GameWorld` como fachada e só removê-lo parcialmente quando testes equivalentes passarem. Isso protege a DBM-001 e as futuras validações da DBM-002.
+
+### 9.3 Comandos, eventos, snapshots e relógio
+
+Domínio:
+
+```text
+Input: GameCommand { Tick, ActorId, Kind, TargetId?, Position?, AbilityId?, ItemId?, ClientSequence? }
+Loop: Receive → Validate → Timers → Path/Move → AI/Target → Cast → Damage → Death
+      → XP/Gold → ItemEffects → Structures/Objectives → Vision → Snapshot
+Output: WorldSnapshot + DomainEvents
+```
+
+**Invariantes obrigatórias:** evento com tick/ID único; comando impossível não produz custo/efeito; HP, Ki, ouro, ranks e stacks não negativos; morte/processamento do Nexus idempotentes; integridade do inventário; tamanho de corpo pode impedir entrada em corredor; sem danos múltiplos por VFX, animação ou pacote duplicado.
+
+Relógio: `MatchTick` inteiro, `TicksPerSecond=30` na primeira fase; cooldown e duração de buff armazenados em ticks sempre que possível. O artigo de engenharia da Riot sobre relógio unificado documenta riscos de fontes diversas de tempo e precisão [T1]. Internamente, preferir algo como `ExpiresAtTick` a múltiplos floats acumulados com `Time.time`.
+
+```csharp
+// Esboço de contrato; NÃO é patch para colar sem integração.
+public readonly struct CombatSnapshot {
+    public readonly int Tick;
+    public readonly int EntityId;
+    public readonly float Hp, MaxHp, Ki, MaxKi;
+    public readonly float PhysicalAttack, KiPower, Armor, KiResist;
+    public readonly float HpRegenPer5, AttackSpeed, AbilityHaste;
+    public CombatSnapshot(int tick, int entityId /* ... */) { /* ... */ }
+}
+```
+
+Para visualização, entregar somente `ReadOnlySnapshots` à Unity. Eventos de dano disparados pelo domínio originam hit sparks, áudio e shake; eles **não autorizam** VFX a descontar HP de novo. Separar lógica de visão e de renderização (não mostrar entidade inimiga invisível por engano).
+
+### 9.4 Design data-driven e versionamento
+
+Propor `ContentManifest` com `balanceVersion`, `mapVersion`, `abilitySchemaVersion`, `itemSchemaVersion`, `assetManifestVersion`. Cada partida fixa as versões ao iniciar, e replays gravam IDs/seed; mudar valores durante patch nunca modifica a partida já em andamento.
+
+Ferramentas de autor:
+
+- `ItemRecipeValidator` verifica DAG sem ciclos, custos e inventário;
+- `ChampionDefinitionValidator` verifica P/Q/W/E/R, crescimento, IDs de animação e forms;
+- `MapValidator` verifica caminhos, colisões, simetria, spawns e visão;
+- `BalanceSimulator` executa lutas sintéticas com seeds reproduzíveis;
+- `ContentLicenseValidator` evita publicar ícones/modelos sem prova de licença.
+
+Modelos, sons e ícones usam `AssetManifest` com origem, licença, hash, atribuição se aplicável, papel (form/skill/item/map) e fallback. Asset missing deve gerar erro verificável no pipeline, não cápsula silenciosa para produto final.
+
+### 9.5 Direção do futuro multiplayer
+
+O `GameWorld` já é C# puro e offline; isso cria **boa separação inicial**, mas ainda não equivale a servidor pronto. Para multiplayer futuro:
+
+1. Extrair `SimulationCore` sem UnityEngine, sem estado global mutável não controlado.
+2. Teste headless de duas equipes simuladas; comandos por sequência/tick.
+3. Criar servidor autoritativo isolado que valide movimentos, casts, XP, ouro e fog.
+4. Escolher transporte e lib após pequeno benchmark de atraso, conexão e segurança. Unity Netcode for GameObjects é opção para projetos GameObject [T3]; Netcode for Entities implica decisão maior de arquitetura [T6]; projeto MOBA_CSharp_Unity é referência MIT legada [T4].
+5. Snapshot/delta, interpolação visual, previsão limitada e reconciliação; tick de simulação não precisa igualar FPS.
+6. Login/lobby/matchmaking só depois de uma partida real estável com 10 bots; autenticação e backend não devem impedir MVP offline.
+
+**Não copiar protocolo do LoL**. As publicações de engenharia Riot sobre determinismo ajudam a formular nossos requisitos [T1], mas não fornecem sua implementação completa.
+
+### 9.6 Repositórios abertos que merecem auditoria
+
+| Repositório / licença declarada | Valor possível | Risco e decisão |
+|---|---|---|
+| [yasgamesdev/MOBA_CSharp_Unity](https://github.com/yasgamesdev/MOBA_CSharp_Unity), MIT, Unity 2018.3 | Referência a servidor C# independente, buffs, bush, visão, skills/itens data-driven, pathfinding e UDP | **Alta relevância conceitual**, mas legado e dependências antigas. Auditar módulos, benchmarks e atribuição; não substituir projeto de imediato. |
+| [bensalilijames/Clash](https://github.com/bensalilijames/Clash), MIT declarada | Estados de personagem, ataques, buffs, itens e minions | Depende de uLink, tecnologia antiga; avaliar código somente como referência. |
+| [InFaNsO/MOBA_Unity](https://github.com/InFaNsO/MOBA_Unity), MIT declarada | Arena/protótipo Unity 2019 | Pequeno e antigo; não presumir produção pronta. |
+| [DevZhav/unity-moba](https://github.com/DevZhav/unity-moba), GPL-3.0 | Exemplo de cliente, 3 mapas, lobby, serviços | Licença copyleft com obrigações, possível incompatibilidade da redistribuição. Usar para estudo; não incorporar componentes sem análise jurídica/técnica. |
+| [Unity-Technologies/EntityComponentSystemSamples](https://github.com/Unity-Technologies/EntityComponentSystemSamples) | Exemplos oficiais DOTS/Netcode/Physics | Material didático; não migrar para ECS só porque há exemplos. |
+
+A licença do código **não autoriza automaticamente** redistribuir modelos/ícones incorporados de terceiros ao repositório externo. Registrar versão/commit analisados e uma `AUD-MOBA` com score: portabilidade, segurança, dependências, custo de migração, cobertura funcional, licença e performance. Até lá, arquitetura atual evolutiva continua sendo a escolha padrão.
+
+## 10. Balanceamento como produto: counters, dados e ciência
+
+### 10.1 Counterplay e classes
+
+Design de cada herói tem `StrengthProfile` e `WeaknessProfile`; cada counter deve existir em **três níveis**, conforme filosofia de counterplay Riot [R8]:
+
+1. **Na habilidade:** disparo com windup, feixe anunciado, zona de impacto legível, tempo de recarga e possibilidade de esquiva/interrupção.
+2. **Na compra de item:** defesa de Ki contra mage, armadura contra físico, anti-cura contra sustain, visão contra emboscada, mobilidade para escapar de zona.
+3. **Na estratégia:** controlar visão/rotas, forçar cooldown, lutar perto de minions, punir transformação lenta ou não contestar objetivo desfavorável.
+
+Exemplo de matriz experimental:
+
+| Arquétipo | Vence em circunstâncias | Perde para / resposta |
+|---|---|---|
+| Lutador de sustain / Cell | trocas longas com pouca interrupção | anti-cura, kite e CC |
+| Assassino móvel / Goku Super | alvo isolado, cooldowns disponíveis | tank/escudo, controle, visão, posição defensiva |
+| Oozaru / cerco em área | fight frontal agrupada | ranged DPS, terreno estreito, lentidão/CC |
+| Mago de Ki (Freeza) | zona/objetivo, poke preparado | assassino chegando por flanco, KiResist |
+| Tank/suporte (Piccolo) | teamfight em torno de carry | penetração, dano percentual, jogar objetivos opostos |
+| Carry de ataque (Android 18) | combate prolongado bem protegido | burst/CC ao alcance antes de acumular dano |
+
+Counters **não** devem ser vitórias automáticas: campeão forte contra outro ainda pode perder por habilidade, desvantagem de ouro ou macro. Separar fraqueza estratégica de ameaça puramente numérica.
+
+### 10.2 Métricas de qualidade e balanceamento
+
+Métricas de partida a registrar por `balanceVersion`:
+
+| Grupo | Métrica | Decisão habilitada |
+|---|---|---|
+| Combate | tempo médio até matar (TTK), dano/min por tipo, dano mitigado, curas/escudos, críticos, life steal | identificar explosões instantâneas, tanks imortais, sobrecura |
+| Progressão | XP/min e Zeni/min por fonte, level aos minutos 5/10/15, nível último das skills, tempo real carregando C | comparar XP do treino e farm |
+| Economia | tempo até primeiro componente e item completo, frequência de compra/venda, receitas favoritas, saldo parado | precificar itens e evitar builds dominantes |
+| Personagens | winrate por matchup/função/faixa de domínio, pick/ban, curva de maestria, duração média de forma | achar kits sem counterplay ou fracos |
+| Objetivos | primeiro ward, first tower, objetivo contestado, tempo de rotação, lado da base, placar no momento do objetivo | medir snowball e assimetria |
+| UX e perf | input-to-feedback, divergência de collider e efeito, CPU/tick, FPS frame times P95/P99, crashes | priorizar correções reais |
+
+Os estudos [A1–A7] sustentam usar composição de equipe, função, dados históricos, simulação e objetivos explícitos de equilíbrio. **Não provam que existe uma fórmula universal para todos os MOBAs.** Uma winrate de 60% em 10 jogos não justifica nerf; usar intervalos de confiança, estratificação por nível de habilidade, posição, partida e patch. Bots podem ser usados para testar invariantes e tendências de balanceamento, mas **não substituem humanos**.
+
+### 10.3 Qualidade do MVP com metas de piloto (valores propostos)
+
+- 100% dos comandos inválidos rejeitados sem mutar ouro/HP/Ki; zero colisões irreversíveis entre structures e actors.
+- 100% das 3 variantes básicas possuem **modelo distinto, escala e kit próprio**, além de barra/nome e no mínimo animações funcionais.
+- Partida offline 1v1 + tropas completa do início à vitória/derrota, sem botão de depuração necessário.
+- C tem XP/s verificável, anti-AFK e feedback visual distinto entre `ChargingKi` e `TrainingXP`.
+- Pelo menos 20 itens reais com ícones e 8 receitas; 6 slots; nenhum item de dano só visual.
+- Map validator: todas as 3 rotas conectadas, caminhos entre bases e objetivos, nenhum spawn sob obstáculos, simetria de tempos de rotação dentro de tolerância a medir.
+- Em PC de referência, `FPS >= 60` na maior parte da partida é objetivo, **não garantia**; medir P95/P99 frame time, CPU da simulação e número de entidades. Criar preset low para máquinas modestas.
+- Escolha de personagem deve ser obrigatória, com confirmação; no final, mostrar XP, Zeni, CS, kills, dano por tipo, itens e objetivos.
+
+## 11. Literatura técnica e científica — implicações para o nosso jogo
+
+| Fonte | Método / ideia respaldada pelo resumo publicado | Uso prático / limite |
+|---|---|---|
+| **[A1] Champion Recommendation System (ICTC/IEEE 2020)** | Modelos de recomendação de campeões com dados de partidas profissionais e sequência de pick/ban | Futuramente sugerir sinergias/counters no draft; **não** inferir matchup balanceado só por pick de pro player. |
+| **[A2] CUPID (ACM PACM HCI 2024)** | Matchmaking considerando equidade e satisfação de posição | Quando houver multiplayer, separar skill e preferência de função; não construir matchmaking antes de volume de jogadores. |
+| **[A3] Metagame Autobalancing (IEEE CoG 2020)** | Otimização por simulação visando um gráfico-alvo de relações entre estratégias | Criar matriz de counters e rodar simulações A-vs-B, sem exigir todos terem exatamente 50% contra todos. |
+| **[A4] Simulation-Driven Balancing of Competitive Game Levels (IEEE ToG 2024)** | Gerador + agente de balanceamento + simulação-recompensa para avaliar justiça em arenas competitivas | Comparar lados do mapa e tempos de rota em 1000 simulações, não aprovar mapa só por parecer simétrico. Não é artigo específico de LoL. |
+| **[A5] Role-Sensitive Analysis of Positional Contributions (IEEE Access 2025)** | Com dados de partidas profissionais de LoL, contribuição varia com ataque, defesa, laning e aquisição de ouro | Scoreboard/telemetria deve valorizar CS, objetivos, cura/defesa e visão, não só kills; resultados não garantem generalização aos nossos bots. |
+| **[A6] What makes an ideal team? (Entertainment Computing 2023)** | Discute número de participantes e dificuldade/competitividade em MOBAs | 5v5 é produto de estratégia e coordenação; fazer 1v1 com bots primeiro para validar mecânicas, mas projetar espaço para 10 participantes. |
+| **[A7] A Gospel for MOBA Game: Ranking-Preserved Hero Change Prediction (IEEE ToG 2022, Dota 2)** | Mudanças constantes de heróis e previsão de ajustes para diversificação e balanceamento | Versionar parâmetros e medir antes/depois por patch; estudo é sobre Dota 2, não fornece regras de LoL. |
+
+**Leitura crítica:** artigos de previsão podem acertar vencedores usando padrões correlacionais sem explicar causalidade do balanceamento. Estudos de meta e draft não substituem playtest de sensação de impacto, câmera e leitura de efeitos. Para engenharia de código, documentação técnica da Unity/Riot e testes próprios são mais úteis do que papers de machine learning.
