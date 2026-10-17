@@ -86,11 +86,27 @@ namespace DragonMoba.Runtime
             var point = MousePoint();
             if (Input.GetMouseButtonDown(1))
             {
-                RaycastHit hit;
+                // Multiple colliders can be hit: choose the nearest valid enemy rather
+                // than treating the ground or a decorative collider as the target.
                 var ray = gameCamera.ScreenPointToRay(Input.mousePosition);
-                var enemy = Physics.Raycast(ray, out hit, 500f) ? hit.collider.GetComponentInParent<EntityHandle>() : null;
-                if (enemy != null && world.Find(enemy.EntityId) != null && world.Find(enemy.EntityId).Team != hero.Team)
-                    world.Submit(new GameCommand { ActorId = hero.Id, Kind = CommandKind.Attack, TargetId = enemy.EntityId });
+                var hits = Physics.RaycastAll(ray, 500f);
+                System.Array.Sort(hits, (a, b) => a.distance.CompareTo(b.distance));
+                EntityState enemy = null;
+                foreach (var hit in hits)
+                {
+                    var handle = hit.collider.GetComponentInParent<EntityHandle>();
+                    if (handle == null) continue;
+                    var candidate = world.Find(handle.EntityId);
+                    if (candidate == null || !candidate.Alive || candidate.Team == hero.Team) continue;
+                    enemy = candidate;
+                    break;
+                }
+                if (enemy != null)
+                {
+                    var accepted = world.Submit(new GameCommand { ActorId = hero.Id,
+                        Kind = CommandKind.Attack, TargetId = enemy.Id });
+                    TraceVisual("RIGHT CLICK ATTACK | accepted=" + accepted + " enemy=" + enemy.Id);
+                }
                 else
                 {
                     var accepted = world.Submit(new GameCommand { ActorId = hero.Id, Kind = CommandKind.Move, Position = new V2(point.x, point.z) });
@@ -98,10 +114,11 @@ namespace DragonMoba.Runtime
                     TraceVisual("RIGHT CLICK | accepted=" + accepted + " target=" + point);
                 }
             }
-            if (Input.GetKeyDown(KeyCode.Q)) Cast(AbilitySlot.Q, point);
-            if (Input.GetKeyDown(KeyCode.W)) Cast(AbilitySlot.W, point);
-            if (Input.GetKeyDown(KeyCode.E)) Cast(AbilitySlot.E, point);
-            if (Input.GetKeyDown(KeyCode.R)) Cast(AbilitySlot.R, point);
+            var upgrade = Input.GetKey(KeyCode.LeftControl) || Input.GetKey(KeyCode.RightControl);
+            if (Input.GetKeyDown(KeyCode.Q)) { if (upgrade) Upgrade(AbilitySlot.Q); else Cast(AbilitySlot.Q, point); }
+            if (Input.GetKeyDown(KeyCode.W)) { if (upgrade) Upgrade(AbilitySlot.W); else Cast(AbilitySlot.W, point); }
+            if (Input.GetKeyDown(KeyCode.E)) { if (upgrade) Upgrade(AbilitySlot.E); else Cast(AbilitySlot.E, point); }
+            if (Input.GetKeyDown(KeyCode.R)) { if (upgrade) Upgrade(AbilitySlot.R); else Cast(AbilitySlot.R, point); }
         }
 
         private void SendCharge(bool enabled)
@@ -109,6 +126,17 @@ namespace DragonMoba.Runtime
             if (world == null) return;
             var accepted = world.Submit(new GameCommand { ActorId = world.PlayerId, Kind = CommandKind.Charge, Pressed = enabled });
             TraceVisual("CHARGE | pressed=" + enabled + " accepted=" + accepted + " Ki=" + world.Player.Ki);
+        }
+
+        private void Upgrade(AbilitySlot slot)
+        {
+            if (world == null || world.Player == null) return;
+            var accepted = world.Submit(new GameCommand { ActorId = world.PlayerId,
+                Kind = CommandKind.UpgradeAbility, Slot = slot });
+            TraceVisual("UPGRADE " + slot + " | accepted=" + accepted);
+            lastMessage = accepted ? slot + " aprimorada para o nivel " + world.Player.SkillRanks[(int)slot]
+                : "Sem pontos ou nivel minimo para aprimorar " + slot + ".";
+            messageUntil = Time.time + 2.5f;
         }
 
         private void Cast(AbilitySlot slot, Vector3 point)
@@ -119,7 +147,9 @@ namespace DragonMoba.Runtime
             TraceVisual("CAST " + slot + " | accepted=" + accepted + " Ki=" + world.Player.Ki);
             if (!accepted)
             {
-                lastMessage = "Tecnica indisponivel: Ki, alcance, tempo de recarga ou estado.";
+                lastMessage = world.Player.SkillRanks[(int)slot] == 0
+                    ? "Tecnica bloqueada: evolua com Ctrl+" + slot + "."
+                    : "Tecnica indisponivel: Ki, alcance, tempo de recarga ou estado.";
                 messageUntil = Time.time + 2.5f;
             }
         }
@@ -259,6 +289,9 @@ namespace DragonMoba.Runtime
 
         private void RenderEvent(GameEvent e)
         {
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
+            GameplayValidationProbe.Observe(e, world);
+#endif
             art?.Emit(e, world);
             if (views.TryGetValue(e.ActorId, out var actorView)) actorView.GetComponent<CharacterPresentation>()?.React(e);
             if (e.TargetId != e.ActorId && views.TryGetValue(e.TargetId, out var targetView)) targetView.GetComponent<CharacterPresentation>()?.React(e);
@@ -439,12 +472,21 @@ namespace DragonMoba.Runtime
             DrawBar(new Rect(25, 100, 305, 15), exp, new Color(0.92f, 0.78f, 0.13f), hero.Level >= 18 ? "NIVEL MAXIMO" : "XP " + (int)hero.Experience);
             GUI.Label(new Rect(25, 122, 310, 22), "Zeni: " + hero.Zeni + "  |  Kills / farm: prototipo", smallStyle);
             GUI.Label(new Rect(25, 141, 310, 25), !hero.Alive ? "DERROTADO - retorna em " + Mathf.CeilToInt(Mathf.Max(0, hero.RespawnTime)) + "s" : hero.Charging ? (hero.Ki >= hero.MaxKi ? "TREINANDO XP • vulneravel" : "CARREGANDO KI • vulneravel") : "C: carregar Ki • P: loja • H: ajuda", smallStyle);
-            GUI.Box(new Rect(Screen.width * 0.5f - 220, Screen.height - 93, 440, 80), "HABILIDADES");
+            GUI.Box(new Rect(Screen.width * 0.5f - 220, Screen.height - 150, 440, 137),
+                "HABILIDADES  |  Pontos: " + hero.UnspentSkillPoints + "  |  Ctrl+Q/W/E/R");
             for (var i = 0; i < 4; ++i)
             {
                 var name = new[] { "Q Rajada", "W Impulso", "E Escudo", "R Explosao" }[i];
-                var text = hero.SkillCooldown[i] <= 0.01f ? "Pronto" : hero.SkillCooldown[i].ToString("0.0") + "s";
-                GUI.Box(new Rect(Screen.width * 0.5f - 206 + i * 105, Screen.height - 67, 100, 45), name + "\n" + text);
+                var slot = (AbilitySlot)i;
+                var rank = hero.SkillRanks[i];
+                var ready = rank == 0 ? "Bloqueada" :
+                    hero.SkillCooldown[i] <= 0.01f ? "Pronto" : hero.SkillCooldown[i].ToString("0.0") + "s";
+                var x = Screen.width * 0.5f - 206 + i * 105;
+                GUI.Box(new Rect(x, Screen.height - 80, 100, 58),
+                    name + "\nNivel " + rank + "/" + (i == 3 ? 3 : 5) + "\n" + ready);
+                if (world.CanUpgradeAbility(hero, slot) &&
+                    GUI.Button(new Rect(x + 76, Screen.height - 107, 24, 24), "+"))
+                    Upgrade(slot);
             }
             GUI.Box(new Rect(Screen.width - 220, 12, 206, 89), "PARTIDA");
             GUI.Label(new Rect(Screen.width - 208, 38, 188, 55), "Tempo: " + world.Elapsed.ToString("0") + "s\nTropas e torres nas 3 rotas", smallStyle);
@@ -454,7 +496,7 @@ namespace DragonMoba.Runtime
             {
                 GUI.Box(new Rect(12, Screen.height - 218, 350, 198), "CONTROLES (H para ocultar)");
                 GUI.Label(new Rect(25, Screen.height - 189, 326, 165),
-                    "Direito: mover/atacar | Q/W/E/R: tecnicas\nC: Ki/XP | P: loja | H: ajuda\nScroll: zoom | setas/meio: camera livre\nEspaco: centralizar | Y: seguir/livre\nEsc: selecao | Enter apos termino: reiniciar", smallStyle);
+                    "Direito: mover/atacar 1x | Q/W/E/R: tecnicas\nCtrl+Q/W/E/R: evoluir com pontos por nivel\nC: Ki/XP | P: loja | H: ajuda\nScroll: zoom | setas/meio: camera livre\nEspaco: centralizar | Y: seguir/livre\nEsc: selecao | Enter apos termino: reiniciar", smallStyle);
             }
             if (shopOpen) ShopPanel(hero);
             if (world.Winner.HasValue) EndPanel();

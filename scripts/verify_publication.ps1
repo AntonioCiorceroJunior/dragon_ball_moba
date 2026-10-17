@@ -1,4 +1,4 @@
-param()
+param([string]$DomainBaseline)
 $ErrorActionPreference = 'Stop'
 $repo = [IO.Path]::GetFullPath((Join-Path $PSScriptRoot '..'))
 $project = Join-Path $repo 'src/client-unity'
@@ -37,7 +37,11 @@ foreach ($asset in $imported) {
     if ($asset.license -ne 'CC0') { throw "Asset license requires review: $($asset.path)" }
     if ((Get-FileHash -LiteralPath (Join-Path $project $asset.path) -Algorithm SHA256).Hash -ne $asset.sha256) { throw "Imported asset changed: $($asset.path)" }
 }
-foreach ($baseline in Import-Csv -LiteralPath (Join-Path $project 'docs/art/DOMAIN_BASELINE.csv')) {
+if (-not $DomainBaseline) {
+    $approved = Join-Path $repo 'docs/coordination/evidence/DBM-001/DOMAIN_BASELINE.csv'
+    $DomainBaseline = if (Test-Path -LiteralPath $approved) { $approved } else { Join-Path $project 'docs/art/DOMAIN_BASELINE.csv' }
+}
+foreach ($baseline in Import-Csv -LiteralPath $DomainBaseline) {
     $fileName = Split-Path $baseline.Path -Leaf
     if ((Get-FileHash -LiteralPath (Join-Path $project "Assets/Scripts/Domain/$fileName") -Algorithm SHA256).Hash -ne $baseline.Hash) { throw "Domain changed: $fileName" }
 }
@@ -46,5 +50,5 @@ if ($licenseFiles.Count -ne 7) { throw 'Expected seven included asset license no
 foreach ($license in $licenseFiles) {
     if ([IO.File]::ReadAllText($license.FullName) -notmatch 'CC0') { throw "Review license notice: $($license.Name)" }
 }
-Write-Output "PUBLICATION CHECK PASSED | files=$($paths.Count) | bytes=$totalBytes | metas=$metaCount | verifiedCC0Files=$($imported.Count) | licenses=$($licenseFiles.Count) | domain=3 unchanged"
+Write-Output "PUBLICATION CHECK PASSED | files=$($paths.Count) | bytes=$totalBytes | metas=$metaCount | verifiedCC0Files=$($imported.Count) | licenses=$($licenseFiles.Count) | domain=3 baseline verified"
 Write-Output 'Scope: source inventory, common private-content patterns, size limits, file metas, package JSON, included CC0 notices and imported hashes. This is not a comprehensive security audit or a gameplay test.'

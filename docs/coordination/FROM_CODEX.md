@@ -1,19 +1,18 @@
-# Último retorno do Codex
+# Último retorno do Codex — DBM-001
 
-**Data:** 2026-10-16 — Codex.  
-**Tarefa:** DBM-000 — publicação inicial segura.  
-**Status:** concluída; fontes e documentos publicados, domínio e mecânicas preservados.  
-**Commit dos fontes:** `04e33a986c7c545c5ae855f7ba4ef1a246ec9a8f`. **Handoff publicado e novamente clonado:** `684b5e467a48211b2d88fda98e47daef0d38f519`. Este resumo acrescenta a prova da verificação remota.  
-**Relatório:** [2026-10-16_DBM-000_publicacao-inicial.md](reports/2026-10-16_DBM-000_publicacao-inicial.md).
+**Data:** 2026-10-16. **Estado:** validação direcionada concluída; aguardando revisão do ChatGPT. **Sem merge.**
+**Branch:** `chatgpt/DBM-001-gameplay`; [PR #1](https://github.com/AntonioCiorceroJunior/dragon_ball_moba/pull/1).
+**Commit de correção/testes:** `c8240a2ae33643a131ed97fe4f858a42d33acd1d`; este handoff é seu descendente direto.
+**Relatório:** [2026-10-16_DBM-001_codex-validacao.md](reports/2026-10-16_DBM-001_codex-validacao.md).
 
-**Verificação posterior à publicação:** [2026-10-16_DBM-000_verificacao-remota.md](reports/2026-10-16_DBM-000_verificacao-remota.md). Clone novo da main passou; arquivos de coordenação protegidos intactos; árvore local limpa.
+- Unity 6000.6.6f1, `src/client-unity`, Built-in/Input Manager legado; cena VisualTest existente.
+- VisualPrepare, VisualPlay e VisualBuild passaram. Confirmada chamada de RunAll; testes de retomada após cast e ranks/pontos no respawn acrescentados.
+- **21 verificações na janela real passaram** via Windows SendInput: Ctrl+Q, botão +, ranks, R 6/11/16, um clique seguido de ataques a cada 33 ticks (1,1 s), cancelamento chão/C, retomada após Q, corpo transformado, respawn e reinício.
+- Corrigido bug constatado no HUD: título/+ sobrepostos e texto de bloqueio cortado.
+- XP, posições, transformação inimiga e dano letal foram preparados por sonda opt-in de desenvolvimento; os comandos de jogo vieram de mouse/teclado reais. Não se declara partida completa jogada por humano.
+- Build testada: `src/client-unity/Builds/VisualTest/DragonMobaVisualTest.exe`; **168.510.049 bytes totais**, UTC `2026-10-17T00:59:53.6958770Z`. `JOGAR_VISUAL_TEST.cmd` não ativa a sonda.
+- [Resultados nativos](evidence/DBM-001/Native-results.json), [eventos](evidence/DBM-001/Native-events.txt), [HUD corrigido](evidence/DBM-001/locked.png). Assets/licenças preservados; nenhum pacote instalado.
 
-- Unity: `src/client-unity`, Editor **6000.6.6f1**, Built-in e Input Manager legado.
-- Cena: `Assets/_DragonMOBA/Scenes/VisualTest/ArenaVisualTest.unity`.
-- Cópia limpa passou em VisualPrepare, VisualPlay e VisualBuild. Executável abriu; captura real incluída.
-- Conteúdo dos 19 arquivos C# preservado no clone remoto; 14 iguais byte a byte, cinco apenas com CRLF normalizado para LF. Três hashes de domínio intactos. 26 arquivos importados CC0 e sete licenças incluídos; checkout e clone remoto dos 26 hashes conferidos.
-- Documentos mestres canônicos em `docs/specifications/`; dados locais removidos das cópias públicas. Builds, caches, backups, downloads e pesquisas externas não publicados.
-- Git local sem credencial: publicação pelo conector GitHub autenticado, com commits descendentes da base e avanço de referência **sem força**, em vez de `git push` via HTTPS local.
-- Nenhuma nova partida completa ou sequência nativa completa de QWER foi validada nesta tarefa. Os testes de Play Mode não aprovam o balanceamento, a progressão individual de habilidades ou o autoataque definitivo.
+Instrução seguida: TO_CODEX de `main` em `cd64b35e6ac8663b1864ddae2549139d62025a2d`; a versão anterior na branch não foi reescrita. `main` não recebeu commits desta execução. Publicação pelo conector autenticado, sem força.
 
-**Próximo passo:** ChatGPT revisar esta entrega e preparar **DBM-001 — corrigir progressão de habilidades e autoataque**. Não iniciado. `TO_CODEX.md` e a fila continuam sob responsabilidade do ChatGPT e não foram reescritos.
+**Próximo passo:** ChatGPT revisar o PR e decidir ajustes/merge. Não iniciar DBM-002. Histórico preservado nos relatórios DBM-000.

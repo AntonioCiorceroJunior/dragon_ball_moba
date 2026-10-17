@@ -1,0 +1,7 @@
+PUBLICATION CHECK PASSED | files=471 | bytes=50365267 | metas=177 | verifiedCC0Files=26 | licenses=7 | domain=3 baseline verified
+Scope: source inventory, common private-content patterns, size limits, file metas, package JSON, included CC0 notices and imported hashes. This is not a comprehensive security audit or a gameplay test.
+
+PROTECTED COORDINATION PASSED | six files unchanged from received PR
+NATIVE RESULTS PASSED | 21 checks, zero failures
+REPORT LINKS PASSED | 13 local targets
+Main must remain cd64b35e6ac8663b1864ddae2549139d62025a2d; only chatgpt/DBM-001-gameplay receives this delivery.

@@ -1,0 +1,4 @@
+DBM001 DOMAIN PASSED | locked skills, point conservation, rank gates, repeated attacks, cast resume and respawn persistence
+Dragon MOBA: PASSOU — verificacoes basicas de dominio.
+CELL REAL RESPAWN PASSED | 0/736 HP, 15.5 simulated seconds, identity, inventory, base and HP/Ki restored
+VISUALBUILD PASSED | <repo>\src\client-unity\Builds\VisualTest\DragonMobaVisualTest.exe | 168510049 bytes | 2026-10-17T00:59:53.6958770Z

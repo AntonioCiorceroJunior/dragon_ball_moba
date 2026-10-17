@@ -41,6 +41,9 @@ namespace DragonMoba.Domain
         public float TrainingBootsRemaining;
         public bool TrainingBootsCompleted;
         public bool BoughtTrainingBoots;
+        // An unspent point is granted at level 1 and once for every level gained.
+        public int UnspentSkillPoints = 1;
+        public readonly int[] SkillRanks = new int[4];
         public readonly float[] SkillCooldown = new float[4];
         public readonly List<string> Inventory = new List<string>();
         public bool Alive { get { return Hp > 0f; } }

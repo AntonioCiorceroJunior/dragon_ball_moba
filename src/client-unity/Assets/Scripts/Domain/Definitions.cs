@@ -6,9 +6,9 @@ namespace DragonMoba.Domain
 {
     public enum Team { Blue = 0, Red = 1, Neutral = 2 }
     public enum EntityKind { Hero, Minion, Tower, Core }
-    public enum CommandKind { Move, Attack, Charge, Cast, Buy }
+    public enum CommandKind { Move, Attack, Charge, Cast, Buy, UpgradeAbility }
     public enum AbilitySlot { Q = 0, W = 1, E = 2, R = 3 }
-    public enum EventKind { Attack, Ability, Damage, Death, Respawn, LevelUp, Transform, Charge, Purchase, Victory, Warning }
+    public enum EventKind { Attack, Ability, Damage, Death, Respawn, LevelUp, Transform, Charge, Purchase, Victory, Warning, SkillUp }
 
     public struct V2
     {
