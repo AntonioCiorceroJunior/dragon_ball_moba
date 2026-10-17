@@ -126,7 +126,7 @@ namespace DragonMoba.Domain
             var kid = new HeroDefinition { Id = "GKU_KID", Name = "Goku Criança", MaxHp = 570, MaxKi = 110, BaseAttack = 55, KiPower = 30, BaseSpeed = 6.2f, AttackRange = 2.4f };
             kid.Forms.Add(new FormStage(1, "kid_base", "Forma Base", 0, 0, 0));
             kid.Forms.Add(new FormStage(11, "kid_nimbus", "Nuvem Voadora", 8, 10, 0.75f));
-            kid.Forms.Add(new FormStage(16, "kid_mastery", "Domínio de Combate", 18, 20, 0.15f));
+            kid.Forms.Add(new FormStage(16, "kid_oozaru", "Oozaru", 34, 12, -1.65f));
             Heroes.Add(kid.Id, kid);
 
             var super = new HeroDefinition { Id = "GKU_SUPER", Name = "Goku Super", MaxHp = 520, MaxKi = 135, BaseAttack = 51, KiPower = 43, BaseSpeed = 6.5f, AttackRange = 5.8f };
