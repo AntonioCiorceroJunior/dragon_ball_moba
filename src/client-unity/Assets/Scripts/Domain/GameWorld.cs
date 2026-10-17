@@ -520,6 +520,13 @@ namespace DragonMoba.Domain
             turret.TowerAggroTargetId = 0;
             turret.TowerAggroSeconds = 0f;
 
+            // Keep firing at the same minion until it dies or leaves range, even
+            // when another minion moves closer. Hero aggression above overrides.
+            var retained = Find(turret.AttackTargetId);
+            if (retained != null && retained.Kind == EntityKind.Minion &&
+                retained.Alive && retained.Team != turret.Team &&
+                InRange(turret,retained,turret.AttackRange))
+                return;
             // Enemy minions always have priority unless an enemy hero provokes
             // the tower by damaging a defended ally. Never target outside range.
             EntityState nearestMinion = null;
