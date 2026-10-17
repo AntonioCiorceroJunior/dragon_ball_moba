@@ -8,9 +8,36 @@ namespace DragonMoba.Editor
 {
     public static class VisualStageChecks
     {
+        public static void SelectionGallery()
+        {
+            var camera=Camera.main;
+            Check(camera!=null,"Selection camera exists");
+            var planes=GeometryUtility.CalculateFrustumPlanes(camera);
+            for(var i=0;i<3;i++)
+            {
+                var anchor=GameObject.Find("Hero showcase "+i);
+                Check(anchor!=null&&anchor.GetComponentsInChildren<SkinnedMeshRenderer>().Any(
+                    r=>r.enabled&&GeometryUtility.TestPlanesAABB(planes,r.bounds)),
+                    "Selection hero remains visible after returning from a match: "+i);
+                if(i==1)Check(anchor.GetComponentInChildren<PlayableCharacterVisual>()!=null,
+                    "Gallery uses the actual Super arena model");
+            }
+            Debug.Log("SELECTION GALLERY PASSED | three visible heroes and arena Super prefab");
+        }
+        public static void GroundRoutePaint(Renderer terrain)
+        {
+            var texture=terrain.sharedMaterial.mainTexture as Texture2D;
+            Check(texture!=null,"Paint texture exists");
+            var mid=texture.GetPixelBilinear((40f+72)/144f,(40f+72)/144f);
+            var top=texture.GetPixelBilinear((-63f+72)/144f,.5f);
+            var jungle=texture.GetPixelBilinear((30f+72)/144f,(-15f+72)/144f);
+            Check(mid.r>mid.g*1.05f&&top.r>top.g*1.05f&&jungle.g>jungle.r*1.2f,
+                "Painted mid/top lanes and jungle match the diagonal navigation layout");
+            Debug.Log("GROUND ROUTE PAINT PASSED | texture agrees with diagonal mid/top and jungle");
+        }
         public static void CellRespawn()
         {
-            var world = new GameWorld("CELL_Z");
+            var world = new GameWorld("CELL_Z",ArenaLayout.Training);
             var hero = world.Player;
             while(hero.Level<5) world.GrantExperience(hero,Catalog.ExperienceForNextLevel(hero.Level)-hero.Experience+.01f);
             Check(hero.MaxHp==736,"Cell level five max HP");
@@ -56,8 +83,9 @@ namespace DragonMoba.Editor
                 Vector3.Distance(controller.Focus,controller.ClampFocus(minimapFocus))<.001f,
                 "Minimap click sets exact free-camera focus");
             controller.Recenter(hero,true);
-            Check(Math.Abs(camera.transform.eulerAngles.x-43)<.1f,"Less vertical angle");
-            Debug.Log("ARENA CAMERA PASSED | orthographic 43 degrees, zoom bounds, pan, map bounds, recenter and follow");
+            Check(Math.Abs(camera.transform.eulerAngles.x-55.5f)<.1f,"55.5 degree strategic camera");
+            Check(!camera.orthographic&&Math.Abs(camera.fieldOfView-40)<.1f,"Strategic perspective projection");
+            Debug.Log("ARENA CAMERA PASSED | perspective 55.5 degrees, zoom bounds, pan, map bounds, recenter and follow");
         }
         static void Check(bool ok,string message) { if(!ok) throw new Exception(message); }
     }

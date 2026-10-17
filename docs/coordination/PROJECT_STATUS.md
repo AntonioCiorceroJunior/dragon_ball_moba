@@ -1,4 +1,20 @@
-# Estado técnico — DBM-002 + BATCH-001 em revisão
+# Estado técnico — ART-002 em revisão
+
+17/10/2026, Codex. Branch `chatgpt/visual-audio-overhaul-2026-10-17`, [PR #5](https://github.com/AntonioCiorceroJunior/dragon_ball_moba/pull/5). **Sem merge; aprovação visual/sonora humana pendente.**
+
+Raiz Unity `src/client-unity`, Editor **6000.6.6f1**, Built-in/Input Manager legado; cena `Assets/_DragonMOBA/Scenes/VisualTest/ArenaVisualTest.unity`. Código final `f4aedc087ed960a6fe820c76655d0610a2c8dbb5`, CI #74 PASS. Prepare/Play/build aprovados; [relatório](reports/2026-10-17_ART-002_codex-validacao.md) e [evidências](evidence/ART-002/README.md).
+
+Build Windows Development local `src/client-unity/Builds/VisualTest/DragonMobaVisualTest.exe`: UTC **2026-10-17T21:19:05.3473104Z**, **168.638.501 bytes totais**. Binários/caches/logs não publicados.
+
+Identidades próprias de Kid/Super/Cell, galeria responsiva, terreno/rotas coerentes, composição original de 48 s e mute de SFX implementados. Capturas reais cobrem oito tipos de cena e menu/HUD 720p/1080p. FPS observado 239,83/239,61; zero clipping nas amostras, silêncio após M. Não certifica partida longa ou qualidade auditiva.
+
+Ampliação autorizada pelo usuário: perspectiva FOV 40°/elevação 55,5°, interpolação/rotação, arena original 144×144, bases opostas, três rotas e 18 torres. Stats/dano/progressão preservados; domínio Classic tem testes próprios, Training mantém fixtures anteriores. Não representa medidas exatas, topologia de selva ou todos os sistemas de LoL.
+
+Pendências: acabamento de modelos/animações e som; aprovação da câmera/escala pelo usuário. Primeira apresentação foi considerada insuficiente; não declarar arte pronta. TO_CODEX intacto, nenhum próximo ticket iniciado.
+
+---
+
+# Histórico — DBM-002 + BATCH-001 em revisão
 
 **Atualização:** 17/10/2026, Codex. **Estado:** importação, domínio, Play/arte, build e smoke Windows aprovados; aceitação manual parcial. **Sem merge.**
 

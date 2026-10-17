@@ -14,6 +14,7 @@ namespace DragonMoba.Runtime
         private GameWorld world;
         private ArtPresentation art;
         private OrganicArena organic;
+        private CharacterGallery heroGallery;
         private bool visualMovePending;
         private V2 visualMoveStart;
         private Camera gameCamera;
@@ -39,6 +40,12 @@ namespace DragonMoba.Runtime
             Time.fixedDeltaTime = GameWorld.FixedStep;
             Application.targetFrameRate = 60;
             CreateCamera(); // A selection menu must render before a match starts.
+            // Show the actual 3D battlefield and existing character rigs before
+            // loading a match, rather than an empty background behind GUI boxes.
+            BuildEnvironment();
+            heroGallery=GetComponent<CharacterGallery>();
+            if(heroGallery==null)heroGallery=gameObject.AddComponent<CharacterGallery>();
+            heroGallery.Show();
         }
 
         private void Start()
@@ -52,11 +59,19 @@ namespace DragonMoba.Runtime
 
         private void StartMatch(string championId)
         {
+            heroGallery?.Hide();
             world = new GameWorld(championId);
             art?.Confirm();
             BuildEnvironment();
             CreateCamera();
             RefreshViews();
+            var cameraController=gameCamera.GetComponent<ArenaCameraController>();
+            if(cameraController!=null)
+            {
+                gameCamera.orthographicSize=cameraController.defaultZoom;
+                cameraController.mapHalfSize=new Vector2(world.Layout.HalfWidth,world.Layout.HalfHeight);
+                cameraController.Recenter(new Vector3(world.Player.Position.X,0,world.Player.Position.Y),true);
+            }
             lastMessage = "Partida iniciada. Clique direito para mover; C carrega Ki.";
             messageUntil = Time.time + 6f;
         }
@@ -229,8 +244,8 @@ namespace DragonMoba.Runtime
                 var presentation = go.GetComponent<CharacterPresentation>();
                 go.SetActive(e.Alive || presentation != null);
                 var placeholder = go.GetComponent<PlaceholderVisual>() != null;
-                go.transform.position = placeholder ? Position(e.Position, e.Kind) : new Vector3(e.Position.X, 0, e.Position.Y);
                 if (presentation != null) presentation.Sync(e);
+                else go.transform.position = placeholder ? Position(e.Position, e.Kind) : new Vector3(e.Position.X, 0, e.Position.Y);
                 var threat = go.GetComponent<TowerRangeVisual>();
                 if (threat != null && world.Player != null)
                     threat.Show(e.Team != world.Player.Team && world.Player.Alive &&
@@ -272,6 +287,10 @@ namespace DragonMoba.Runtime
             }
             if (visual == null && state.Kind == EntityKind.Hero)
                 visual = PrimitiveHeroVisual.Create(state);
+            if (visual != null && state.Kind == EntityKind.Hero)
+                HeroVisualIdentity.Apply(visual,state.HeroId,state.FormId);
+            if (visual == null && state.Kind == EntityKind.Minion)
+                visual = MinionVisual.Create(state);
             if (visual == null)
             {
                 var primitive = state.Kind == EntityKind.Hero ? PrimitiveType.Capsule :
@@ -408,7 +427,7 @@ namespace DragonMoba.Runtime
         {
             if (environmentBuilt) return;
             environmentBuilt = true;
-            CreateBlock("Solo", new Vector3(0, -0.55f, 0), new Vector3(72, 1, 88), new Color(0.10f, 0.19f, 0.15f));
+            CreateBlock("Solo", new Vector3(0, -0.55f, 0), new Vector3(144, 1, 144), new Color(0.10f, 0.19f, 0.15f));
             foreach (var x in new[] { -17, 0, 17 })
                 CreateBlock("Rota", new Vector3(x, -0.015f, 0), new Vector3(7, 0.1f, 79), new Color(0.37f, 0.33f, 0.26f));
             CreateBlock("Rio Central", new Vector3(0, 0.015f, 0), new Vector3(68, 0.11f, 5), new Color(0.13f, 0.34f, 0.45f));
@@ -478,7 +497,7 @@ namespace DragonMoba.Runtime
             if (gameCamera == null) return;
             var focus = new Vector3(hero.Position.X, 0, hero.Position.Y);
             var controller = gameCamera.GetComponent<ArenaCameraController>();
-            if (controller != null) { controller.Tick(focus); return; }
+            if (controller != null) { controller.Tick(focus,true,!PointerOverGui()); return; }
             var targetCamera = focus + new Vector3(0, 31f, -20f);
             gameCamera.transform.position = Vector3.Lerp(gameCamera.transform.position, targetCamera, Time.deltaTime * 7f);
             gameCamera.transform.rotation = Quaternion.LookRotation(focus - gameCamera.transform.position, Vector3.up);
@@ -489,6 +508,7 @@ namespace DragonMoba.Runtime
             foreach (var go in views.Values) if (go != null) Destroy(go);
             views.Clear(); lastForm.Clear();
             world = null; shopOpen = false;
+            heroGallery?.Show();
             lastMessage = "Selecione um personagem para iniciar.";
         }
 
@@ -532,35 +552,7 @@ namespace DragonMoba.Runtime
             EnsureStyles();
             if (world == null)
             {
-                var width = Mathf.Min(620, Screen.width - 30);
-                var left = (Screen.width - width) * 0.5f;
-                var top = Mathf.Max(16, (Screen.height - 430) * 0.5f);
-                GUI.Box(new Rect(left, top, width, 430), "");
-                GUI.Label(new Rect(left+12, top+12, width-24, 45), "ESCOLHA SEU GUERREIRO", titleStyle);
-                GUI.Label(new Rect(left+24, top+55, width-48, 32),
-                    "Selecione um personagem, conheca seu estilo e confirme antes da partida.", smallStyle);
-                var heroes = new[] { "GKU_KID", "GKU_SUPER", "CELL_Z" };
-                var roles = new[] { "Lutador agil | corpo a corpo", "Guerreiro de Ki | longa distancia",
-                    "Tanque / sustentacao | corpo a corpo" };
-                for (var i=0; i<3; ++i)
-                {
-                    var id = heroes[i];
-                    var def = Catalog.Hero(id);
-                    var y = top + 94 + i*83;
-                    var selected = selectedChampionId == id;
-                    GUI.Box(new Rect(left+22,y,width-44,78),
-                        (selected ? "✓ " : "") + def.Name + "  |  " + roles[i]);
-                    GUI.Label(new Rect(left+42,y+29,width-205,42),
-                        "HP " + (int)def.MaxHp + "  •  Ki " + (int)def.MaxKi +
-                        "  •  Ataque " + (int)def.BaseAttack, smallStyle);
-                    if (GUI.Button(new Rect(left+width-170,y+30,128,35),
-                        selected ? "Selecionado" : "Selecionar"))
-                        selectedChampionId = id;
-                }
-                GUI.Label(new Rect(left+25,top+350,width-50,26),
-                    "Selecionado: " + Catalog.Hero(selectedChampionId).Name, normalStyle);
-                if (GUI.Button(new Rect(left+width-225,top+378,203,40), "CONFIRMAR E JOGAR"))
-                    StartMatch(selectedChampionId);
+                DrawCharacterSelection();
                 return;
             }
             var hero = world.Player;
@@ -598,8 +590,11 @@ namespace DragonMoba.Runtime
                     GUI.Button(new Rect(x + 76, Screen.height - 107, 24, 24), "+"))
                     Upgrade(slot);
             }
-            GUI.Box(new Rect(Screen.width - 220, 12, 206, 89), "PARTIDA");
-            GUI.Label(new Rect(Screen.width - 208, 38, 188, 55), "Tempo: " + world.Elapsed.ToString("0") + "s\nTropas e torres nas 3 rotas", smallStyle);
+            GUI.Box(new Rect(Screen.width - 236, 12, 222, 96), "ARENA • TEMPORADA PILOTO");
+            var clock=TimeSpan.FromSeconds(Mathf.Max(0,world.Elapsed));
+            GUI.Label(new Rect(Screen.width - 219, 38, 200, 64),
+                "  "+clock.Minutes.ToString("00")+":"+clock.Seconds.ToString("00")+
+                "   •   ZENI "+hero.Zeni+"\nM: som ligado/desligado\nY: camera livre",smallStyle);
             if (Time.time < messageUntil)
                 GUI.Box(new Rect(Screen.width * 0.5f - 240, 16, 480, 42), lastMessage);
             if (showHelp)
@@ -616,13 +611,80 @@ namespace DragonMoba.Runtime
         // Map coordinates use the same bounds as the current domain V2.Clamp.
         // This is a truthful minimap of the current three-lane prototype; the
         // original diagonal MOBA layout remains a separate map/navigation project.
-        private static Vector2 MapPixel(V2 pos, Rect bounds)
+        private void DrawCharacterSelection()
         {
-            return new Vector2(bounds.xMin + Mathf.Clamp01((pos.X+32f)/64f)*bounds.width,
-                bounds.yMax - Mathf.Clamp01((pos.Y+41f)/82f)*bounds.height);
+            // Restrained UI leaves the 3D gallery visible. Card layout is
+            // resolution-adaptive and selections remain explicit.
+            var maxWidth=Mathf.Min(920f,Screen.width-34f);
+            var center=Screen.width*.5f;
+            var header=new Rect(center-maxWidth*.5f,18,maxWidth,83);
+            GUI.Box(header,"");
+            GUI.Label(new Rect(header.x+15,header.y+6,header.width-30,33),
+                "CAPSULE CORP    /    ARENA DOS GUERREIROS",titleStyle);
+            GUI.Label(new Rect(header.x+18,header.y+44,header.width-36,28),
+                "ESCOLHA O SEU CAMINHO • DOMINE O KI • CONTROLE O CAMPO DE BATALHA",smallStyle);
+            var cardGap=10f;
+            var cardWidth=(maxWidth-cardGap*2f)/3f;
+            var cardY=Mathf.Max(115f,Screen.height-249f);
+            var cardHeight=153f;
+            var ids=new[]{"GKU_KID","GKU_SUPER","CELL_Z"};
+            var subtitles=new[]{
+                "ARTES MARCIAIS  •  AGIL",
+                "KI E TRANSFORMACOES",
+                "RESISTENCIA E ABSORCAO"
+            };
+            var marks=new[]{"I","II","III"};
+            var colors=new[]{
+                new Color(1f,.71f,.38f),
+                new Color(.30f,.78f,1f),
+                new Color(.66f,.94f,.42f)
+            };
+            for(var i=0;i<3;i++)
+            {
+                var id=ids[i];
+                var def=Catalog.Hero(id);
+                var selected=selectedChampionId==id;
+                var card=new Rect(center-maxWidth*.5f+i*(cardWidth+cardGap),cardY,
+                    cardWidth,cardHeight);
+                GUI.Box(card,"");
+                var c=GUI.color;
+                GUI.color=selected?new Color(1f,.83f,.46f):colors[i];
+                GUI.DrawTexture(new Rect(card.x+9,card.y+8,5,card.height-17),
+                    Texture2D.whiteTexture);
+                GUI.color=c;
+                GUI.Label(new Rect(card.x+22,card.y+8,36,33),marks[i],titleStyle);
+                var nameStyle=normalStyle;
+                GUI.Label(new Rect(card.x+60,card.y+11,card.width-69,28),
+                    def.Name,nameStyle);
+                GUI.Label(new Rect(card.x+22,card.y+47,card.width-38,24),
+                    subtitles[i],smallStyle);
+                GUI.Label(new Rect(card.x+22,card.y+76,card.width-40,23),
+                    "HP "+(int)def.MaxHp+"   KI "+(int)def.MaxKi+
+                    "   ATAQUE "+(int)def.BaseAttack,smallStyle);
+                var button=new Rect(card.x+21,card.y+107,card.width-42,34);
+                if(GUI.Button(button,selected?"GUERREIRO SELECIONADO":"SELECIONAR"))
+                {
+                    selectedChampionId=id;
+                    art?.Confirm();
+                }
+            }
+            var actionW=Mathf.Min(370f,maxWidth*.5f);
+            var bottom=cardY+cardHeight+9f;
+            if(GUI.Button(new Rect(center-actionW*.5f,bottom,actionW,44f),
+                "INICIAR PARTIDA   →"))
+                StartMatch(selectedChampionId);
+            GUI.Label(new Rect(center-maxWidth*.5f,Screen.height-28,maxWidth,21),
+                "VISUAL EM DESENVOLVIMENTO • 3 HERÓIS • PROTÓTIPO OFFLINE",
+                smallStyle);
         }
 
-        private static void MapDot(Rect map, V2 position, float size, Color tint)
+        private Vector2 MapPixel(V2 pos, Rect bounds)
+        {
+            return new Vector2(bounds.xMin + Mathf.Clamp01((pos.X+world.Layout.HalfWidth)/(world.Layout.HalfWidth*2))*bounds.width,
+                bounds.yMax - Mathf.Clamp01((pos.Y+world.Layout.HalfHeight)/(world.Layout.HalfHeight*2))*bounds.height);
+        }
+
+        private void MapDot(Rect map, V2 position, float size, Color tint)
         {
             var center=MapPixel(position,map);
             var before=GUI.color;
@@ -632,6 +694,14 @@ namespace DragonMoba.Runtime
             GUI.color=before;
         }
 
+        private void DrawMapLine(Rect map,V2 from,V2 to,float thickness)
+        {
+            var a=MapPixel(from,map);var b=MapPixel(to,map);var delta=b-a;
+            var saved=GUI.matrix;
+            GUIUtility.RotateAroundPivot(Mathf.Atan2(delta.y,delta.x)*Mathf.Rad2Deg,a);
+            GUI.DrawTexture(new Rect(a.x,a.y-thickness*.5f,delta.magnitude,thickness),Texture2D.whiteTexture);
+            GUI.matrix=saved;
+        }
         private void DrawMinimap()
         {
             const float width=185f, height=214f;
@@ -644,14 +714,11 @@ namespace DragonMoba.Runtime
             GUI.color=new Color(.07f,.16f,.14f,.96f);
             GUI.DrawTexture(region,Texture2D.whiteTexture);
             GUI.color=new Color(.30f,.28f,.22f,.95f);
-            foreach(var lane in new[]{-17f,0f,17f})
-            {
-                var x=MapPixel(new V2(lane,0),region).x;
-                GUI.DrawTexture(new Rect(x-2,region.y+8,4,region.height-16),Texture2D.whiteTexture);
-            }
+            foreach(var lane in world.Layout.Lanes)
+                for(var i=0;i<lane.Length-1;i++)DrawMapLine(region,lane[i],lane[i+1],4);
             GUI.color=new Color(.15f,.36f,.48f,.9f);
-            var riverY=MapPixel(new V2(0,0),region).y;
-            GUI.DrawTexture(new Rect(region.x,riverY-3,region.width,6),Texture2D.whiteTexture);
+            DrawMapLine(region,new V2(-world.Layout.HalfWidth,world.Layout.HalfHeight),
+                new V2(world.Layout.HalfWidth,-world.Layout.HalfHeight),5);
             GUI.color=before;
             foreach(var entity in world.Entities)
             {
@@ -669,7 +736,7 @@ namespace DragonMoba.Runtime
             {
                 var nx=Mathf.Clamp01((ev.mousePosition.x-region.x)/region.width);
                 var ny=Mathf.Clamp01((region.yMax-ev.mousePosition.y)/region.height);
-                var look=new Vector3(nx*64f-32f,0,ny*82f-41f);
+                var look=new Vector3((nx*2-1)*world.Layout.HalfWidth,0,(ny*2-1)*world.Layout.HalfHeight);
                 var controller=gameCamera!=null?
                     gameCamera.GetComponent<ArenaCameraController>():null;
                 if(controller!=null)controller.FocusAt(look);
@@ -807,11 +874,37 @@ namespace DragonMoba.Runtime
                 if (e.Kind == EntityKind.Hero)
                     GUI.Label(new Rect(rect.x-30, rect.y-37, rect.width+60, 24),
                         e.DisplayName + " Nv." + e.Level, smallStyle);
-                DrawBar(rect, e.Hp / e.MaxHp, e.Team == Team.Blue ? Color.green : Color.red, "");
+                DrawSegmentedHealth(rect,e);
                 if (e.Shield > 0)
                     DrawBar(new Rect(rect.x,rect.y+10,rect.width,4),e.Shield/e.MaxHp,
                         new Color(.37f,.71f,1f),"");
             }
+        }
+
+        private static void DrawSegmentedHealth(Rect rect, EntityState hero)
+        {
+            // One thin pip per 100 maximum HP; thicker markers at 1000 HP.
+            // Indicators show scale without obscuring the remaining health.
+            var old=GUI.color;
+            GUI.color=new Color(.025f,.05f,.07f,.96f);
+            GUI.DrawTexture(rect,Texture2D.whiteTexture);
+            GUI.color=hero.Team==Team.Blue?
+                new Color(.12f,.80f,.56f):new Color(1f,.32f,.30f);
+            var fraction=Mathf.Clamp01(hero.Hp/Mathf.Max(1f,hero.MaxHp));
+            GUI.DrawTexture(new Rect(rect.x+1,rect.y+1,(rect.width-2)*fraction,
+                Mathf.Max(2,rect.height-2)),Texture2D.whiteTexture);
+            var count=Mathf.FloorToInt(hero.MaxHp/100f);
+            for(var step=1;step<=count&&step<=80;step++)
+            {
+                var amount=step*100f;
+                if(amount>=hero.MaxHp)break;
+                var x=rect.x+rect.width*(amount/hero.MaxHp);
+                GUI.color=step%10==0?new Color(1f,.87f,.50f,.95f):
+                    new Color(.02f,.07f,.08f,.8f);
+                GUI.DrawTexture(new Rect(x,rect.y,step%10==0?2f:1f,rect.height),
+                    Texture2D.whiteTexture);
+            }
+            GUI.color=old;
         }
 
         private void DrawBar(Rect rect, float fraction, Color fill, string label)

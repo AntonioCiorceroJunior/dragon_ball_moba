@@ -4,8 +4,8 @@ namespace DragonMoba.Runtime
     [RequireComponent(typeof(Camera))]
     public sealed class ArenaCameraController : MonoBehaviour
     {
-        [Range(30,60)] public float elevation = 43f;
-        public float defaultZoom = 11.5f, minimumZoom = 8f, maximumZoom = 18f;
+        [Range(30,60)] public float elevation = 55.5f;
+        public float defaultZoom = 9.5f, minimumZoom = 7.5f, maximumZoom = 18f;
         public float panSpeed = 18f, smoothing = .12f;
         public bool edgeScroll = true;
         public float edgeThresholdPixels = 17f;
@@ -15,7 +15,7 @@ namespace DragonMoba.Runtime
         private Camera view;
         private Vector3 target, velocity, previousMouse;
         private bool initialized;
-        private void Awake() { view = GetComponent<Camera>(); view.orthographic = true; view.orthographicSize = defaultZoom; }
+        private void Awake() { view = GetComponent<Camera>(); view.orthographic = false; view.fieldOfView = 40f; view.orthographicSize = defaultZoom; }
         public Vector3 ClampFocus(Vector3 value)
         {
             float limitX = Mathf.Max(0, mapHalfSize.x - view.orthographicSize * view.aspect);
@@ -48,18 +48,18 @@ namespace DragonMoba.Runtime
             Following = true; target = ClampFocus(hero);
             if(snap) { Focus = target; velocity = Vector3.zero; Place(); }
         }
-        public void Tick(Vector3 hero, bool readInput = true)
+        public void Tick(Vector3 hero, bool readInput = true, bool allowPointerInput = true)
         {
             if(!initialized) { initialized = true; Recenter(hero,true); previousMouse = Input.mousePosition; }
             // Batch validation has no interactive pointer; its default position must not pan the camera.
-            if(readInput && !Application.isBatchMode)
+            if(readInput && !Application.isBatchMode && Application.isFocused)
             {
-                Zoom(Input.mouseScrollDelta.y);
+                if(allowPointerInput)Zoom(Input.mouseScrollDelta.y);
                 if(Input.GetKeyDown(KeyCode.Y)) Following = !Following;
                 if(Input.GetKeyDown(KeyCode.Space)) Recenter(hero);
                 Vector2 input = new Vector2((Input.GetKey(KeyCode.RightArrow)?1:0)-(Input.GetKey(KeyCode.LeftArrow)?1:0),
                     (Input.GetKey(KeyCode.UpArrow)?1:0)-(Input.GetKey(KeyCode.DownArrow)?1:0));
-                if (edgeScroll && Screen.width > 0 && Screen.height > 0)
+                if (allowPointerInput && edgeScroll && Screen.width > 0 && Screen.height > 0)
                 {
                     var mouse = Input.mousePosition;
                     if (mouse.x >= 0 && mouse.x <= Screen.width &&
@@ -72,7 +72,7 @@ namespace DragonMoba.Runtime
                     }
                 }
                 if(input.sqrMagnitude>0) Pan(input.normalized * (panSpeed * Time.unscaledDeltaTime));
-                if(Input.GetMouseButton(2))
+                if(allowPointerInput && Input.GetMouseButton(2))
                 {
                     Vector3 delta = Input.mousePosition - previousMouse;
                     float unitPerPixel = 2 * view.orthographicSize / Mathf.Max(1,Screen.height);
@@ -86,8 +86,10 @@ namespace DragonMoba.Runtime
         }
         private void Place()
         {
+            view.orthographic=false;
+            view.fieldOfView=40f;
             transform.rotation = Quaternion.Euler(elevation,0,0);
-            transform.position = Focus - transform.forward * 36f;
+            transform.position = Focus - transform.forward * (view.orthographicSize/Mathf.Tan(view.fieldOfView*.5f*Mathf.Deg2Rad));
         }
     }
 }

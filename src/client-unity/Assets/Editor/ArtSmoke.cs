@@ -100,6 +100,15 @@ namespace DragonMoba.Editor
                         Check(arena.TerrainVertices>20000&&arena.PlantCount>80,"Organic map actively generated");
                         var terrainRenderer=GameObject.Find("OrganicTerrain").GetComponent<Renderer>();
                         Check(terrainRenderer.enabled&&GeometryUtility.TestPlanesAABB(GeometryUtility.CalculateFrustumPlanes(Camera.main),terrainRenderer.bounds),"Organic terrain active inside camera frustum");
+                        Check(terrainRenderer.sharedMaterial.mainTexture is Texture2D,
+                            "VISUAL-02: Ground actually displays procedural terrain paint");
+                        VisualStageChecks.GroundRoutePaint(terrainRenderer);
+                        Check(RenderSettings.fog, "VISUAL-02: Battlefield atmospheric fog configured");
+                        var drone=GameObject.Find("Entity-"+minion.Id+"-"+minion.DisplayName);
+                        Check(drone!=null&&drone.GetComponent<MinionFloatAnimation>()!=null,
+                            "VISUAL-02: Troops use the original animated sentry model");
+                        Check(game.GetComponent<BattleSoundscape>()!=null,
+                            "AUDIO-01: Original battle soundscape attached to presentation");
                         Check(UnityEngine.Object.FindObjectsByType<Renderer>().Where(r=>r.name=="Rota"||r.name=="Rio Central").All(r=>!r.enabled),"Rectangular map no longer rendered");
                         if(hero.HeroId=="GKU_SUPER") Check(view.GetComponent<PlayableCharacterVisual>()!=null&&view.GetComponentsInChildren<SkinnedMeshRenderer>().Any(r=>r.enabled&&GeometryUtility.TestPlanesAABB(GeometryUtility.CalculateFrustumPlanes(Camera.main),r.bounds)),"Styled fighter actually used and inside camera frustum");
                         RaycastHit groundHit;
@@ -243,7 +252,7 @@ namespace DragonMoba.Editor
                     Check(art.EffectCount<=ArtPresentation.EffectLimit,"Bounded effect pool");
                     Check(art.panel!=null&&art.bar!=null&&art.keys.All(k=>k!=null),"HUD assets");
                     var cameraController=Camera.main.GetComponent<ArenaCameraController>();
-                    Check(Camera.main.orthographic,"Orthographic camera");
+                    Check(!Camera.main.orthographic&&Mathf.Abs(Camera.main.fieldOfView-40f)<.1f,"Strategic perspective camera");
                     VisualStageChecks.CameraControls(cameraController,new Vector3(hero.Position.X,0,hero.Position.Y));
                     if(game.GetComponent<OrganicArena>()!=null)
                     {
@@ -258,6 +267,7 @@ namespace DragonMoba.Editor
                     {
                         typeof(PrototypeGame).GetMethod("ReturnToSelection",Flags).Invoke(game,null);
                         Check(typeof(PrototypeGame).GetField("world",Flags).GetValue(game)==null,"Return to character selection");
+                        VisualStageChecks.SelectionGallery();
                         typeof(PrototypeGame).GetMethod("StartMatch",Flags).Invoke(game,new object[]{"GKU_SUPER"});
                         Check(((GameWorld)typeof(PrototypeGame).GetField("world",Flags).GetValue(game)).Player.HeroId=="GKU_SUPER","Restart after selection");
                         Debug.Log("SELECTION RESTART PASSED");

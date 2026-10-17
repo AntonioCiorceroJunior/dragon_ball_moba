@@ -26,7 +26,7 @@ namespace DragonMoba.Editor
 
         public static void RunAll()
         {
-            var world = new GameWorld("GKU_SUPER");
+            var world = new GameWorld("GKU_SUPER",ArenaLayout.Training);
             var hero = world.Player;
             Require(hero != null && hero.Level == 1 && hero.Alive, "Criacao do heroi");
             Require(world.Entities.Count >= 25, "Tres rotas com tropas, torres e bases");
@@ -69,15 +69,39 @@ namespace DragonMoba.Editor
             TestStructureCollision();
             TestDerivedStatsAndEquipment();
             TestAttackMoveAndStop();
+            TestClassicLayout();
             Debug.Log("DBM-BATCH DOMAIN PASSED | regen, recipes, selling, lifesteal, haste, forms, attack-move");
             Debug.Log("DBM001 DOMAIN PASSED | locked skills, point conservation, rank gates, repeated attacks, cast resume and respawn persistence");
             Debug.Log("DBM002 DOMAIN PASSED | tower targeting, aggro, range, collision and detour");
         }
 
 
+        private static void TestClassicLayout()
+        {
+            var world=new GameWorld("GKU_KID");var map=world.Layout;var hero=world.Player;
+            Require(map==ArenaLayout.Classic&&map.HalfWidth==map.HalfHeight&&map.HalfWidth==72,"MAP-01: Square diagonal arena is the actual default");
+            var towers=0;
+            foreach(var e in world.Entities)if(e.Kind==EntityKind.Tower)towers++;
+            Require(towers==18&&map.Core(Team.Blue).X<0&&map.Core(Team.Red).X>0,"MAP-02: Opposite corner bases and three tower tiers per lane");
+            Require(world.Submit(new GameCommand{ActorId=hero.Id,Kind=CommandKind.Buy,ItemId="KI_CELL"}),"MAP-03: New spawn can use its own fountain shop");
+            Require(map.At(0,.5f).X<0&&map.At(0,.5f).Y>0&&map.At(2,.5f).X>0&&map.At(2,.5f).Y<0,"MAP-04: Side lanes take separate corners");
+            EntityState minion=null;foreach(var e in world.Entities)if(e.Kind==EntityKind.Minion&&e.Team==Team.Blue&&e.Lane==0){minion=e;break;}
+            Require(minion!=null,"MAP-05: Top lane minion exists");
+            var progress=map.Progress(0,minion.Position);
+            for(var i=0;i<600;i++)world.Tick(GameWorld.FixedStep);
+            Require(map.Progress(0,minion.Position)>progress+.15f&&map.RoadDistance(minion.Position)<0,"MAP-05: Waves advance along their curved lane");
+            hero.Position=hero.Destination=new V2(5,-30);
+            world.Submit(new GameCommand{ActorId=hero.Id,Kind=CommandKind.Move,Position=new V2(13.2f,-17.8f)});
+            for(var i=0;i<30;i++)world.Tick(GameWorld.FixedStep);
+            var dx=hero.Position.X-5;var dy=hero.Position.Y+30;
+            Require(dx>1&&Math.Abs(dx/dy-8.2f/12.2f)<.002f,"MOVE-360: Arbitrary-angle movement is not quantized to eight directions");
+            world.Submit(new GameCommand{ActorId=hero.Id,Kind=CommandKind.Move,Position=new V2(1000,-1000)});
+            Require(hero.Destination.X==72&&hero.Destination.Y==-72,"MAP-06: Commands use the enlarged map bounds");
+            Debug.Log("CLASSIC MAP PASSED | diagonal bases, 18 towers, lane routes, shop, bounds, continuous movement");
+        }
         private static void TestSkillProgression()
         {
-            var world = new GameWorld("GKU_SUPER");
+            var world = new GameWorld("GKU_SUPER",ArenaLayout.Training);
             var hero = world.Player;
             Require(hero.UnspentSkillPoints == 1 && Array.TrueForAll(hero.SkillRanks, r => r == 0),
                 "SK-01: Level 1 begins with one unspent point and all skills locked");
@@ -151,7 +175,7 @@ namespace DragonMoba.Editor
                 if (candidate.Kind == EntityKind.Hero && candidate.Team != hero.Team) { opponent = candidate; break; }
             Require(opponent != null && opponent.SkillRanks[0] >= 1,
                 "SK-05: Bot starts with legal Q rank");
-            var fresh = new GameWorld("GKU_SUPER").Player;
+            var fresh = new GameWorld("GKU_SUPER",ArenaLayout.Training).Player;
             Require(fresh.Level == 1 && fresh.UnspentSkillPoints == 1 && fresh.SkillRanks[0] == 0,
                 "SK-04: New match resets skill points");
             var savedRanks = (int[])hero.SkillRanks.Clone();
@@ -165,7 +189,7 @@ namespace DragonMoba.Editor
 
         private static void TestPersistentAttack()
         {
-            var world = new GameWorld("GKU_KID");
+            var world = new GameWorld("GKU_KID",ArenaLayout.Training);
             var hero = world.Player;
             EntityState target = null;
             foreach (var e in world.Entities)
@@ -238,7 +262,7 @@ namespace DragonMoba.Editor
 
         private static void TestTowerRangeAndAggro()
         {
-            var world = new GameWorld("GKU_SUPER");
+            var world = new GameWorld("GKU_SUPER",ArenaLayout.Training);
             var hero = world.Player;
             EntityState tower = null, enemy = null, alliedMinion = null;
             foreach (var e in world.Entities)
@@ -290,7 +314,7 @@ namespace DragonMoba.Editor
 
         private static void TestStructureCollision()
         {
-            var world = new GameWorld("GKU_KID");
+            var world = new GameWorld("GKU_KID",ArenaLayout.Training);
             var hero = world.Player;
             EntityState blueTower = null, redTower = null;
             foreach (var e in world.Entities)
@@ -335,7 +359,7 @@ namespace DragonMoba.Editor
 
         private static void TestDerivedStatsAndEquipment()
         {
-            var world = new GameWorld("GKU_KID");
+            var world = new GameWorld("GKU_KID",ArenaLayout.Training);
             var hero = world.Player;
             Require(hero.HpRegenPer5 >= 6f && Catalog.Item("CAPSULE_SWORD") != null,
                 "STAT-01: Regeneration and expanded item catalog");
@@ -393,7 +417,7 @@ namespace DragonMoba.Editor
                 hero.SkillCooldown[0]>3.6f && hero.SkillCooldown[0]<3.7f,
                 "SK-07: +10 ability haste reduces base 4s cooldown correctly");
 
-            var antiWorld = new GameWorld("GKU_KID");
+            var antiWorld = new GameWorld("GKU_KID",ArenaLayout.Training);
             var buyer = antiWorld.Player;
             buyer.Zeni = 4000;
             Require(antiWorld.Submit(new GameCommand {ActorId=buyer.Id, Kind=CommandKind.Buy,
@@ -413,7 +437,7 @@ namespace DragonMoba.Editor
             Require(affected.HealingReductionSeconds==0f && affected.HealingReductionRate==0f,
                 "COUNTER-02: Anti-heal debuff expires without ghost modifiers");
 
-            var apeWorld = new GameWorld("GKU_KID");
+            var apeWorld = new GameWorld("GKU_KID",ArenaLayout.Training);
             var kid = apeWorld.Player;
             kid.Position = kid.Destination = new V2(0,-17.2f); // fits Kid, not giant form.
             apeWorld.GrantExperience(kid,99999);
@@ -425,7 +449,7 @@ namespace DragonMoba.Editor
 
         private static void TestAttackMoveAndStop()
         {
-            var world = new GameWorld("GKU_KID");
+            var world = new GameWorld("GKU_KID",ArenaLayout.Training);
             var hero=world.Player;
             EntityState enemy=null;
             foreach (var e in world.Entities)
