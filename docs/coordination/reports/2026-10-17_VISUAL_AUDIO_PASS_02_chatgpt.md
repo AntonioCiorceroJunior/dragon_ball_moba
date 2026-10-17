@@ -17,7 +17,7 @@ A arena era um protótipo cujo shader `DragonMoba/Organic Ground` **já utilizav
 | `PrototypeGame.cs` | construção do cenário durante o menu, 3 cards de campeão com informações e confirmação, tropas com modelo distinto, HUD com HP segmentado a cada 100/1000, cronômetro e indicação M para áudio |
 | `MinionVisual.cs` | pequenos drones sentinelas com carapaça, asas, reator de Ki e oscilação sutil, duas cores de time; apenas render/collider de clique |
 | `ArtPresentation.cs` | tema coerente de interface escura/cápsula com brilho metálico, botões com estados; feixes de Ki com núcleo luminoso e efeitos em dois traços; sistema sonoro integrado |
-| `BattleSoundscape.cs` | **áudio original gerado por algoritmo na inicialização**, música ambiente discreta, disparo Ki, impacto, compra, carga, transformação, KO, vitória e alerta; M alterna silêncio. Não reutiliza músicas, dublagens ou sons protegidos |
+| `BattleSoundscape.cs` | **áudio original gerado por algoritmo na inicialização**, música ambiente discreta, disparo Ki, impacto, compra, carga, transformação, KO, vitória e alerta; M alterna silêncio. **Combina os três clipes já existentes e aprovados no projeto** para laser, impacto e carga com os sinais procedurais. Não introduz música, dublagem ou áudio protegido de terceiros |
 | `ArenaCameraController.cs` | inclinação ortográfica 55,5° conforme direção de referência, com follow/free, foco/zoom existentes preservados |
 | `ArtSmoke.cs`, `VisualStageChecks.cs` | novas verificações de `mainTexture`, fog, modelo minion, inicialização de áudio e novo ângulo de câmera |
 
