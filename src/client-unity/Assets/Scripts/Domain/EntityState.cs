@@ -27,6 +27,19 @@ namespace DragonMoba.Domain
         public float MaxKi;
         public float Ki;
         public float KiRegen = 2f;
+        // Derived from level, current form and owned items (StatCalculator).
+        public float HpRegenPer5;
+        public float AttackSpeedBonus;
+        public float LifeSteal;
+        public float SpellVamp;
+        public float CritChance;
+        public float AbilityHaste;
+        public float ArmorPenPercent;
+        public float KiPenPercent;
+        public int BasicAttacksIssued;
+        // Read-only combat feedback, updated during charging/training.
+        public float TrainingXpPerSecond;
+
         public float Armor = 25f;
         public float KiResist = 25f;
         public float PhysicalAttack;
