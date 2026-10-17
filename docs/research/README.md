@@ -40,3 +40,7 @@ Estes dossiês são **mais específicos** que o blueprint v1/v2 e apresentam hip
 ## Protocolo de atualização de pesquisa
 
 Quando houver novo estudo/patch ou evidência, registrar **data/versão, fonte, afirmação específica, aplicabilidade, mudança no plano e teste para falsificar hipótese**. Não substituir números silenciosamente. A fase de playtesting deverá complementar fontes publicadas com dados coletados do nosso próprio jogo.
+
+## Estado de avanço auditável
+
+Acompanhe [STATUS_INVESTIGACAO.md](STATUS_INVESTIGACAO.md): matriz por sistema com evidência E1–E5, temas realmente estudados, pesquisas pendentes e limites de validação. Isso evita confundir documentação com teste Unity/Windows ou playtest humano.
