@@ -860,7 +860,7 @@ namespace DragonMoba.Domain
             var item = Catalog.Item(itemId);
             if (item == null || item.TrainingBoots) return false;
             hero.Inventory.Remove(itemId);
-            hero.Zeni += (int)Math.Floor(item.Price * .7f);
+            hero.Zeni += (int)((long)item.Price * 70 / 100);
             StatCalculator.Refresh(hero);
             events.Add(new GameEvent(EventKind.Purchase, hero.Id, hero.Position, "Vendeu " + item.Name));
             return true;

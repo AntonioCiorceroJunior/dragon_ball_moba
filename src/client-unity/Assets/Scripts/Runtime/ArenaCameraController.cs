@@ -51,7 +51,8 @@ namespace DragonMoba.Runtime
         public void Tick(Vector3 hero, bool readInput = true)
         {
             if(!initialized) { initialized = true; Recenter(hero,true); previousMouse = Input.mousePosition; }
-            if(readInput)
+            // Batch validation has no interactive pointer; its default position must not pan the camera.
+            if(readInput && !Application.isBatchMode)
             {
                 Zoom(Input.mouseScrollDelta.y);
                 if(Input.GetKeyDown(KeyCode.Y)) Following = !Following;
