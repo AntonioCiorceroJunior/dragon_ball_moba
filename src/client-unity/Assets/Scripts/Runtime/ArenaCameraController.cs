@@ -4,7 +4,7 @@ namespace DragonMoba.Runtime
     [RequireComponent(typeof(Camera))]
     public sealed class ArenaCameraController : MonoBehaviour
     {
-        [Range(30,60)] public float elevation = 43f;
+        [Range(30,60)] public float elevation = 55.5f;
         public float defaultZoom = 11.5f, minimumZoom = 8f, maximumZoom = 18f;
         public float panSpeed = 18f, smoothing = .12f;
         public bool edgeScroll = true;
