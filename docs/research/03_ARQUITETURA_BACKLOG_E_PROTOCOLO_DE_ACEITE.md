@@ -218,6 +218,24 @@ O nome `LoL` não justifica copiar valores. Números do nosso GDD: preço Luvas 
 
 `Report{hypothesis,baseline,experiment,seed,gameVersion,observedMetrics,uncertainty,screenshots,regressions,rolloutDecision}`. Documento vivo; uma alteração só é "concluída" com código, evidência, diferença no executável e teste. Gamification de indicadores bonitos sem jogo funcional não resolve satisfação.
 
+## 6.4 Desenho de experimento entre patches — derivado de pesquisa longitudinal real sobre LoL
+
+O estudo de **He et al. (FDG 2021, AC12)** analisa 437 mil partidas e 62 versões históricas de LoL, mostrando impacto heterogêneo de patches por composição e habilidade dos jogadores. O preprint de **Kwak (out/2026, AC13)** mostra a necessidade de comunicar efeitos desiguais de mudanças antes de competições, sem comprovar causalidade nas vitórias.
+
+**Processo de balanceamento do nosso jogo:**
+
+1. Congelar versão A de `BalanceProfile`, mapa e dados de personagens, seed e IA. Registrar métricas de linha de base.
+2. Formular hipótese mensurável: p.ex. "reduzir cura de Cell em 12% aumenta TTK de lutadores contra Cell sem inviabilizar Cell contra poke".
+3. Aplicar **uma família de alteração por experimento**, preservando versão A; rodar partidas pareadas A/B com composição, side, rota, nível, itens e seed controlados.
+4. Relatar efeitos **separados** por matchup, estilo, fase e posição, evitando conclusões baseadas só no agregado. Mudanças de item alteram tanto inimigos quanto aliados por counterbuild; catalogar impactos indiretos.
+5. Quando existirem pessoas jogando, avaliar diferença por experiência/maestria e por quantos dias/partidas transcorreram após a mudança. **Bots não permitem estimar comportamento humano diante de patch.**
+6. Preservar resultados desfavoráveis; estimar intervalos de incerteza; registrar uma decisão `Keep/Rollback/Retest`.
+7. Nunca confundir diferenças causadas por bug, alteração de pathing ou IA com alteração genuína de dano/kit.
+
+Exemplo de protocolo para DBM-003B: executar 30 seeds fixas em duas versões de combate; avaliar `MeanTTK`, `P95TTK`, absorção de escudos, life steal, vitórias por lado, travas de simulação e diferença entre personagens. São **30 repetições de engenharia**, não uma amostra suficiente para estimar taxa de vitória humana. Ajustar número de seeds conforme variância observada.
+
+**Checklist de relatório:** `[hypothesis, versions, changedParameters, mapVersion, botPolicy, seeds, inputs, outcomes, uncertainty, subgroupEffects, externalValidityLimit, releaseDecision]`. Incorporar a `docs/coordination/reports/` e ao changelog do jogo antes de considerar o balanceamento finalizado.
+
 ## 7. Experimentos de interface e sensação
 
 Fazer protocolos de três usuários, sem ajudá-los:
