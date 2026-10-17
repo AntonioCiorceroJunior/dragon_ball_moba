@@ -1,0 +1,37 @@
+{
+    "stage": "fps-waves1080",
+    "groundShader": "DragonMoba/Organic Ground",
+    "groundTexture": "Original detailed arena ground paint",
+    "frames": 7201,
+    "minions": 52,
+    "renderers": 1193,
+    "width": 1920,
+    "height": 1080,
+    "textureWidth": 960,
+    "audioSources": 3,
+    "playingSources": 1,
+    "mutedSources": 0,
+    "audioSampleRate": 48000,
+    "seconds": 30.052953800678253,
+    "averageFps": 239.6103973388672,
+    "medianFrameMs": 4.163123607635498,
+    "p95FrameMs": 4.163130760192871,
+    "p99FrameMs": 4.1796979904174805,
+    "textureEnabled": 1.0,
+    "galleryHeights": [
+        0.0,
+        0.0,
+        0.0
+    ],
+    "cameraPerspective": true,
+    "mapHalfWidth": 72.0,
+    "mapHalfHeight": 72.0,
+    "lastAudio": {
+        "file": "",
+        "samples": 0,
+        "clippedSamples": 0,
+        "seconds": 0.0,
+        "peak": 0.0,
+        "rms": 0.0
+    }
+}

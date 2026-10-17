@@ -1,0 +1,702 @@
+[
+    {
+        "test":  "Ordinary start: one point, all skills locked",
+        "passed":  true,
+        "state":  {
+                      "tick":  112,
+                      "level":  1,
+                      "points":  1,
+                      "target":  0,
+                      "enemyId":  22,
+                      "attacks":  0,
+                      "minimumAttackTicks":  2147483647,
+                      "ranks":  [
+                                    0,
+                                    0,
+                                    0,
+                                    0
+                                ],
+                      "ki":  135.0,
+                      "hp":  520.0,
+                      "enemyHp":  640.0,
+                      "attackInterval":  1.100000023841858,
+                      "enemyX":  1799.4969482421875,
+                      "enemyY":  -686.87890625,
+                      "cooldowns":  [
+                                        0.0,
+                                        0.0,
+                                        0.0,
+                                        0.0
+                                    ],
+                      "charging":  false,
+                      "form":  "super_base",
+                      "enemyForm":  "cell_imperfect",
+                      "fixture":  "ordinary match; no arranged state"
+                  }
+    },
+    {
+        "test":  "Physical Q rejected without Ki or cooldown cost",
+        "passed":  true,
+        "state":  {
+                      "tick":  131,
+                      "level":  1,
+                      "points":  1,
+                      "target":  0,
+                      "enemyId":  22,
+                      "attacks":  0,
+                      "minimumAttackTicks":  2147483647,
+                      "ranks":  [
+                                    0,
+                                    0,
+                                    0,
+                                    0
+                                ],
+                      "ki":  135.0,
+                      "hp":  520.0,
+                      "enemyHp":  640.0,
+                      "attackInterval":  1.100000023841858,
+                      "enemyX":  1789.6544189453125,
+                      "enemyY":  -680.279052734375,
+                      "cooldowns":  [
+                                        0.0,
+                                        0.0,
+                                        0.0,
+                                        0.0
+                                    ],
+                      "charging":  false,
+                      "form":  "super_base",
+                      "enemyForm":  "cell_imperfect",
+                      "fixture":  "ordinary match; no arranged state"
+                  }
+    },
+    {
+        "test":  "Physical Ctrl+Q spends one point",
+        "passed":  true,
+        "state":  {
+                      "tick":  144,
+                      "level":  1,
+                      "points":  0,
+                      "target":  0,
+                      "enemyId":  22,
+                      "attacks":  0,
+                      "minimumAttackTicks":  2147483647,
+                      "ranks":  [
+                                    1,
+                                    0,
+                                    0,
+                                    0
+                                ],
+                      "ki":  135.0,
+                      "hp":  520.0,
+                      "enemyHp":  640.0,
+                      "attackInterval":  1.100000023841858,
+                      "enemyX":  1782.8656005859375,
+                      "enemyY":  -675.0133056640625,
+                      "cooldowns":  [
+                                        0.0,
+                                        0.0,
+                                        0.0,
+                                        0.0
+                                    ],
+                      "charging":  false,
+                      "form":  "super_base",
+                      "enemyForm":  "cell_imperfect",
+                      "fixture":  "ordinary match; no arranged state"
+                  }
+    },
+    {
+        "test":  "Physical Q costs Ki and starts cooldown",
+        "passed":  true,
+        "state":  {
+                      "tick":  181,
+                      "level":  1,
+                      "points":  0,
+                      "target":  0,
+                      "enemyId":  22,
+                      "attacks":  0,
+                      "minimumAttackTicks":  2147483647,
+                      "ranks":  [
+                                    1,
+                                    0,
+                                    0,
+                                    0
+                                ],
+                      "ki":  115.73332214355469,
+                      "hp":  520.0,
+                      "enemyHp":  640.0,
+                      "attackInterval":  1.100000023841858,
+                      "enemyX":  1763.85400390625,
+                      "enemyY":  -660.266845703125,
+                      "cooldowns":  [
+                                        3.633333683013916,
+                                        0.0,
+                                        0.0,
+                                        0.0
+                                    ],
+                      "charging":  false,
+                      "form":  "super_base",
+                      "enemyForm":  "cell_imperfect",
+                      "fixture":  "ordinary match; no arranged state"
+                  }
+    },
+    {
+        "test":  "Level 2 rejects Q rank 2 and preserves point",
+        "passed":  true,
+        "state":  {
+                      "tick":  218,
+                      "level":  2,
+                      "points":  1,
+                      "target":  0,
+                      "enemyId":  22,
+                      "attacks":  0,
+                      "minimumAttackTicks":  2147483647,
+                      "ranks":  [
+                                    1,
+                                    0,
+                                    0,
+                                    0
+                                ],
+                      "ki":  118.199951171875,
+                      "hp":  544.0,
+                      "enemyHp":  640.0,
+                      "attackInterval":  1.08695650100708,
+                      "enemyX":  1743.431396484375,
+                      "enemyY":  -644.42578125,
+                      "cooldowns":  [
+                                        2.4000015258789063,
+                                        0.0,
+                                        0.0,
+                                        0.0
+                                    ],
+                      "charging":  false,
+                      "form":  "super_base",
+                      "enemyForm":  "cell_imperfect",
+                      "fixture":  "controlled XP via GrantExperience: 2"
+                  }
+    },
+    {
+        "test":  "Level 3 Q rank 2 via physical plus button",
+        "passed":  true,
+        "state":  {
+                      "tick":  255,
+                      "level":  3,
+                      "points":  1,
+                      "target":  0,
+                      "enemyId":  22,
+                      "attacks":  0,
+                      "minimumAttackTicks":  2147483647,
+                      "ranks":  [
+                                    2,
+                                    0,
+                                    0,
+                                    0
+                                ],
+                      "ki":  120.66658020019531,
+                      "hp":  568.0,
+                      "enemyHp":  640.0,
+                      "attackInterval":  1.07421875,
+                      "enemyX":  1714.17333984375,
+                      "enemyY":  -628.97900390625,
+                      "cooldowns":  [
+                                        1.1666693687438965,
+                                        0.0,
+                                        0.0,
+                                        0.0
+                                    ],
+                      "charging":  false,
+                      "form":  "super_base",
+                      "enemyForm":  "cell_imperfect",
+                      "fixture":  "controlled XP via GrantExperience: 3"
+                  }
+    },
+    {
+        "test":  "R rejected below level 6",
+        "passed":  true,
+        "state":  {
+                      "tick":  274,
+                      "level":  3,
+                      "points":  1,
+                      "target":  0,
+                      "enemyId":  22,
+                      "attacks":  0,
+                      "minimumAttackTicks":  2147483647,
+                      "ranks":  [
+                                    2,
+                                    0,
+                                    0,
+                                    0
+                                ],
+                      "ki":  121.9332275390625,
+                      "hp":  568.0,
+                      "enemyHp":  640.0,
+                      "attackInterval":  1.07421875,
+                      "enemyX":  1702.891845703125,
+                      "enemyY":  -619.89501953125,
+                      "cooldowns":  [
+                                        0.53333580493927,
+                                        0.0,
+                                        0.0,
+                                        0.0
+                                    ],
+                      "charging":  false,
+                      "form":  "super_base",
+                      "enemyForm":  "cell_imperfect",
+                      "fixture":  "controlled XP via GrantExperience: 3"
+                  }
+    },
+    {
+        "test":  "Single right click on 3D enemy body acquires target",
+        "passed":  true,
+        "state":  {
+                      "tick":  329,
+                      "level":  3,
+                      "points":  1,
+                      "target":  22,
+                      "enemyId":  22,
+                      "attacks":  1,
+                      "minimumAttackTicks":  2147483647,
+                      "ranks":  [
+                                    2,
+                                    0,
+                                    0,
+                                    0
+                                ],
+                      "ki":  125.59983825683594,
+                      "hp":  568.0,
+                      "enemyHp":  4954.84033203125,
+                      "attackInterval":  1.07421875,
+                      "enemyX":  639.5322875976563,
+                      "enemyY":  138.38043212890625,
+                      "cooldowns":  [
+                                        0.0,
+                                        0.0,
+                                        0.0,
+                                        0.0
+                                    ],
+                      "charging":  false,
+                      "form":  "super_base",
+                      "enemyForm":  "cell_imperfect",
+                      "fixture":  "controlled combat positions; stationary enemy with no attacks/skills"
+                  }
+    },
+    {
+        "test":  "Chase and repeated attacks respect attack interval",
+        "passed":  true,
+        "state":  {
+                      "tick":  480,
+                      "level":  3,
+                      "points":  1,
+                      "target":  22,
+                      "enemyId":  22,
+                      "attacks":  5,
+                      "minimumAttackTicks":  33,
+                      "ranks":  [
+                                    2,
+                                    0,
+                                    0,
+                                    0
+                                ],
+                      "ki":  135.0,
+                      "hp":  568.0,
+                      "enemyHp":  4779.76708984375,
+                      "attackInterval":  1.07421875,
+                      "enemyX":  639.52978515625,
+                      "enemyY":  144.7752685546875,
+                      "cooldowns":  [
+                                        0.0,
+                                        0.0,
+                                        0.0,
+                                        0.0
+                                    ],
+                      "charging":  false,
+                      "form":  "super_base",
+                      "enemyForm":  "cell_imperfect",
+                      "fixture":  "controlled combat positions; stationary enemy with no attacks/skills"
+                  }
+    },
+    {
+        "test":  "Attacks resume after physical Q without another click",
+        "passed":  true,
+        "state":  {
+                      "tick":  552,
+                      "level":  3,
+                      "points":  1,
+                      "target":  22,
+                      "enemyId":  22,
+                      "attacks":  7,
+                      "minimumAttackTicks":  33,
+                      "ranks":  [
+                                    2,
+                                    0,
+                                    0,
+                                    0
+                                ],
+                      "ki":  119.73326110839844,
+                      "hp":  568.0,
+                      "enemyHp":  4692.09033203125,
+                      "attackInterval":  1.07421875,
+                      "enemyX":  639.52978515625,
+                      "enemyY":  144.7752685546875,
+                      "cooldowns":  [
+                                        1.6333355903625488,
+                                        0.0,
+                                        0.0,
+                                        0.0
+                                    ],
+                      "charging":  false,
+                      "form":  "super_base",
+                      "enemyForm":  "cell_imperfect",
+                      "fixture":  "controlled combat positions; stationary enemy with no attacks/skills"
+                  }
+    },
+    {
+        "test":  "Ground click cancels repeated attacks",
+        "passed":  true,
+        "state":  {
+                      "tick":  638,
+                      "level":  3,
+                      "points":  1,
+                      "target":  0,
+                      "enemyId":  22,
+                      "attacks":  8,
+                      "minimumAttackTicks":  33,
+                      "ranks":  [
+                                    2,
+                                    0,
+                                    0,
+                                    0
+                                ],
+                      "ki":  125.46650695800781,
+                      "hp":  568.0,
+                      "enemyHp":  4650.25390625,
+                      "attackInterval":  1.07421875,
+                      "enemyX":  639.5361328125,
+                      "enemyY":  128.29205322265625,
+                      "cooldowns":  [
+                                        0.0,
+                                        0.0,
+                                        0.0,
+                                        0.0
+                                    ],
+                      "charging":  false,
+                      "form":  "super_base",
+                      "enemyForm":  "cell_imperfect",
+                      "fixture":  "controlled combat positions; stationary enemy with no attacks/skills"
+                  }
+    },
+    {
+        "test":  "Holding physical C cancels attack",
+        "passed":  true,
+        "state":  {
+                      "tick":  687,
+                      "level":  3,
+                      "points":  1,
+                      "target":  0,
+                      "enemyId":  22,
+                      "attacks":  9,
+                      "minimumAttackTicks":  33,
+                      "ranks":  [
+                                    2,
+                                    0,
+                                    0,
+                                    0
+                                ],
+                      "ki":  135.0,
+                      "hp":  568.0,
+                      "enemyHp":  4606.93603515625,
+                      "attackInterval":  1.07421875,
+                      "enemyX":  639.5299072265625,
+                      "enemyY":  144.4586181640625,
+                      "cooldowns":  [
+                                        0.0,
+                                        0.0,
+                                        0.0,
+                                        0.0
+                                    ],
+                      "charging":  false,
+                      "form":  "super_base",
+                      "enemyForm":  "cell_imperfect",
+                      "fixture":  "controlled combat positions; stationary enemy with no attacks/skills"
+                  }
+    },
+    {
+        "test":  "R upgrade at level 6",
+        "passed":  true,
+        "state":  {
+                      "tick":  720,
+                      "level":  6,
+                      "points":  3,
+                      "target":  0,
+                      "enemyId":  22,
+                      "attacks":  9,
+                      "minimumAttackTicks":  33,
+                      "ranks":  [
+                                    2,
+                                    0,
+                                    0,
+                                    1
+                                ],
+                      "ki":  135.0,
+                      "hp":  640.0,
+                      "enemyHp":  4608.25732421875,
+                      "attackInterval":  1.0377358198165894,
+                      "enemyX":  639.5299072265625,
+                      "enemyY":  144.4586181640625,
+                      "cooldowns":  [
+                                        0.0,
+                                        0.0,
+                                        0.0,
+                                        0.0
+                                    ],
+                      "charging":  false,
+                      "form":  "super_god",
+                      "enemyForm":  "cell_imperfect",
+                      "fixture":  "controlled XP via GrantExperience: 6"
+                  }
+    },
+    {
+        "test":  "Next R rank blocked at level 6",
+        "passed":  true,
+        "state":  {
+                      "tick":  738,
+                      "level":  6,
+                      "points":  3,
+                      "target":  0,
+                      "enemyId":  22,
+                      "attacks":  9,
+                      "minimumAttackTicks":  33,
+                      "ranks":  [
+                                    2,
+                                    0,
+                                    0,
+                                    1
+                                ],
+                      "ki":  135.0,
+                      "hp":  640.0,
+                      "enemyHp":  4608.97802734375,
+                      "attackInterval":  1.0377358198165894,
+                      "enemyX":  639.5299072265625,
+                      "enemyY":  144.4586181640625,
+                      "cooldowns":  [
+                                        0.0,
+                                        0.0,
+                                        0.0,
+                                        0.0
+                                    ],
+                      "charging":  false,
+                      "form":  "super_god",
+                      "enemyForm":  "cell_imperfect",
+                      "fixture":  "controlled XP via GrantExperience: 6"
+                  }
+    },
+    {
+        "test":  "R upgrade at level 11",
+        "passed":  true,
+        "state":  {
+                      "tick":  774,
+                      "level":  11,
+                      "points":  7,
+                      "target":  0,
+                      "enemyId":  22,
+                      "attacks":  9,
+                      "minimumAttackTicks":  33,
+                      "ranks":  [
+                                    2,
+                                    0,
+                                    0,
+                                    2
+                                ],
+                      "ki":  135.0,
+                      "hp":  760.0,
+                      "enemyHp":  4610.41943359375,
+                      "attackInterval":  0.9821428656578064,
+                      "enemyX":  639.5299072265625,
+                      "enemyY":  144.4586181640625,
+                      "cooldowns":  [
+                                        0.0,
+                                        0.0,
+                                        0.0,
+                                        0.0
+                                    ],
+                      "charging":  false,
+                      "form":  "super_blue",
+                      "enemyForm":  "cell_imperfect",
+                      "fixture":  "controlled XP via GrantExperience: 11"
+                  }
+    },
+    {
+        "test":  "Next R rank blocked at level 11",
+        "passed":  true,
+        "state":  {
+                      "tick":  792,
+                      "level":  11,
+                      "points":  7,
+                      "target":  0,
+                      "enemyId":  22,
+                      "attacks":  9,
+                      "minimumAttackTicks":  33,
+                      "ranks":  [
+                                    2,
+                                    0,
+                                    0,
+                                    2
+                                ],
+                      "ki":  135.0,
+                      "hp":  760.0,
+                      "enemyHp":  4611.14013671875,
+                      "attackInterval":  0.9821428656578064,
+                      "enemyX":  639.5299072265625,
+                      "enemyY":  144.4586181640625,
+                      "cooldowns":  [
+                                        0.0,
+                                        0.0,
+                                        0.0,
+                                        0.0
+                                    ],
+                      "charging":  false,
+                      "form":  "super_blue",
+                      "enemyForm":  "cell_imperfect",
+                      "fixture":  "controlled XP via GrantExperience: 11"
+                  }
+    },
+    {
+        "test":  "R upgrade at level 16",
+        "passed":  true,
+        "state":  {
+                      "tick":  824,
+                      "level":  16,
+                      "points":  11,
+                      "target":  0,
+                      "enemyId":  22,
+                      "attacks":  9,
+                      "minimumAttackTicks":  33,
+                      "ranks":  [
+                                    2,
+                                    0,
+                                    0,
+                                    3
+                                ],
+                      "ki":  135.0,
+                      "hp":  880.0,
+                      "enemyHp":  4612.42138671875,
+                      "attackInterval":  0.9322034120559692,
+                      "enemyX":  639.5299072265625,
+                      "enemyY":  144.4586181640625,
+                      "cooldowns":  [
+                                        0.0,
+                                        0.0,
+                                        0.0,
+                                        0.0
+                                    ],
+                      "charging":  false,
+                      "form":  "super_ui_sign",
+                      "enemyForm":  "cell_imperfect",
+                      "fixture":  "controlled XP via GrantExperience: 16"
+                  }
+    },
+    {
+        "test":  "Evolved enemy 3D body remains clickable after transformation",
+        "passed":  true,
+        "state":  {
+                      "tick":  864,
+                      "level":  16,
+                      "points":  11,
+                      "target":  22,
+                      "enemyId":  22,
+                      "attacks":  10,
+                      "minimumAttackTicks":  33,
+                      "ranks":  [
+                                    2,
+                                    0,
+                                    0,
+                                    3
+                                ],
+                      "ki":  135.0,
+                      "hp":  880.0,
+                      "enemyHp":  788.2958374023438,
+                      "attackInterval":  0.9322034120559692,
+                      "enemyX":  640.00048828125,
+                      "enemyY":  149.46923828125,
+                      "cooldowns":  [
+                                        0.0,
+                                        0.0,
+                                        0.0,
+                                        0.0
+                                    ],
+                      "charging":  false,
+                      "form":  "super_ui_sign",
+                      "enemyForm":  "cell_perfect",
+                      "fixture":  "controlled enemy XP to level 11; normal form replacement"
+                  }
+    },
+    {
+        "test":  "Controlled death enters real respawn state",
+        "passed":  true,
+        "state":  {
+                      "tick":  883,
+                      "level":  16,
+                      "points":  11,
+                      "target":  0,
+                      "enemyId":  22,
+                      "attacks":  10,
+                      "minimumAttackTicks":  33,
+                      "ranks":  [
+                                    2,
+                                    0,
+                                    0,
+                                    3
+                                ],
+                      "ki":  135.0,
+                      "hp":  0.0,
+                      "enemyHp":  789.8787841796875,
+                      "attackInterval":  0.9322034120559692,
+                      "enemyX":  640.00048828125,
+                      "enemyY":  149.46923828125,
+                      "cooldowns":  [
+                                        0.0,
+                                        0.0,
+                                        0.0,
+                                        0.0
+                                    ],
+                      "charging":  false,
+                      "form":  "super_ui_sign",
+                      "enemyForm":  "cell_perfect",
+                      "fixture":  "controlled lethal damage; normal respawn timer"
+                  }
+    },
+    {
+        "test":  "Normal respawn preserves ranks and points",
+        "passed":  false,
+        "state":  {
+                      "tick":  1259,
+                      "level":  16,
+                      "points":  11,
+                      "target":  0,
+                      "enemyId":  22,
+                      "attacks":  10,
+                      "minimumAttackTicks":  33,
+                      "ranks":  [
+                                    2,
+                                    0,
+                                    0,
+                                    3
+                                ],
+                      "ki":  135.0,
+                      "hp":  0.0,
+                      "enemyHp":  821.2044677734375,
+                      "attackInterval":  0.9322034120559692,
+                      "enemyX":  640.0009155273438,
+                      "enemyY":  149.4696044921875,
+                      "cooldowns":  [
+                                        0.0,
+                                        0.0,
+                                        0.0,
+                                        0.0
+                                    ],
+                      "charging":  false,
+                      "form":  "super_ui_sign",
+                      "enemyForm":  "cell_perfect",
+                      "fixture":  "controlled lethal damage; normal respawn timer"
+                  }
+    }
+]

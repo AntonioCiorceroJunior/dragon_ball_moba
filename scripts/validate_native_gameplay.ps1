@@ -136,7 +136,7 @@ try {
  Check ((State).hp -le 0) 'Controlled death enters real respawn state'
  $deathTick=(State).tick
  $deadline=[DateTime]::UtcNow.AddSeconds(120)
- while((State).hp -le 0 -and (State).tick-$deathTick -lt 42*30 -and [DateTime]::UtcNow -lt $deadline){Start-Sleep -Milliseconds 500}
+ while((State).hp -le 0 -and (State).tick-$deathTick -lt 42*30 -and [DateTime]::UtcNow -lt $deadline){Focus; Start-Sleep -Milliseconds 500}
  Check ((State).hp -gt 0 -and ((State).ranks -join ',') -eq $savedRanks -and (State).points -eq $savedPoints) 'Normal respawn preserves ranks and points'
  Key 27
  Click 640 655 # Confirm the selected champion in the ART-002 selection screen (1280x720).

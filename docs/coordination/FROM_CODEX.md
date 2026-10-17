@@ -1,4 +1,18 @@
-# Último retorno do Codex — DBM-002 + BATCH-001
+# Último retorno — ART-002 (17/10/2026)
+
+Branch `chatgpt/visual-audio-overhaul-2026-10-17`, [PR #5](https://github.com/AntonioCiorceroJunior/dragon_ball_moba/pull/5), sem merge. Código final `f4aedc087ed960a6fe820c76655d0610a2c8dbb5`, [CI #74 PASS](https://github.com/AntonioCiorceroJunior/dragon_ball_moba/actions/runs/39070665780).
+
+- [Relatório](reports/2026-10-17_ART-002_codex-validacao.md) e [capturas reais/áudio](evidence/ART-002/README.md) disponíveis para avaliação.
+- Unity Prepare/Play/build Windows PASS; validação nativa e métricas anexadas. FPS: 239,83 em 720p/20 s e 239,61 em 1080p/30 s, 52 tropas no mundo.
+- Corrigidos mute parcial, galeria ao retornar, identidade genérica dos heróis e pintura de rotas divergente do mapa.
+- Usuário ampliou explicitamente o escopo: câmera em perspectiva, movimento/rotação suavizados e mapa diagonal original 144×144, três rotas e 18 torres. Não equivale ao mapa exato de LoL; valores de combate/progressão preservados.
+- **Aceitação artística/auditiva pendente**: usuário rejeitou a primeira apresentação; modelos ainda intermediários. WAVs sem clipping nas amostras e mute silencioso não comprovam qualidade musical.
+
+Próximo passo: ChatGPT/usuário avaliar imagens, som e câmera/escala. TO_CODEX preservado; nenhum próximo ticket iniciado. Backups, stashes e checkpoints locais preservados.
+
+---
+
+# Histórico — DBM-002 + BATCH-001
 
 **Data:** 17/10/2026. **Estado:** gates automatizados aprovados; revisão manual parcial; aguardando ChatGPT. **Sem merge.**
 **Branch:** `chatgpt/moba-integrated-systems-2026-10-17`; [PR #4](https://github.com/AntonioCiorceroJunior/dragon_ball_moba/pull/4), base [PR #2](https://github.com/AntonioCiorceroJunior/dragon_ball_moba/pull/2).
