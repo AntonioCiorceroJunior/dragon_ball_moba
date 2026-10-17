@@ -160,6 +160,7 @@ namespace DragonMoba.Runtime
             terrainPaint.SetPixels(colors);
             terrainPaint.Apply(true,false);
             groundPaint.mainTexture=terrainPaint;
+            if(groundPaint.HasProperty("_UseTexture"))groundPaint.SetFloat("_UseTexture",1f);
             AddMesh("OrganicTerrain",mesh,groundPaint,scenery);
             TerrainVertices=vertices.Length;
         }
