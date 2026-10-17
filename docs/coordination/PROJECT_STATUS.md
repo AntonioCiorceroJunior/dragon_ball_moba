@@ -1,52 +1,36 @@
-# Estado técnico do projeto
+# Estado técnico — DBM-001 validada em branch
 
-**Última atualização:** 2026-10-16 — Codex, DBM-000.  
-**Estado:** projeto-fonte Unity e documentos mestres importados; cópia limpa compilada e testada.  
-**Commit dos fontes:** `04e33a986c7c545c5ae855f7ba4ef1a246ec9a8f`; **handoff verificado no clone remoto:** `684b5e467a48211b2d88fda98e47daef0d38f519`.  
-**Relatório:** [DBM-000 — publicação inicial](reports/2026-10-16_DBM-000_publicacao-inicial.md).
+**Atualização:** 2026-10-16, Codex. **Estado:** importação, smoke, build e 21 verificações nativas passaram; HUD corrigido. **Aguardando revisão; sem merge.**
 
-**Conferência posterior:** [clone novo do GitHub](reports/2026-10-16_DBM-000_verificacao-remota.md) passou nas verificações de publicação e integridade. O commit desta atualização contém apenas documentação e provas adicionais.
+- Branch: `chatgpt/DBM-001-gameplay`; [PR #1](https://github.com/AntonioCiorceroJunior/dragon_ball_moba/pull/1).
+- Implementação recebida: `089a48f5188496711b957c282776ed0fa44ec4b6`.
+- Correção/evidências: `c8240a2ae33643a131ed97fe4f858a42d33acd1d`; o commit deste status acrescenta somente documentação.
+- Instrução executada: TO_CODEX da main `cd64b35e6ac8663b1864ddae2549139d62025a2d`, sem reescrever a versão anterior na branch.
+- [Relatório desta execução](reports/2026-10-16_DBM-001_codex-validacao.md); [histórico DBM-000](reports/2026-10-16_DBM-000_publicacao-inicial.md).
 
-## Projeto e execução
+## Projeto e build real
 
-- Raiz real do Unity no repositório: **`src/client-unity`**. Na pasta de trabalho original, a cópia ativa está em `Repositorio/dragon_ball_moba/src/client-unity`.
-- Editor: **Unity 6000.6.6f1**; Built-in; `activeInputHandler: 0`.
-- Cena: `Assets/_DragonMOBA/Scenes/VisualTest/ArenaVisualTest.unity`.
-- Identificação: **VISUAL TEST 01 - Organic Arena**. Mapa gerado durante Play.
-- Build local: `src/client-unity/Builds/VisualTest/DragonMobaVisualTest.exe`; executar `JOGAR_VISUAL_TEST.cmd` após compilar. Binários não estão no Git.
-- Build DBM-000: **168.500.853 bytes totais**, em **2026-10-17T00:21:32.7697390Z** (16/10 às 21:21:32, São Paulo).
-- Comando, na raiz do clone: `powershell -NoProfile -ExecutionPolicy Bypass -File scripts/validate_unity.ps1 -Mode VisualBuild`.
+Raiz Unity: **`src/client-unity`**, no clone ativo `Repositorio/dragon_ball_moba` da pasta principal. Editor **6000.6.6f1**, Built-in/Input Manager legado. Cena: `Assets/_DragonMOBA/Scenes/VisualTest/ArenaVisualTest.unity`; mapa gerado em Play.
 
-## Verificações desta execução
+Executável: `src/client-unity/Builds/VisualTest/DragonMobaVisualTest.exe`; launcher `JOGAR_VISUAL_TEST.cmd`. Build Windows x64 Development, **168.510.049 bytes totais**, UTC **2026-10-17T00:59:53.6958770Z** (16/10, 21:59:53 em São Paulo). O selo continua VISUAL TEST 01; [build-info](evidence/DBM-001/build-info.json) e [hash do assembly](evidence/DBM-001/Build-identity.json) distinguem esta build da DBM-000. Binários ficam locais; build anterior preservada em Backups.
 
-| Verificação | Resultado e prova |
+## Resultados verificados
+
+| Camada | Resultado |
 | --- | --- |
-| Importação e preparação na cópia limpa | VisualPrepare passou |
-| Play Mode na cópia limpa | Três campeões/12 formas, animação, combate, Ki/XP, compra, câmera, tropas, torres, morte/respawn, seleção e reinício passaram |
-| Compilação Windows x64 Development | VisualBuild passou; [build-info](evidence/DBM-000/build-info.json) |
-| Executável recém-compilado | Abriu em 1280 × 720; [captura real](evidence/DBM-000/Executable-1280x720.png) |
-| Código preservado | No clone remoto, 19 arquivos C# com o mesmo conteúdo; 14 iguais byte a byte e cinco apenas normalizados de CRLF para LF; três hashes de domínio iguais |
-| Publicação e licenças | Scanner de padrões comuns, tamanhos, `.meta`, pacotes, sete licenças e 26 hashes CC0 passou; checkout dos hashes passou |
-| Integridade remota | Árvore do commit dos fontes igual ao índice revisado: `06dfbbb6653deb2adfa7706d3574fdf1f9c9ab6e` |
-| Clone independente da main | Passou: 450 arquivos, 176 `.meta`, 26 hashes CC0, sete licenças e três hashes de domínio; snapshot `684b5e4` |
+| Unity | VisualPrepare, VisualPlay e VisualBuild passaram |
+| Domínio | Run chama RunAll; pontos/ranks/limites, autoataque, retomada após Q e respawn passaram |
+| Play Mode | Três campeões/12 formas, animação, QWER, Ki/XP, loja, tropas, torres, câmera, morte/respawn, seleção e reinício |
+| Janela Windows | 21 verificações via SendInput passaram; [snapshots](evidence/DBM-001/Native-results.json) |
+| HUD | Sobreposição e texto cortado corrigidos; [captura](evidence/DBM-001/locked.png) |
+| Publicação | 26 hashes CC0, sete licenças, .meta, pacotes e padrões comuns de dados privados conferidos |
 
-Evidências resumidas em [evidence/DBM-000/](evidence/DBM-000/). Logs completos ficam locais em `src/client-unity/Logs/`; não foram publicados por conterem dados do ambiente. A verificação de padrões comuns não constitui auditoria completa de segurança.
+Q foi rejeitada enquanto bloqueada; Ctrl+Q e botão + funcionaram. Q rank2 foi rejeitado no nível2 e aceito em3; R evoluiu em6/11/16. Um clique gerou cinco ataques (intervalo mínimo33 ticks/1,1s); depois de Q houve mais dois sem novo clique. Chão/C cancelaram. Corpo do inimigo Cell perfeito continuou selecionável. Respawn nível16 preservou ranks/pontos; menu/nova partida reiniciou a progressão.
 
-## Conteúdo e dependências
+Preparação controlada na janela: XP via GrantExperience, posições, inimigo estacionário sem ataques/técnicas, transformação inimiga e dano letal. Sonda somente com `-dbm001-native-test`, sob símbolos de Editor/desenvolvimento; não ativa ao jogar normalmente. Não altera ticks, cooldowns, ranks diretamente ou FormId. Não se declara partida completa manual nem teste prolongado.
 
-Domínio C# continua isolado de UnityEngine: `Definitions.cs`, `EntityState.cs`, `GameWorld.cs`. O jogo é offline; não foi implementado servidor remoto. Arquivos de código, cenas, prefabs, materiais, shaders, `.meta`, Packages e ProjectSettings foram incluídos.
+## Preservação e revisão
 
-Humanoide/animações/natureza Quaternius e recursos Kenney têm avisos CC0 incluídos. Nenhum modelo oficial, modelo de fã não autorizado, asset extraído de jogos, toolkit externo ou pacote da Asset Store foi incorporado nesta tarefa. [Manifesto](../ASSET_MANIFEST.md).
+O Codex não alterou os três arquivos de domínio recebidos do ChatGPT. A referência DBM-000 permanece histórica; a nova [DOMAIN_BASELINE.csv](evidence/DBM-001/DOMAIN_BASELINE.csv) identifica o commit aprovado DBM-001 e é reconhecida pelo verificador. Mapa, arte, torres/colisões, inventário e dependências não foram reimplementados. Saídas regeneradas foram arquivadas/restauradas para evitar ruído no PR.
 
-Documentos mestres: [specifications/README.md](../specifications/README.md). Propostas históricas nesses documentos não equivalem a funcionalidades concluídas; Built-in permanece como implementação atual. `AGENTS.md`, `TO_CODEX.md`, decisões e fila remotos foram preservados.
-
-## P0 e verificações que permanecem abertas
-
-- **DBM-001:** progressão individual de Q/W/E/R, desbloqueios e autoataque/perseguição contínua; ainda não corrigidos nesta tarefa.
-- Torres, aggro, alcance e colisões: DBM-002; loja/inventário completo: DBM-003.
-- Partida completa, balanceamento, testes prolongados e multiplayer não comprovados.
-- Testes controlados em Play Mode não substituem entrada física completa nem aceitação de gameplay.
-
-## Próxima ação
-
-DBM-000 entregue para revisão. Aguardar instrução do usuário/ChatGPT para **DBM-001 — corrigir progressão de habilidades e autoataque**. Não executar automaticamente outra tarefa nem reescrever `TO_CODEX.md`.
+**Próximo passo:** ChatGPT revisar PR #1 e decidir sobre merge. `main`, TO_CODEX e fila não foram modificados pelo Codex; DBM-002 não iniciada. Partida completa, desempenho prolongado e multiplayer seguem não comprovados.
