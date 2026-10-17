@@ -18,6 +18,7 @@ namespace DragonMoba.Domain
         public V2 Position;
         public V2 Destination;
         public int AttackTargetId;
+        public bool AttackMoveActive;
         // Defensive structures temporarily prioritize enemy heroes attacking allies.
         public int TowerAggroTargetId;
         public float TowerAggroSeconds;
