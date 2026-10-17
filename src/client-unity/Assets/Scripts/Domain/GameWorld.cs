@@ -9,6 +9,11 @@ namespace DragonMoba.Domain
     {
         public const float FixedStep = 1f / 30f;
         public const float BaseRadius = 9f;
+        public const float TowerBodyRadius = 1.45f;
+        public const float CoreBodyRadius = 1.65f;
+        public const float HeroBodyRadius = 0.5f;
+        public const float MinionBodyRadius = 0.4f;
+        public const float TowerAggroDuration = 3f;
         private readonly List<EntityState> entities = new List<EntityState>();
         private readonly List<GameEvent> events = new List<GameEvent>();
         private int nextId = 1;
@@ -77,7 +82,7 @@ namespace DragonMoba.Domain
                 if (!e.Alive || e.Kind == EntityKind.Core) continue;
                 if (e.Kind == EntityKind.Hero && e.Id != PlayerId) ThinkBot(e);
                 if (e.Kind == EntityKind.Minion) ThinkMinion(e);
-                if (e.Kind == EntityKind.Tower) ThinkTower(e);
+                if (e.Kind == EntityKind.Tower) ThinkTower(e, dt);
             }
             foreach (var e in entities)
             {
@@ -114,7 +119,7 @@ namespace DragonMoba.Domain
                     hero.Charging = false;
                     hero.ChargeSeconds = 0;
                     hero.AttackTargetId = 0;
-                    hero.Destination = V2.Clamp(cmd.Position);
+                    hero.Destination = ClampWalkable(hero, V2.Clamp(cmd.Position));
                     return true;
                 case CommandKind.Attack:
                     var target = Find(cmd.TargetId);
@@ -155,7 +160,7 @@ namespace DragonMoba.Domain
             var e = new EntityState {
                 Id = nextId++, Kind = kind, Team = team, Lane = lane, Position = pos,
                 Destination = pos, DisplayName = kind == EntityKind.Core ? "Nucleo" : "Torre",
-                MaxHp = hp, Hp = hp, PhysicalAttack = kind == EntityKind.Core ? 0 : 68,
+                MaxHp = hp, Hp = hp, PhysicalAttack = kind == EntityKind.Core ? 0 : 125,
                 AttackRange = kind == EntityKind.Tower ? 11.5f : 0,
                 AttackInterval = kind == EntityKind.Tower ? 1.4f : 0,
                 Armor = kind == EntityKind.Tower ? 45 : 25, KiResist = 25
@@ -277,6 +282,109 @@ namespace DragonMoba.Domain
             }
         }
 
+        public float BodyRadius(EntityState entity)
+        {
+            if (entity == null) return 0f;
+            switch (entity.Kind)
+            {
+                case EntityKind.Tower: return TowerBodyRadius;
+                case EntityKind.Core: return CoreBodyRadius;
+                case EntityKind.Hero: return HeroBodyRadius;
+                case EntityKind.Minion: return MinionBodyRadius;
+                default: return 0f;
+            }
+        }
+
+        // Structures are solid even for allies. Destroyed structures stop blocking paths.
+        public bool IsStructureCollision(EntityState mover, V2 point)
+        {
+            if (mover == null) return false;
+            foreach (var obstacle in entities)
+                if (BlocksMovement(mover, obstacle) &&
+                    V2.Distance(point, obstacle.Position) < BodyRadius(mover) + BodyRadius(obstacle) - 0.001f)
+                    return true;
+            return false;
+        }
+
+        private static float Dot(V2 a, V2 b) { return a.X * b.X + a.Y * b.Y; }
+        private static V2 Minus(V2 a, V2 b) { return new V2(a.X - b.X, a.Y - b.Y); }
+        private static V2 Plus(V2 a, V2 b) { return new V2(a.X + b.X, a.Y + b.Y); }
+        private static V2 Scale(V2 v, float factor) { return new V2(v.X * factor, v.Y * factor); }
+        private static float Length(V2 v) { return (float)Math.Sqrt(Dot(v, v)); }
+
+        private static bool BlocksMovement(EntityState mover, EntityState obstacle)
+        {
+            return obstacle != mover && obstacle.Alive &&
+                (obstacle.Kind == EntityKind.Tower || obstacle.Kind == EntityKind.Core);
+        }
+
+        private V2 ClampWalkable(EntityState mover, V2 desired)
+        {
+            foreach (var obstacle in entities)
+            {
+                if (!BlocksMovement(mover, obstacle)) continue;
+                var clearance = BodyRadius(mover) + BodyRadius(obstacle) + 0.05f;
+                var away = Minus(desired, obstacle.Position);
+                var length = Length(away);
+                if (length >= clearance) continue;
+                if (length < 0.0001f) { away = Minus(mover.Position, obstacle.Position); length = Length(away); }
+                if (length < 0.0001f) { away = new V2(1f, 0f); length = 1f; }
+                desired = V2.Clamp(Plus(obstacle.Position, Scale(away, clearance / length)));
+            }
+            return desired;
+        }
+
+        // Swept circle collision plus a tangent step prevents running through tower
+        // centers at low frame rates. No Unity physics dependency in the domain.
+        private V2 AdvanceWithoutStructureCollision(EntityState mover, V2 destination, float maxStep)
+        {
+            if (maxStep <= 0f) return mover.Position;
+            var start = mover.Position;
+            var proposed = V2.Clamp(V2.MoveTowards(start, destination, maxStep));
+            EntityState blocker = null;
+            var nearest = float.MaxValue;
+            foreach (var obstacle in entities)
+            {
+                if (!BlocksMovement(mover, obstacle)) continue;
+                var clearance = BodyRadius(mover) + BodyRadius(obstacle) + 0.02f;
+                var segment = Minus(proposed, start);
+                var lengthSquared = Dot(segment, segment);
+                var projection = lengthSquared < 0.000001f ? 0f :
+                    Math.Max(0f, Math.Min(1f, Dot(Minus(obstacle.Position, start), segment) / lengthSquared));
+                var closest = Plus(start, Scale(segment, projection));
+                if (V2.Distance(closest, obstacle.Position) >= clearance) continue;
+                var distance = V2.Distance(start, obstacle.Position);
+                if (distance >= nearest) continue;
+                blocker = obstacle;
+                nearest = distance;
+            }
+            if (blocker == null) return proposed;
+
+            var radial = Minus(start, blocker.Position);
+            var radialLength = Length(radial);
+            if (radialLength < 0.0001f)
+            {
+                radial = new V2(1, 0);
+                radialLength = 1f;
+            }
+            radial = Scale(radial, 1f / radialLength);
+            var desired = Minus(destination, start);
+            var cross = radial.X * desired.Y - radial.Y * desired.X;
+            var side = Math.Abs(cross) < 0.0001f ? (mover.Id % 2 == 0 ? 1f : -1f)
+                : (cross > 0f ? 1f : -1f);
+            var tangent = new V2(-radial.Y * side, radial.X * side);
+            var step = Math.Min(maxStep, Length(desired));
+            var result = V2.Clamp(Plus(start, Scale(tangent, step)));
+            // Project back onto the outside boundary if rounding or teleporting
+            // brought the actor inside the structure's solid circle.
+            var fromCenter = Minus(result, blocker.Position);
+            var minimum = BodyRadius(mover) + BodyRadius(blocker) + 0.02f;
+            var resultLength = Length(fromCenter);
+            if (resultLength < minimum)
+                result = V2.Clamp(Plus(blocker.Position, Scale(fromCenter, minimum / Math.Max(resultLength, 0.0001f))));
+            return IsStructureCollision(mover, result) ? start : result;
+        }
+
         private void UpdateMovement(EntityState entity, float dt)
         {
             entity.AttackCooldown = Math.Max(0f, entity.AttackCooldown - (entity.Kind == EntityKind.Hero ? 0f : dt));
@@ -297,7 +405,7 @@ namespace DragonMoba.Domain
             var speed = entity.MoveSpeed;
             if (entity.TrainingBootsRemaining > 0) speed *= 0.92f;
             if (entity.TrainingBootsCompleted) speed *= 1.08f;
-            entity.Position = V2.Clamp(V2.MoveTowards(entity.Position, destination, speed * dt));
+            entity.Position = AdvanceWithoutStructureCollision(entity, destination, speed * dt);
         }
 
         private void ThinkMinion(EntityState minion)
@@ -326,12 +434,46 @@ namespace DragonMoba.Domain
             return null;
         }
 
-        private void ThinkTower(EntityState turret)
+        private void ThinkTower(EntityState turret, float dt)
         {
             if (!turret.Alive) return;
-            var nearestMinion = NearestEnemy(turret, turret.AttackRange, true);
-            turret.AttackTargetId = nearestMinion == null ? 0 : nearestMinion.Id;
-            turret.AttackCooldown = Math.Max(0, turret.AttackCooldown - FixedStep);
+            turret.AttackCooldown = Math.Max(0f, turret.AttackCooldown - dt);
+            turret.TowerAggroSeconds = Math.Max(0f, turret.TowerAggroSeconds - dt);
+
+            var aggro = Find(turret.TowerAggroTargetId);
+            if (turret.TowerAggroSeconds > 0f && aggro != null && aggro.Alive &&
+                aggro.Kind == EntityKind.Hero && aggro.Team != turret.Team &&
+                InRange(turret, aggro, turret.AttackRange))
+            {
+                turret.AttackTargetId = aggro.Id;
+                return;
+            }
+            turret.TowerAggroTargetId = 0;
+            turret.TowerAggroSeconds = 0f;
+
+            // Enemy minions always have priority unless an enemy hero provokes
+            // the tower by damaging a defended ally. Never target outside range.
+            EntityState nearestMinion = null;
+            EntityState nearestHero = null;
+            var minionDistance = float.MaxValue;
+            var heroDistance = float.MaxValue;
+            foreach (var candidate in entities)
+            {
+                if (!candidate.Alive || candidate.Team == turret.Team ||
+                    candidate.Team == Team.Neutral || !InRange(turret, candidate, turret.AttackRange))
+                    continue;
+                var distance = V2.Distance(turret.Position, candidate.Position);
+                if (candidate.Kind == EntityKind.Minion && distance < minionDistance)
+                {
+                    nearestMinion = candidate; minionDistance = distance;
+                }
+                else if (candidate.Kind == EntityKind.Hero && distance < heroDistance)
+                {
+                    nearestHero = candidate; heroDistance = distance;
+                }
+            }
+            var selected = nearestMinion ?? nearestHero;
+            turret.AttackTargetId = selected == null ? 0 : selected.Id;
         }
 
         private void ThinkBot(EntityState bot)
@@ -388,8 +530,8 @@ namespace DragonMoba.Domain
                         60f + actor.KiPower * 0.85f + 24f * (actor.SkillRanks[i] - 1), true);
                     break;
                 case AbilitySlot.W:
-                    actor.Position = V2.Clamp(V2.MoveTowards(actor.Position, targetPoint,
-                        6f + actor.SkillRanks[i] - 1));
+                    actor.Position = AdvanceWithoutStructureCollision(actor, targetPoint,
+                        6f + actor.SkillRanks[i] - 1);
                     actor.Destination = actor.Position;
                     break;
                 case AbilitySlot.E:
@@ -437,6 +579,16 @@ namespace DragonMoba.Domain
                 amount -= absorbed;
             }
             victim.Hp = Math.Max(0, victim.Hp - amount);
+            if (actor.Kind == EntityKind.Hero && victim.Kind == EntityKind.Hero && amount > 0f)
+            {
+                foreach (var defender in entities)
+                {
+                    if (defender.Kind != EntityKind.Tower || !defender.Alive || defender.Team != victim.Team ||
+                        !InRange(defender, actor, defender.AttackRange)) continue;
+                    defender.TowerAggroTargetId = actor.Id;
+                    defender.TowerAggroSeconds = TowerAggroDuration;
+                }
+            }
             if (victim.Kind == EntityKind.Hero)
             {
                 victim.Charging = false;
