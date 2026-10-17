@@ -110,6 +110,7 @@ namespace DragonMoba.Domain
         public float ArmorPenPercent;
         public float KiPenPercent;
         public float MoveSpeed;
+        public float AntiHealOnHit;
         public string[] Components = new string[0];
         public string Category = "Diversos";
         public string IconSymbol = "?";
@@ -178,6 +179,8 @@ namespace DragonMoba.Domain
                 components:new[]{"ENERGY_FOCUS","ENERGY_FOCUS"});
             AddItem("SHIELD_AMPLIFIER", "Amplificador de Escudo", 2700, "Defesa", "◆", "+250 Vida, +20 Poder Ki", maxHp:250, kiPower:20,
                 components:new[]{"ENERGY_FOCUS","HASTE_SHARD"});
+            AddItem("ANTI_HEAL_BLADE", "Lamina de Supressao", 2600, "Ataque", "⚔", "+40 Ataque; aplica -35% de cura por 3s", attack:40, antiHeal:.35f,
+                components:new[]{"GLOVES","ENERGY_FOCUS"});
             AddItem("ARMORED_BOOTS", "Botas de Armadura Saiyajin", 1200, "Movimento", "»", "+0.4 Movimento, +30 Armadura", armor:30, speed:.4f,
                 components:new[]{"BASIC_BOOTS","ARMOR"});
             AddItem("KI_BOOTS", "Botas de Ki", 1200, "Movimento", "»", "+0.4 Movimento, +30 Resistencia Ki", kiResist:30, speed:.4f,
@@ -188,7 +191,8 @@ namespace DragonMoba.Domain
             string description, float maxHp = 0, float hpRegen = 0, float kiResist = 0,
             float kiPower = 0, float attackSpeed = 0, float lifeSteal = 0, float spellVamp = 0,
             float critChance = 0, float haste = 0, float armorPen = 0, float kiPen = 0,
-            float speed = 0, float attack = 0, float armor = 0, string[] components = null)
+            float speed = 0, float attack = 0, float armor = 0, float antiHeal = 0,
+            string[] components = null)
         {
             Items.Add(id, new ItemDefinition {
                 Id = id, Name = name, Price = price, Category = category, IconSymbol = icon,
@@ -196,7 +200,8 @@ namespace DragonMoba.Domain
                 KiPower = kiPower, AttackSpeedBonus = attackSpeed, LifeSteal = lifeSteal,
                 SpellVamp = spellVamp, CritChance = critChance, AbilityHaste = haste,
                 ArmorPenPercent = armorPen, KiPenPercent = kiPen, MoveSpeed = speed,
-                Attack = attack, Armor = armor, Components = components ?? new string[0]
+                Attack = attack, Armor = armor, AntiHealOnHit = antiHeal,
+                Components = components ?? new string[0]
             });
         }
 
