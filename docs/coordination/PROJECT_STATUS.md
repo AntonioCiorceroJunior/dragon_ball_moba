@@ -34,3 +34,6 @@ Preparação controlada na janela: XP via GrantExperience, posições, inimigo e
 O Codex não alterou os três arquivos de domínio recebidos do ChatGPT. A referência DBM-000 permanece histórica; a nova [DOMAIN_BASELINE.csv](evidence/DBM-001/DOMAIN_BASELINE.csv) identifica o commit aprovado DBM-001 e é reconhecida pelo verificador. Mapa, arte, torres/colisões, inventário e dependências não foram reimplementados. Saídas regeneradas foram arquivadas/restauradas para evitar ruído no PR.
 
 **Próximo passo:** ChatGPT revisar PR #1 e decidir sobre merge. `main`, TO_CODEX e fila não foram modificados pelo Codex; DBM-002 não iniciada. Partida completa, desempenho prolongado e multiplayer seguem não comprovados.
+
+## Acesso local para teste — 16/10/2026
+Atalho **Dragon Ball MOBA - Testar** criado e verificado na Área de Trabalho, apontando à build Windows DBM-001 existente. Sem nova compilação ou alteração de gameplay; teste de abertura pelo usuário permanece disponível. O atalho contém caminho local e não é publicado no Git.

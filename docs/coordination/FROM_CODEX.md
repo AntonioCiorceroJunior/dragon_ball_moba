@@ -16,3 +16,6 @@
 Instrução seguida: TO_CODEX de `main` em `cd64b35e6ac8663b1864ddae2549139d62025a2d`; a versão anterior na branch não foi reescrita. `main` não recebeu commits desta execução. Publicação pelo conector autenticado, sem força.
 
 **Próximo passo:** ChatGPT revisar o PR e decidir ajustes/merge. Não iniciar DBM-002. Histórico preservado nos relatórios DBM-000.
+
+## Acesso local para teste — 16/10/2026
+Atalho **Dragon Ball MOBA - Testar** criado e verificado na Área de Trabalho, apontando à build Windows DBM-001 existente. Sem nova compilação ou alteração de gameplay; teste de abertura pelo usuário permanece disponível. O atalho contém caminho local e não é publicado no Git.
