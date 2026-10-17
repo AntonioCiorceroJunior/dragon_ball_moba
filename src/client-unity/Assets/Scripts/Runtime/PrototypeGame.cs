@@ -574,7 +574,11 @@ namespace DragonMoba.Runtime
                 "HABILIDADES  |  Pontos: " + hero.UnspentSkillPoints + "  |  Ctrl+Q/W/E/R");
             for (var i = 0; i < 4; ++i)
             {
-                var name = new[] { "Q Rajada", "W Impulso", "E Escudo", "R Explosao" }[i];
+                var name = hero.HeroId == "GKU_KID" ?
+                    new[] { "Q Bastao", "W Salto", "E Defesa", "R Oozaru" }[i] :
+                    hero.HeroId == "CELL_Z" ?
+                    new[] { "Q Absorcao", "W Avanco", "E Carapaca", "R Explosao" }[i] :
+                    new[] { "Q Rajada", "W Transmissao", "E Barreira", "R Explosao" }[i];
                 var slot = (AbilitySlot)i;
                 var rank = hero.SkillRanks[i];
                 var ready = rank == 0 ? "Bloqueada" :
