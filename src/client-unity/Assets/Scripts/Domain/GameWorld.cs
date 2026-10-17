@@ -385,6 +385,21 @@ namespace DragonMoba.Domain
             return IsStructureCollision(mover, result) ? start : result;
         }
 
+        // A dash travels in short collision-tested segments; a single long tangent
+        // step would incorrectly teleport several units sideways through obstacles.
+        private void DashWithoutStructureCollision(EntityState mover, V2 goal, float distance)
+        {
+            var remaining = Math.Min(distance, V2.Distance(mover.Position, goal));
+            for (var i = 0; i < 80 && remaining > 0.001f; ++i)
+            {
+                var step = Math.Min(0.2f, remaining);
+                var before = mover.Position;
+                mover.Position = AdvanceWithoutStructureCollision(mover, goal, step);
+                if (V2.Distance(before, mover.Position) < 0.0001f) break;
+                remaining -= step;
+            }
+        }
+
         private void UpdateMovement(EntityState entity, float dt)
         {
             entity.AttackCooldown = Math.Max(0f, entity.AttackCooldown - (entity.Kind == EntityKind.Hero ? 0f : dt));
@@ -530,7 +545,7 @@ namespace DragonMoba.Domain
                         60f + actor.KiPower * 0.85f + 24f * (actor.SkillRanks[i] - 1), true);
                     break;
                 case AbilitySlot.W:
-                    actor.Position = AdvanceWithoutStructureCollision(actor, targetPoint,
+                    DashWithoutStructureCollision(actor, targetPoint,
                         6f + actor.SkillRanks[i] - 1);
                     actor.Destination = actor.Position;
                     break;
