@@ -16,6 +16,8 @@
 
 Estes dossiês são **mais específicos** que o blueprint v1/v2 e apresentam hipóteses que podem ser refutadas. Ainda existem áreas não auditadas integralmente, como todas as variantes do LoL, artigos pagos integrais, rede/servidor, o restante do código open source e balanceamento real por partidas humanas.
 
+7. **[07 — Pesquisas longitudinais e balanceamento experimental](07_ESTUDOS_LONGITUDINAIS_BALANCEAMENTO_EXPERIMENTAL.md)**: leitura da íntegra do paper de He et al. (2021), cotejo com postmortem Riot de 2025, distinção entre causalidade e correlação, roteiro de experimento A/B e métricas do nosso jogo. Não é uma metanálise de todos os estudos existentes.
+
 ## Relação com documentos anteriores
 
 - [GAME_DESIGN.md](../specifications/GAME_DESIGN.md) continua sendo a **visão original de produto**, com 15 variantes, fichas, fusão, Oozaru e loja. A pesquisa v2 não o substitui.
