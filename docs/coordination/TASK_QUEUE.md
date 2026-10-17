@@ -5,8 +5,8 @@ Use somente uma tarefa ativa de cada vez. ChatGPT publica a instrução concreta
 | ID | Prioridade | Tarefa | Situação | Aceitação resumida |
 |---|---|---|---|---|
 | DBM-000 | P0 | Publicar projeto Unity local no GitHub com segurança | CONCLUÍDA — commit 0c13080 | Código-fonte e cenas versionados, licenças verificadas, relatório e testes |
-| DBM-001 | P0 | Progressão de habilidades e autoataque | EM VALIDAÇÃO — PR #1 implementado pelo ChatGPT | Pontos por nível, QWE/R desbloqueadas, perseguição/ataque contínuo, testes |
-| DBM-002 | P0 | Torres, aggro, limites de ataque e colisões | PENDENTE | Alcance verificável, prioridade de alvo, dano real, navegação sem atravessar |
+| DBM-001 | P0 | Progressão de habilidades e autoataque | CONCLUÍDA — PR #1 mesclado (067ed1c) | Pontos por nível, QWE/R desbloqueadas, perseguição/ataque contínuo, testes |
+| DBM-002 | P0 | Torres, aggro, limites de ataque e colisões | CÓDIGO PRONTO — PR #2 aguardando Unity/Codex | Alcance verificável, prioridade de alvo, dano real, navegação sem atravessar |
 | DBM-003 | P0 | Loja, inventário, modificadores e botas | PENDENTE | Ouro e slots coerentes; atributos/aplicação e restrições testadas |
 | DBM-004 | P1 | Ki, XP por treino e efeitos com regras completas | PENDENTE | Custos, recuperação, vulnerabilidade e exploração controlados |
 | DBM-005 | P1 | Animações, rigs e 3 apresentações distintas | PENDENTE | Goku Criança, Goku Super e Cell legíveis e sem falhas de movimento |
