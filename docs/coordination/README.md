@@ -34,3 +34,10 @@ O GitHub é a fonte compartilhada de verdade para tarefas, decisões, progresso,
 
 ## Segurança e licenças
 O repositório é **público**. Não publicar tokens, perfis locais, `Library`, `Builds`, backups, pacotes ZIP, modelos extraídos de LoL/Dragon Ball ou assets sem licença de redistribuição. Git não é backup do projeto inteiro: assets grandes podem requerer Git LFS ou armazenamento autorizado externo, sem que isso signifique redistribuição livre.
+
+## Navegação e versões dos estados (17/10/2026)
+
+- [Painel de situação integrada da main e PRs](../STATUS_ATUAL.md) — leitura geral por ChatGPT; não substitui confirmação atual no GitHub.
+- [Plano mestre consolidado](../PLANO_MESTRE_ATUAL.md) — arquitetura, dependências e futuros recortes **não ativados**.
+- `FROM_CODEX.md` e `PROJECT_STATUS.md` refletem a **última execução Codex**, podem estar anteriores ao merge já ocorrido. Eles não devem ser reescritos retroativamente para esconder histórico.
+- A única execução autorizada ao Codex é a descrita em `TO_CODEX.md`; pesquisas e o plano consolidado não são comandos de implementação.
