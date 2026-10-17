@@ -385,10 +385,12 @@ namespace DragonMoba.Editor
 
             var apeWorld = new GameWorld("GKU_KID");
             var kid = apeWorld.Player;
+            kid.Position = kid.Destination = new V2(0,-17.2f); // fits Kid, not giant form.
             apeWorld.GrantExperience(kid,99999);
             Require(kid.Level==18 && kid.FormId=="kid_oozaru" &&
-                apeWorld.BodyRadius(kid)>.9f && kid.MoveSpeed<6f,
-                "FORM-01: Oozaru grows body radius and slows movement");
+                apeWorld.BodyRadius(kid)>.9f && kid.MoveSpeed<6f &&
+                !apeWorld.IsStructureCollision(kid,kid.Position),
+                "FORM-01: Oozaru grows, slows and transforms outside tower collisions");
         }
 
         private static void TestAttackMoveAndStop()
