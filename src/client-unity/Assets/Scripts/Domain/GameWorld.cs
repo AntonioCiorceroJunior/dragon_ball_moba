@@ -769,6 +769,13 @@ namespace DragonMoba.Domain
                 // Stats are rebuilt once by StatCalculator.Refresh after stage changes.
                 hero.FormId = stage.Id;
                 hero.FormName = stage.DisplayName;
+                // A large transformation cannot materialize inside a solid tower.
+                if (IsStructureCollision(hero, hero.Position))
+                {
+                    hero.Position = ClampWalkable(hero, hero.Position);
+                    hero.Destination = hero.Position;
+                    hero.AttackTargetId = 0;
+                }
                 events.Add(new GameEvent(EventKind.Transform, hero.Id, hero.Position, hero.FormName));
             }
         }
