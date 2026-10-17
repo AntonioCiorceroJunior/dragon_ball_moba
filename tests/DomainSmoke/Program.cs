@@ -92,6 +92,26 @@ static class Program
         Check(Cmd(combat,actor,CommandKind.Stop) && !actor.AttackMoveActive &&
             actor.AttackTargetId==0,"stop clears attack-move");
 
+        var anti=new GameWorld("GKU_KID");
+        var buyer=anti.Player;
+        buyer.Zeni=5000;
+        Check(Cmd(anti,buyer,CommandKind.Buy,"ANTI_HEAL_BLADE") &&
+            Math.Abs(buyer.AntiHealOnHit-.35f)<.001f,
+            "anti-heal item grants debuff on damage");
+        EntityState affected=null;
+        foreach(var e in anti.Entities)
+            if(e.Kind==EntityKind.Hero && e.Team==Team.Red)affected=e;
+        Check(affected!=null,"enemy for anti-heal exists");
+        affected.Position=affected.Destination=new V2(30,-36);
+        affected.MoveSpeed=affected.PhysicalAttack=affected.AttackRange=0;
+        affected.Hp=250;
+        Check(anti.DealDamage(buyer,affected,40,false,true) &&
+            Math.Abs(affected.HealingReductionRate-.35f)<.001f &&
+            affected.HealingReductionSeconds==3f,"anti-heal debuff applied for 3s");
+        for(int i=0;i<115;i++)anti.Tick(GameWorld.FixedStep);
+        Check(affected.HealingReductionSeconds==0f &&
+            affected.HealingReductionRate==0f,"anti-heal debuff expires");
+
         var towers=new GameWorld("GKU_SUPER");
         EntityState redTower=null, firstMinion=null, closerMinion=null;
         foreach(var entity in towers.Entities)
