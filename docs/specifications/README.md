@@ -27,3 +27,7 @@ Sugestão de organização:
 Conteúdo histórico preservado; propostas de URP, rede e arte não descrevem automaticamente o estado implementado. O projeto atual usa Built-in. AGENTS.md e docs/coordination/ têm precedência para tarefas e handoff. O uso real de recursos está em [ASSET_MANIFEST.md](../ASSET_MANIFEST.md).
 
 Proveniência e hashes originais: [IMPORT_SOURCES.csv](IMPORT_SOURCES.csv). Fontes Word/ZIP duplicadas não foram publicadas. Os documentos importados não concedem direitos sobre personagens ou marcas citados.
+
+## Pesquisa de referência e roadmap (16/10/2026)
+
+- **[MOBA_RESEARCH_BLUEPRINT_2026.md](MOBA_RESEARCH_BLUEPRINT_2026.md)** — pesquisa técnica e científica do League of Legends, evolução de mecânicas, fórmulas de stats/dano/regeneração, itens e receitas, treinamento de Ki, seleção e kits de personagens, Oozaru, topologia do mapa, câmera, arquitetura modular, testes e ordem de implementação. **Documento de proposta, não código já implementado.** Complementa o GAME_DESIGN; respeitar o PR DBM-002 pendente antes de iniciar DBM-003.
