@@ -261,7 +261,7 @@ namespace DragonMoba.Editor
             Require(tower.AttackTargetId == 0, "TR-02: Tower releases targets outside range");
 
             hero.Position = hero.Destination = new V2(4, 19);
-            alliedMinion.Position = alliedMinion.Destination = new V2(10, 19);
+            alliedMinion.Position = alliedMinion.Destination = new V2(0, 12);
             world.Tick(GameWorld.FixedStep);
             Require(tower.AttackTargetId == alliedMinion.Id,
                 "TR-03: Tower prioritizes enemy minion even if hero is closer");
@@ -282,7 +282,7 @@ namespace DragonMoba.Editor
                     candidate.Id != alliedMinion.Id && candidate.Lane == 1)
                 { secondMinion = candidate; break; }
             Require(secondMinion != null, "TR-06: Another minion exists");
-            secondMinion.Position = secondMinion.Destination = new V2(2f,19f);
+            secondMinion.Position = secondMinion.Destination = new V2(0f,16f);
             world.Tick(GameWorld.FixedStep);
             Require(tower.AttackTargetId == alliedMinion.Id,
                 "TR-06: Tower retains living minion despite a nearer minion arriving");
