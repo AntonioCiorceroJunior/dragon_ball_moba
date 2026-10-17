@@ -116,31 +116,33 @@ namespace DragonMoba.Editor
                 Slot = AbilitySlot.E, Position = hero.Position }), "SK-04: E rank 2 cast");
             Require(hero.Shield > shieldOne + 20f, "SK-04: Higher rank strengthens the ability");
 
-            while (hero.Level < 6) world.GrantExperience(hero, Catalog.ExperienceForNextLevel(hero.Level) - hero.Experience);
+            while (hero.Level < 6) world.GrantExperience(hero, Catalog.ExperienceForNextLevel(hero.Level) - hero.Experience + 0.01f);
             Require(hero.Level == 6 && world.Submit(new GameCommand { ActorId = hero.Id,
                 Kind = CommandKind.UpgradeAbility, Slot = AbilitySlot.R }), "SK-03: First R at level 6");
             Require(!world.Submit(new GameCommand { ActorId = hero.Id,
                 Kind = CommandKind.UpgradeAbility, Slot = AbilitySlot.R }), "SK-03: Second R requires level 11");
-            while (hero.Level < 11) world.GrantExperience(hero, Catalog.ExperienceForNextLevel(hero.Level) - hero.Experience);
+            while (hero.Level < 11) world.GrantExperience(hero, Catalog.ExperienceForNextLevel(hero.Level) - hero.Experience + 0.01f);
             Require(world.Submit(new GameCommand { ActorId = hero.Id,
                 Kind = CommandKind.UpgradeAbility, Slot = AbilitySlot.R }), "SK-03: Second R at level 11");
             Require(!world.Submit(new GameCommand { ActorId = hero.Id,
                 Kind = CommandKind.UpgradeAbility, Slot = AbilitySlot.R }), "SK-03: Third R requires level 16");
-            while (hero.Level < 16) world.GrantExperience(hero, Catalog.ExperienceForNextLevel(hero.Level) - hero.Experience);
+            while (hero.Level < 16) world.GrantExperience(hero, Catalog.ExperienceForNextLevel(hero.Level) - hero.Experience + 0.01f);
             Require(world.Submit(new GameCommand { ActorId = hero.Id,
                 Kind = CommandKind.UpgradeAbility, Slot = AbilitySlot.R }), "SK-03: Third R at level 16");
             Require(!world.Submit(new GameCommand { ActorId = hero.Id,
                 Kind = CommandKind.UpgradeAbility, Slot = AbilitySlot.R }), "SK-03: R capped at 3");
 
-            while (hero.Level < 18) world.GrantExperience(hero, Catalog.ExperienceForNextLevel(hero.Level) - hero.Experience);
+            while (hero.Level < 18) world.GrantExperience(hero, Catalog.ExperienceForNextLevel(hero.Level) - hero.Experience + 0.01f);
             var earned = hero.UnspentSkillPoints;
             world.GrantExperience(hero, 999999);
             Require(hero.Level == 18 && hero.UnspentSkillPoints == earned, "SK-04: No points after 18");
             var ranks = hero.SkillRanks[0] + hero.SkillRanks[1] + hero.SkillRanks[2] + hero.SkillRanks[3];
             Require(ranks + hero.UnspentSkillPoints == 18, "SK-04: Spent plus unspent equals level");
 
-            var opponent = world.Find(world.Entities.Count > 0 ? hero.Id + 1 : 0);
-            Require(opponent != null && opponent.Team != hero.Team && opponent.SkillRanks[0] >= 1,
+            EntityState opponent = null;
+            foreach (var candidate in world.Entities)
+                if (candidate.Kind == EntityKind.Hero && candidate.Team != hero.Team) { opponent = candidate; break; }
+            Require(opponent != null && opponent.SkillRanks[0] >= 1,
                 "SK-05: Bot starts with legal Q rank");
             var fresh = new GameWorld("GKU_SUPER").Player;
             Require(fresh.Level == 1 && fresh.UnspentSkillPoints == 1 && fresh.SkillRanks[0] == 0,
