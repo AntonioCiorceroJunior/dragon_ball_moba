@@ -245,6 +245,19 @@ namespace DragonMoba.Domain
                 }
                 return;
             }
+            // Gentle passive income begins after the opening phase. Keeps expensive
+            // item builds viable without requiring every last hit, but active farming
+            // remains more rewarding than waiting at the fountain.
+            if (elapsed >= 30f)
+            {
+                hero.PassiveZeniRemainder += 3f * dt;
+                var earned = (int)hero.PassiveZeniRemainder;
+                if (earned > 0)
+                {
+                    hero.Zeni += earned;
+                    hero.PassiveZeniRemainder -= earned;
+                }
+            }
             hero.Ki = Math.Min(hero.MaxKi, hero.Ki + hero.KiRegen * dt);
             if (hero.ShieldLifetime > 0f)
             {
