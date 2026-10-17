@@ -29,6 +29,7 @@ namespace DragonMoba.Runtime
             effectMaterial = new Material(Shader.Find("Sprites/Default"));
             originalSound = GetComponent<BattleSoundscape>();
             if(originalSound==null) originalSound = gameObject.AddComponent<BattleSoundscape>();
+            originalSound.SetExistingClips(laser,impact,charge);
             source = gameObject.AddComponent<AudioSource>(); source.playOnAwake = false; source.spatialBlend=0;
             foreach(var clip in new[]{laser,impact,charge})
             {
