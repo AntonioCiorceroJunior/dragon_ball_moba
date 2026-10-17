@@ -1,0 +1,61 @@
+ORGANIC MAP ACTIVE | vertices=25665 | plants=125 | original colliders retained
+VISUAL INPUT | CAST Q | accepted=False Ki=135
+VISUAL INPUT | UPGRADE Q | accepted=True
+DBM001 EVENT | SkillUp | tick=160 target=0 Q nivel 1
+VISUAL INPUT | CAST Q | accepted=True Ki=115
+DBM001 FIXTURE | level:2 | controlled XP via GrantExperience: 2
+DBM001 EVENT | LevelUp | tick=210 target=0 Nivel 2
+VISUAL INPUT | UPGRADE Q | accepted=False
+DBM001 FIXTURE | level:3 | controlled XP via GrantExperience: 3
+DBM001 EVENT | LevelUp | tick=245 target=0 Nivel 3
+VISUAL INPUT | UPGRADE Q | accepted=True
+DBM001 EVENT | SkillUp | tick=272 target=0 Q nivel 2
+VISUAL INPUT | UPGRADE R | accepted=False
+DBM001 FIXTURE | combat | controlled combat positions; stationary enemy with no attacks/skills
+VISUAL INPUT | RIGHT CLICK ATTACK | accepted=True enemy=10
+DBM001 EVENT | Attack | tick=336 target=10 Ataque
+DBM001 EVENT | Attack | tick=369 target=10 Ataque
+DBM001 EVENT | Attack | tick=402 target=10 Ataque
+DBM001 EVENT | Attack | tick=435 target=10 Ataque
+DBM001 EVENT | Attack | tick=468 target=10 Ataque
+VISUAL INPUT | CAST Q | accepted=True Ki=114,8664
+DBM001 EVENT | Attack | tick=501 target=10 Ataque
+DBM001 EVENT | Attack | tick=534 target=10 Ataque
+DBM001 EVENT | Attack | tick=567 target=10 Ataque
+VISUAL INPUT | RIGHT CLICK | accepted=True target=(15.56, 0.00, -28.12)
+VISUAL INPUT | MOVEMENT CONFIRMED | x=29,36823 z=-31,46379
+VISUAL INPUT | RIGHT CLICK ATTACK | accepted=True enemy=10
+VISUAL INPUT | CHARGE | pressed=True accepted=True Ki=126,5995
+VISUAL INPUT | CHARGE | pressed=False accepted=True Ki=135
+DBM001 FIXTURE | level:6 | controlled XP via GrantExperience: 6
+DBM001 EVENT | LevelUp | tick=698 target=0 Nivel 4
+DBM001 EVENT | LevelUp | tick=698 target=0 Nivel 5
+DBM001 EVENT | LevelUp | tick=698 target=0 Nivel 6
+DBM001 EVENT | Transform | tick=698 target=0 Super Saiyajin God
+VISUAL INPUT | UPGRADE R | accepted=True
+DBM001 EVENT | SkillUp | tick=719 target=0 R nivel 1
+VISUAL INPUT | UPGRADE R | accepted=False
+DBM001 FIXTURE | level:11 | controlled XP via GrantExperience: 11
+DBM001 EVENT | LevelUp | tick=750 target=0 Nivel 7
+DBM001 EVENT | LevelUp | tick=750 target=0 Nivel 8
+DBM001 EVENT | LevelUp | tick=750 target=0 Nivel 9
+DBM001 EVENT | LevelUp | tick=750 target=0 Nivel 10
+DBM001 EVENT | Transform | tick=750 target=0 Super Saiyajin Blue
+DBM001 EVENT | LevelUp | tick=750 target=0 Nivel 11
+VISUAL INPUT | UPGRADE R | accepted=True
+DBM001 EVENT | SkillUp | tick=771 target=0 R nivel 2
+VISUAL INPUT | UPGRADE R | accepted=False
+DBM001 FIXTURE | level:16 | controlled XP via GrantExperience: 16
+DBM001 EVENT | LevelUp | tick=803 target=0 Nivel 12
+DBM001 EVENT | LevelUp | tick=803 target=0 Nivel 13
+DBM001 EVENT | Transform | tick=803 target=0 Blue + Kaioken
+DBM001 EVENT | LevelUp | tick=803 target=0 Nivel 14
+DBM001 EVENT | LevelUp | tick=803 target=0 Nivel 15
+DBM001 EVENT | LevelUp | tick=803 target=0 Nivel 16
+DBM001 EVENT | Transform | tick=803 target=0 Instinto Superior Incompleto
+VISUAL INPUT | UPGRADE R | accepted=True
+DBM001 EVENT | SkillUp | tick=825 target=0 R nivel 3
+DBM001 FIXTURE | enemy-transform | controlled enemy XP to level 11; normal form replacement
+VISUAL INPUT | RIGHT CLICK ATTACK | accepted=True enemy=10
+DBM001 FIXTURE | death | controlled lethal damage; normal respawn timer
+DBM001 EVENT | Respawn | tick=1840 target=0 Ressurgiu

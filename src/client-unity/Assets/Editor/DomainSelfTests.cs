@@ -65,6 +65,7 @@ namespace DragonMoba.Editor
             Require(Catalog.Mitigate(100, 100) == 50, "Mitigacao com resistencia 100");
             TestSkillProgression();
             TestPersistentAttack();
+            Debug.Log("DBM001 DOMAIN PASSED | locked skills, point conservation, rank gates, repeated attacks, cast resume and respawn persistence");
         }
 
 
@@ -147,6 +148,13 @@ namespace DragonMoba.Editor
             var fresh = new GameWorld("GKU_SUPER").Player;
             Require(fresh.Level == 1 && fresh.UnspentSkillPoints == 1 && fresh.SkillRanks[0] == 0,
                 "SK-04: New match resets skill points");
+            var savedRanks = (int[])hero.SkillRanks.Clone();
+            var savedPoints = hero.UnspentSkillPoints;
+            world.DealDamage(opponent, hero, 100000, false);
+            for (var i = 0; i < 1200 && !hero.Alive; ++i) world.Tick(GameWorld.FixedStep);
+            Require(hero.Alive && hero.UnspentSkillPoints == savedPoints &&
+                Array.TrueForAll(new[] {0,1,2,3}, i => hero.SkillRanks[i] == savedRanks[i]),
+                "SK-06: Real respawn preserves ranks and points");
         }
 
         private static void TestPersistentAttack()
@@ -191,6 +199,19 @@ namespace DragonMoba.Editor
                 "AA-01: Hero chases target until attack range");
             Require((second - first) * GameWorld.FixedStep >= hero.AttackInterval - GameWorld.FixedStep * 1.1f,
                 "AA-01: Repeat attacks obey cooldown");
+
+            Require(world.Submit(new GameCommand { ActorId=hero.Id, Kind=CommandKind.UpgradeAbility, Slot=AbilitySlot.Q }),
+                "AA-04: Learn Q before testing cast resumption");
+            Require(world.Submit(new GameCommand { ActorId=hero.Id, Kind=CommandKind.Cast, Slot=AbilitySlot.Q,
+                Position=target.Position }) && hero.AttackTargetId == target.Id, "AA-04: Cast keeps attack target");
+            bool resumed = false;
+            for (var i=0; i<90; ++i)
+            {
+                world.Tick(GameWorld.FixedStep);
+                foreach (var e in world.DrainEvents())
+                    if (e.Kind==EventKind.Attack && e.ActorId==hero.Id && e.TargetId==target.Id) resumed=true;
+            }
+            Require(resumed, "AA-04: Basic attacks resume without another order after cast");
 
             Require(world.Submit(new GameCommand { ActorId = hero.Id, Kind = CommandKind.Move,
                 Position = new V2(30, -40) }), "AA-02: Move cancels attack");

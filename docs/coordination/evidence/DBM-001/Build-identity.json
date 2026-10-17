@@ -1,0 +1,12 @@
+{
+    "branch":  "chatgpt/DBM-001-gameplay",
+    "tested_source_base":  "089a48f5188496711b957c282776ed0fa44ec4b6",
+    "unity":  "6000.6.6f1",
+    "buildUtc":  "2026-10-17T00:59:53.6958770Z",
+    "assembly":  "src/client-unity/Builds/VisualTest/DragonMobaVisualTest_Data/Managed/Assembly-CSharp.dll",
+    "assembly_sha256":  "854EBBAC5FBA670564B4B4EDCC5152C5538801A60ACD2168A9F8F4E7334D7384",
+    "nativeChecks":  21,
+    "nativeFailures":  0,
+    "nativeInput":  "Windows SendInput with foreground guard",
+    "fixtures":  "Controlled combat positions, GrantExperience levels, enemy transformation and lethal damage; no direct FormId writes; real 30Hz ticks and respawn timer"
+}

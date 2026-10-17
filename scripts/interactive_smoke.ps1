@@ -26,6 +26,21 @@ public static class GameWindowInput {
  [StructLayout(LayoutKind.Sequential)] public struct Input { public uint type; public Union value; }
  [DllImport("user32.dll")] public static extern bool SetProcessDPIAware();
  [DllImport("user32.dll")] public static extern bool SetForegroundWindow(IntPtr hwnd);
+ [DllImport("kernel32.dll")] static extern uint GetCurrentThreadId();
+ [DllImport("user32.dll")] static extern bool AttachThreadInput(uint from,uint to,bool attach);
+ [DllImport("user32.dll")] static extern bool BringWindowToTop(IntPtr hwnd);
+ [DllImport("user32.dll")] static extern IntPtr SetFocus(IntPtr hwnd);
+ public static void ActivateVerifiedWindow(IntPtr hwnd) {
+  uint owner; uint target=GetWindowThreadProcessId(hwnd,out owner);
+  uint foreground=GetWindowThreadProcessId(GetForegroundWindow(),out owner), current=GetCurrentThreadId();
+  bool attachForeground=foreground!=0 && foreground!=current && AttachThreadInput(current,foreground,true);
+  bool attachTarget=target!=current && target!=foreground && AttachThreadInput(current,target,true);
+  try { BringWindowToTop(hwnd); SetForegroundWindow(hwnd); SetFocus(hwnd); }
+  finally {
+   if(attachTarget) AttachThreadInput(current,target,false);
+   if(attachForeground) AttachThreadInput(current,foreground,false);
+  }
+ }
  [DllImport("user32.dll")] public static extern IntPtr GetForegroundWindow();
  [DllImport("user32.dll")] public static extern bool ShowWindow(IntPtr hwnd,int mode);
  [DllImport("user32.dll")] public static extern bool GetClientRect(IntPtr hwnd,out Rect rect);
@@ -93,6 +108,7 @@ if($hwnd -eq [IntPtr]::Zero){ throw 'No game window found.' }
 for($attempt=0;$attempt -lt 12;$attempt++) {
  $player.Refresh(); $hwnd=[GameWindowInput]::FindWindow($player.Id)
  [GameWindowInput]::SetForegroundWindow($hwnd) | Out-Null
+ if($attempt -ge 4){[GameWindowInput]::ActivateVerifiedWindow($hwnd)}
  if($attempt -eq 3 -and [GameWindowInput]::GetForegroundWindow() -ne $hwnd) {
   # Standard Windows activation, restricted to the verified game process.
   $activator=New-Object -ComObject WScript.Shell

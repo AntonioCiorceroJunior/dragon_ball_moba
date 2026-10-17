@@ -289,6 +289,9 @@ namespace DragonMoba.Runtime
 
         private void RenderEvent(GameEvent e)
         {
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
+            GameplayValidationProbe.Observe(e, world);
+#endif
             art?.Emit(e, world);
             if (views.TryGetValue(e.ActorId, out var actorView)) actorView.GetComponent<CharacterPresentation>()?.React(e);
             if (e.TargetId != e.ActorId && views.TryGetValue(e.TargetId, out var targetView)) targetView.GetComponent<CharacterPresentation>()?.React(e);
@@ -469,7 +472,7 @@ namespace DragonMoba.Runtime
             DrawBar(new Rect(25, 100, 305, 15), exp, new Color(0.92f, 0.78f, 0.13f), hero.Level >= 18 ? "NIVEL MAXIMO" : "XP " + (int)hero.Experience);
             GUI.Label(new Rect(25, 122, 310, 22), "Zeni: " + hero.Zeni + "  |  Kills / farm: prototipo", smallStyle);
             GUI.Label(new Rect(25, 141, 310, 25), !hero.Alive ? "DERROTADO - retorna em " + Mathf.CeilToInt(Mathf.Max(0, hero.RespawnTime)) + "s" : hero.Charging ? (hero.Ki >= hero.MaxKi ? "TREINANDO XP • vulneravel" : "CARREGANDO KI • vulneravel") : "C: carregar Ki • P: loja • H: ajuda", smallStyle);
-            GUI.Box(new Rect(Screen.width * 0.5f - 220, Screen.height - 108, 440, 95),
+            GUI.Box(new Rect(Screen.width * 0.5f - 220, Screen.height - 150, 440, 137),
                 "HABILIDADES  |  Pontos: " + hero.UnspentSkillPoints + "  |  Ctrl+Q/W/E/R");
             for (var i = 0; i < 4; ++i)
             {
@@ -480,7 +483,7 @@ namespace DragonMoba.Runtime
                     hero.SkillCooldown[i] <= 0.01f ? "Pronto" : hero.SkillCooldown[i].ToString("0.0") + "s";
                 var x = Screen.width * 0.5f - 206 + i * 105;
                 GUI.Box(new Rect(x, Screen.height - 80, 100, 58),
-                    name + "\nNivel " + rank + "/" + (i == 3 ? 3 : 5) + " | " + ready);
+                    name + "\nNivel " + rank + "/" + (i == 3 ? 3 : 5) + "\n" + ready);
                 if (world.CanUpgradeAbility(hero, slot) &&
                     GUI.Button(new Rect(x + 76, Screen.height - 107, 24, 24), "+"))
                     Upgrade(slot);
