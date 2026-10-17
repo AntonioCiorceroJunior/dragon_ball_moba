@@ -92,6 +92,30 @@ static class Program
         Check(Cmd(combat,actor,CommandKind.Stop) && !actor.AttackMoveActive &&
             actor.AttackTargetId==0,"stop clears attack-move");
 
+        var towers=new GameWorld("GKU_SUPER");
+        EntityState redTower=null, firstMinion=null, closerMinion=null;
+        foreach(var entity in towers.Entities)
+        {
+            if(entity.Kind==EntityKind.Tower && entity.Team==Team.Red && entity.Lane==1)
+                redTower=entity;
+            if(entity.Kind==EntityKind.Minion && entity.Team==Team.Blue && entity.Lane==1)
+            {
+                if(firstMinion==null) firstMinion=entity;
+                else if(closerMinion==null) closerMinion=entity;
+            }
+        }
+        Check(redTower!=null && firstMinion!=null && closerMinion!=null,
+            "tower target retention fixtures exist");
+        firstMinion.Position=firstMinion.Destination=new V2(10,19);
+        closerMinion.Position=closerMinion.Destination=new V2(10,0);
+        towers.Tick(GameWorld.FixedStep);
+        Check(redTower.AttackTargetId==firstMinion.Id,
+            "tower initially acquires minion in range");
+        closerMinion.Position=closerMinion.Destination=new V2(2,19);
+        towers.Tick(GameWorld.FixedStep);
+        Check(redTower.AttackTargetId==firstMinion.Id,
+            "tower does not retarget when closer minion arrives");
+
         Console.WriteLine("DOMAIN SMOKE PASSED | checks=" + passed);
     }
 }
