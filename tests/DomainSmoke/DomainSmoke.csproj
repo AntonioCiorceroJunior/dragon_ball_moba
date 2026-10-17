@@ -11,5 +11,6 @@
     <Compile Include="../../src/client-unity/Assets/Scripts/Domain/EntityState.cs" Link="EntityState.cs" />
     <Compile Include="../../src/client-unity/Assets/Scripts/Domain/GameWorld.cs" Link="GameWorld.cs" />
     <Compile Include="../../src/client-unity/Assets/Scripts/Domain/StatCalculator.cs" Link="StatCalculator.cs" />
+    <Compile Include="../../src/client-unity/Assets/Scripts/Domain/ArenaLayout.cs" Link="ArenaLayout.cs" />
   </ItemGroup>
 </Project>

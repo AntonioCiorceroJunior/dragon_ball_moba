@@ -12,15 +12,25 @@ namespace DragonMoba.Runtime
         private string state;
         private float actionUntil, deathTime;
         private Vector3 previous;
+        private Vector3 previousSnapshot, currentSnapshot;
+        private Quaternion facing;
         private bool initialized, wasAlive = true;
         public void Sync(EntityState value)
         {
             entity = value;
             if (aura != null) { var emission = aura.emission; emission.enabled = value.Alive && value.Charging; }
-            var delta = transform.position - previous;
-            previous = transform.position;
+            var position = new Vector3(value.Position.X,0,value.Position.Y);
+            var delta = position - previous;
+            previous = position;
+            if(!initialized || Vector3.Distance(currentSnapshot,position)>6f || wasAlive!=value.Alive)
+            {
+                previousSnapshot=currentSnapshot=position;
+                transform.position=position;
+                facing=transform.rotation;
+            }
+            else { previousSnapshot=currentSnapshot; currentSnapshot=position; }
             if (initialized && value.Alive && delta.sqrMagnitude > 0.0001f)
-                transform.rotation = Quaternion.LookRotation(delta, Vector3.up);
+                facing = Quaternion.LookRotation(delta, Vector3.up);
             initialized = true;
             if (wasAlive && !value.Alive) { deathTime = Time.time; SetState("Death"); }
             if (!wasAlive && value.Alive) { state = null; SetState("Idle"); }
@@ -30,6 +40,13 @@ namespace DragonMoba.Runtime
             wasAlive = value.Alive;
             if (value.Alive && Time.time >= actionUntil)
                 SetState(value.Charging ? "Charge" : delta.sqrMagnitude > 0.0001f ? "Run" : "Idle");
+        }
+        private void LateUpdate()
+        {
+            if(!initialized)return;
+            var fraction=Mathf.Clamp01((Time.time-Time.fixedTime)/Mathf.Max(.001f,Time.fixedDeltaTime));
+            transform.position=Vector3.Lerp(previousSnapshot,currentSnapshot,fraction);
+            transform.rotation=Quaternion.Slerp(transform.rotation,facing,1f-Mathf.Exp(-20f*Time.deltaTime));
         }
         public void React(GameEvent e)
         {

@@ -69,6 +69,7 @@ namespace DragonMoba.Runtime
             if(cameraController!=null)
             {
                 gameCamera.orthographicSize=cameraController.defaultZoom;
+                cameraController.mapHalfSize=new Vector2(world.Layout.HalfWidth,world.Layout.HalfHeight);
                 cameraController.Recenter(new Vector3(world.Player.Position.X,0,world.Player.Position.Y),true);
             }
             lastMessage = "Partida iniciada. Clique direito para mover; C carrega Ki.";
@@ -243,8 +244,8 @@ namespace DragonMoba.Runtime
                 var presentation = go.GetComponent<CharacterPresentation>();
                 go.SetActive(e.Alive || presentation != null);
                 var placeholder = go.GetComponent<PlaceholderVisual>() != null;
-                go.transform.position = placeholder ? Position(e.Position, e.Kind) : new Vector3(e.Position.X, 0, e.Position.Y);
                 if (presentation != null) presentation.Sync(e);
+                else go.transform.position = placeholder ? Position(e.Position, e.Kind) : new Vector3(e.Position.X, 0, e.Position.Y);
                 var threat = go.GetComponent<TowerRangeVisual>();
                 if (threat != null && world.Player != null)
                     threat.Show(e.Team != world.Player.Team && world.Player.Alive &&
@@ -286,6 +287,8 @@ namespace DragonMoba.Runtime
             }
             if (visual == null && state.Kind == EntityKind.Hero)
                 visual = PrimitiveHeroVisual.Create(state);
+            if (visual != null && state.Kind == EntityKind.Hero)
+                HeroVisualIdentity.Apply(visual,state.HeroId,state.FormId);
             if (visual == null && state.Kind == EntityKind.Minion)
                 visual = MinionVisual.Create(state);
             if (visual == null)
@@ -424,7 +427,7 @@ namespace DragonMoba.Runtime
         {
             if (environmentBuilt) return;
             environmentBuilt = true;
-            CreateBlock("Solo", new Vector3(0, -0.55f, 0), new Vector3(72, 1, 88), new Color(0.10f, 0.19f, 0.15f));
+            CreateBlock("Solo", new Vector3(0, -0.55f, 0), new Vector3(144, 1, 144), new Color(0.10f, 0.19f, 0.15f));
             foreach (var x in new[] { -17, 0, 17 })
                 CreateBlock("Rota", new Vector3(x, -0.015f, 0), new Vector3(7, 0.1f, 79), new Color(0.37f, 0.33f, 0.26f));
             CreateBlock("Rio Central", new Vector3(0, 0.015f, 0), new Vector3(68, 0.11f, 5), new Color(0.13f, 0.34f, 0.45f));
@@ -494,7 +497,7 @@ namespace DragonMoba.Runtime
             if (gameCamera == null) return;
             var focus = new Vector3(hero.Position.X, 0, hero.Position.Y);
             var controller = gameCamera.GetComponent<ArenaCameraController>();
-            if (controller != null) { controller.Tick(focus); return; }
+            if (controller != null) { controller.Tick(focus,true,!PointerOverGui()); return; }
             var targetCamera = focus + new Vector3(0, 31f, -20f);
             gameCamera.transform.position = Vector3.Lerp(gameCamera.transform.position, targetCamera, Time.deltaTime * 7f);
             gameCamera.transform.rotation = Quaternion.LookRotation(focus - gameCamera.transform.position, Vector3.up);
@@ -675,13 +678,13 @@ namespace DragonMoba.Runtime
                 smallStyle);
         }
 
-        private static Vector2 MapPixel(V2 pos, Rect bounds)
+        private Vector2 MapPixel(V2 pos, Rect bounds)
         {
-            return new Vector2(bounds.xMin + Mathf.Clamp01((pos.X+32f)/64f)*bounds.width,
-                bounds.yMax - Mathf.Clamp01((pos.Y+41f)/82f)*bounds.height);
+            return new Vector2(bounds.xMin + Mathf.Clamp01((pos.X+world.Layout.HalfWidth)/(world.Layout.HalfWidth*2))*bounds.width,
+                bounds.yMax - Mathf.Clamp01((pos.Y+world.Layout.HalfHeight)/(world.Layout.HalfHeight*2))*bounds.height);
         }
 
-        private static void MapDot(Rect map, V2 position, float size, Color tint)
+        private void MapDot(Rect map, V2 position, float size, Color tint)
         {
             var center=MapPixel(position,map);
             var before=GUI.color;
@@ -691,6 +694,14 @@ namespace DragonMoba.Runtime
             GUI.color=before;
         }
 
+        private void DrawMapLine(Rect map,V2 from,V2 to,float thickness)
+        {
+            var a=MapPixel(from,map);var b=MapPixel(to,map);var delta=b-a;
+            var saved=GUI.matrix;
+            GUIUtility.RotateAroundPivot(Mathf.Atan2(delta.y,delta.x)*Mathf.Rad2Deg,a);
+            GUI.DrawTexture(new Rect(a.x,a.y-thickness*.5f,delta.magnitude,thickness),Texture2D.whiteTexture);
+            GUI.matrix=saved;
+        }
         private void DrawMinimap()
         {
             const float width=185f, height=214f;
@@ -703,14 +714,11 @@ namespace DragonMoba.Runtime
             GUI.color=new Color(.07f,.16f,.14f,.96f);
             GUI.DrawTexture(region,Texture2D.whiteTexture);
             GUI.color=new Color(.30f,.28f,.22f,.95f);
-            foreach(var lane in new[]{-17f,0f,17f})
-            {
-                var x=MapPixel(new V2(lane,0),region).x;
-                GUI.DrawTexture(new Rect(x-2,region.y+8,4,region.height-16),Texture2D.whiteTexture);
-            }
+            foreach(var lane in world.Layout.Lanes)
+                for(var i=0;i<lane.Length-1;i++)DrawMapLine(region,lane[i],lane[i+1],4);
             GUI.color=new Color(.15f,.36f,.48f,.9f);
-            var riverY=MapPixel(new V2(0,0),region).y;
-            GUI.DrawTexture(new Rect(region.x,riverY-3,region.width,6),Texture2D.whiteTexture);
+            DrawMapLine(region,new V2(-world.Layout.HalfWidth,world.Layout.HalfHeight),
+                new V2(world.Layout.HalfWidth,-world.Layout.HalfHeight),5);
             GUI.color=before;
             foreach(var entity in world.Entities)
             {
@@ -728,7 +736,7 @@ namespace DragonMoba.Runtime
             {
                 var nx=Mathf.Clamp01((ev.mousePosition.x-region.x)/region.width);
                 var ny=Mathf.Clamp01((region.yMax-ev.mousePosition.y)/region.height);
-                var look=new Vector3(nx*64f-32f,0,ny*82f-41f);
+                var look=new Vector3((nx*2-1)*world.Layout.HalfWidth,0,(ny*2-1)*world.Layout.HalfHeight);
                 var controller=gameCamera!=null?
                     gameCamera.GetComponent<ArenaCameraController>():null;
                 if(controller!=null)controller.FocusAt(look);

@@ -26,7 +26,7 @@ namespace DragonMoba.Editor
         }
         public static void CellRespawn()
         {
-            var world = new GameWorld("CELL_Z");
+            var world = new GameWorld("CELL_Z",ArenaLayout.Training);
             var hero = world.Player;
             while(hero.Level<5) world.GrantExperience(hero,Catalog.ExperienceForNextLevel(hero.Level)-hero.Experience+.01f);
             Check(hero.MaxHp==736,"Cell level five max HP");
@@ -73,7 +73,8 @@ namespace DragonMoba.Editor
                 "Minimap click sets exact free-camera focus");
             controller.Recenter(hero,true);
             Check(Math.Abs(camera.transform.eulerAngles.x-55.5f)<.1f,"55.5 degree strategic camera");
-            Debug.Log("ARENA CAMERA PASSED | orthographic 55.5 degrees, zoom bounds, pan, map bounds, recenter and follow");
+            Check(!camera.orthographic&&Math.Abs(camera.fieldOfView-40)<.1f,"Strategic perspective projection");
+            Debug.Log("ARENA CAMERA PASSED | perspective 55.5 degrees, zoom bounds, pan, map bounds, recenter and follow");
         }
         static void Check(bool ok,string message) { if(!ok) throw new Exception(message); }
     }

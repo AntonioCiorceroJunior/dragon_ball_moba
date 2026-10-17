@@ -42,6 +42,7 @@ foreach ($asset in $imported) {
 }
 if (-not $DomainBaseline) {
     $candidates = @(
+        (Join-Path $repo 'docs/coordination/evidence/ART-002/DOMAIN_BASELINE.csv'),
         (Join-Path $repo 'docs/coordination/evidence/DBM-BATCH-001/DOMAIN_BASELINE.csv'),
         (Join-Path $repo 'docs/coordination/evidence/DBM-002/DOMAIN_BASELINE.csv'),
         (Join-Path $repo 'docs/coordination/evidence/DBM-001/DOMAIN_BASELINE.csv'),

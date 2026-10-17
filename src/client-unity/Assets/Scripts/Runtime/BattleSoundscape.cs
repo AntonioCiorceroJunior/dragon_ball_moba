@@ -10,8 +10,8 @@ namespace DragonMoba.Runtime
 {
     public sealed class BattleSoundscape : MonoBehaviour
     {
-        public float musicVolume = .095f;
-        public float soundVolume = .31f;
+        public float musicVolume = .12f;
+        public float soundVolume = .26f;
         private const int SampleRate = 22050;
         private AudioSource music, effects;
         private readonly Dictionary<string, AudioClip> clips = new Dictionary<string, AudioClip>();
@@ -33,7 +33,7 @@ namespace DragonMoba.Runtime
             music.loop = true;
             music.spatialBlend = 0;
             music.priority = 180;
-            music.clip = Create("Ambient", 8f, 0);
+            music.clip = Create("Ambient", 48f, 0);
             music.volume = musicVolume;
             music.Play();
             effects = gameObject.AddComponent<AudioSource>();
@@ -51,6 +51,24 @@ namespace DragonMoba.Runtime
             Create("Warning", .30f, 8);
         }
         private static float Sin(float phase) { return Mathf.Sin(phase * Mathf.PI * 2f); }
+        static readonly float[] roots={130.81f,103.83f,155.56f,116.54f};
+        static readonly float[] thirds={155.56f,130.81f,196f,146.83f};
+        static readonly float[] fifths={196f,155.56f,233.08f,174.61f};
+        static readonly float[] melody={392f,0,311.13f,261.63f,0,233.08f,261.63f,0,311.13f,0,392f,466.16f,392f,0,311.13f,0};
+        private static float Ambient(float t)
+        {
+            // Original 16-bar cue at 80 BPM; soft pad, bass and sparse plucked melody.
+            // Crossfade harmony rather than restarting the old eight-second drone.
+            var bar=Mathf.FloorToInt(t/3f);var chord=bar%4;var previous=(chord+3)%4;
+            var blend=Mathf.SmoothStep(0,1,(t%3f)/.25f);
+            var pad=.25f*Mathf.Lerp(Sin(t*roots[previous]),Sin(t*roots[chord]),blend)+
+                .17f*Mathf.Lerp(Sin(t*thirds[previous]),Sin(t*thirds[chord]),blend)+
+                .12f*Mathf.Lerp(Sin(t*fifths[previous]),Sin(t*fifths[chord]),blend);
+            var beat=t/.75f;var local=t%.75f;var note=melody[Mathf.FloorToInt(beat)%melody.Length];
+            var pluck=note<=0?0:.13f*Mathf.Exp(-local*7f)*(Sin(t*note)+.18f*Sin(t*note*2));
+            var bass=.10f*Sin(t*roots[chord]*.5f)*Mathf.Exp(-local*3f);
+            return pad+pluck+bass;
+        }
         private AudioClip Create(string name, float duration, int style)
         {
             var samples = Mathf.CeilToInt(SampleRate * duration);
@@ -63,17 +81,14 @@ namespace DragonMoba.Runtime
                 float f=0f, raw=0f, env=0f;
                 switch(style)
                 {
-                    case 0: // Low, evolving ambient pad with a restrained chord.
-                        env=Mathf.Min(1f,Mathf.Min(t/.6f,(duration-t)/.6f));
-                        raw=.33f*Sin(t*82.41f)+.23f*Sin(t*123.47f)+
-                            .17f*Sin(t*164.81f)+.12f*Sin(t*246.94f);
-                        raw*=.7f+.3f*Mathf.Sin(t*.67f)*Mathf.Sin(t*.67f);
-                        raw+=.045f*Sin(t*658.25f)*(0.5f+0.5f*Mathf.Sin(t*1.8f));
+                    case 0:
+                        env=Mathf.Min(1f,Mathf.Min(t/.08f,(duration-t)/.08f));
+                        raw=Ambient(t);
                         break;
                     case 1: // Ki shot with accelerating edge and short bass tail.
-                        f=650f*Mathf.Pow(1f-u,1.15f)+90f;
+                        f=420f*Mathf.Pow(1f-u,1.15f)+80f;
                         env=Mathf.Exp(-u*8f)*(1f-Mathf.Exp(-u*38f));
-                        raw=Sin(phase)+.24f*Sin(phase*2.1f)+.21f*Sin(t*90f)*(1f-u);
+                        raw=.68f*Sin(phase)+.14f*Sin(phase*2.1f)+.26f*Sin(t*90f)*(1f-u);
                         break;
                     case 2: // Impact, low thud and a short crunchy transient.
                         f=100f-58f*u; env=Mathf.Exp(-u*12f);

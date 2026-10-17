@@ -18,7 +18,7 @@ static class Program
     }
     public static void Main()
     {
-        var w = new GameWorld("GKU_KID");
+        var w = new GameWorld("GKU_KID",ArenaLayout.Training);
         var hero = w.Player;
         Check(hero.MaxHp == 570 && hero.HpRegenPer5 >= 6,
             "base Kid stats and regeneration");
@@ -57,7 +57,7 @@ static class Program
             hero.SkillCooldown[0]>3.6 && hero.SkillCooldown[0]<3.7,
             "haste reduces cooldown");
 
-        var apeWorld=new GameWorld("GKU_KID");
+        var apeWorld=new GameWorld("GKU_KID",ArenaLayout.Training);
         var kid=apeWorld.Player;
         kid.Position=kid.Destination=new V2(0,-17.2f);
         apeWorld.GrantExperience(kid,99999);
@@ -66,7 +66,7 @@ static class Program
             !apeWorld.IsStructureCollision(kid,kid.Position),
             "Oozaru grows, slows and never transforms inside a tower");
 
-        var combat=new GameWorld("GKU_KID");
+        var combat=new GameWorld("GKU_KID",ArenaLayout.Training);
         var actor=combat.Player;
         EntityState victim=null;
         foreach(var e in combat.Entities)
@@ -92,7 +92,7 @@ static class Program
         Check(Cmd(combat,actor,CommandKind.Stop) && !actor.AttackMoveActive &&
             actor.AttackTargetId==0,"stop clears attack-move");
 
-        var anti=new GameWorld("GKU_KID");
+        var anti=new GameWorld("GKU_KID",ArenaLayout.Training);
         var buyer=anti.Player;
         buyer.Zeni=5000;
         Check(Cmd(anti,buyer,CommandKind.Buy,"ANTI_HEAL_BLADE") &&
@@ -112,7 +112,7 @@ static class Program
         Check(affected.HealingReductionSeconds==0f &&
             affected.HealingReductionRate==0f,"anti-heal debuff expires");
 
-        var towers=new GameWorld("GKU_SUPER");
+        var towers=new GameWorld("GKU_SUPER",ArenaLayout.Training);
         EntityState redTower=null, firstMinion=null, closerMinion=null;
         foreach(var entity in towers.Entities)
         {
@@ -136,6 +136,22 @@ static class Program
         Check(redTower.AttackTargetId==firstMinion.Id,
             "tower does not retarget when closer minion arrives");
 
+        var classic=new GameWorld("GKU_KID");var map=classic.Layout;
+        Check(map==ArenaLayout.Classic&&map.HalfWidth==72&&map.HalfHeight==72,"actual default diagonal map bounds");
+        var towerCount=0;EntityState routeMinion=null;
+        foreach(var entity in classic.Entities){if(entity.Kind==EntityKind.Tower)towerCount++;if(entity.Kind==EntityKind.Minion&&entity.Team==Team.Blue&&entity.Lane==0)routeMinion=entity;}
+        Check(towerCount==18&&map.Core(Team.Blue).X<0&&map.Core(Team.Red).X>0,"corner bases and eighteen towers");
+        Check(Cmd(classic,classic.Player,CommandKind.Buy,"KI_CELL"),"classic spawn fountain purchase");
+        Check(map.At(0,.5f).X<0&&map.At(0,.5f).Y>0&&map.At(2,.5f).X>0&&map.At(2,.5f).Y<0,"distinct top and bottom routes");
+        var progress=map.Progress(0,routeMinion.Position);
+        for(var tick=0;tick<600;tick++)classic.Tick(GameWorld.FixedStep);
+        Check(map.Progress(0,routeMinion.Position)>progress+.15f&&map.RoadDistance(routeMinion.Position)<0,"minion follows side lane without cutting jungle");
+        classic.Player.Position=classic.Player.Destination=new V2(5,-30);
+        Cmd(classic,classic.Player,CommandKind.Move,pos:new V2(13.2f,-17.8f));
+        for(var tick=0;tick<30;tick++)classic.Tick(GameWorld.FixedStep);
+        Check(Math.Abs((classic.Player.Position.X-5)/(classic.Player.Position.Y+30)-8.2f/12.2f)<.002f,"movement supports arbitrary angles");
+        Cmd(classic,classic.Player,CommandKind.Move,pos:new V2(1000,-1000));
+        Check(classic.Player.Destination.X==72&&classic.Player.Destination.Y==-72,"classic map command clamp");
         Console.WriteLine("DOMAIN SMOKE PASSED | checks=" + passed);
     }
 }

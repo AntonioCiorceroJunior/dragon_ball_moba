@@ -20,7 +20,7 @@ namespace DragonMoba.Domain
         private float waveTimer;
         private float elapsed;
         private int currentTick;
-        private readonly int[] laneX = { -17, 0, 17 };
+        public ArenaLayout Layout { get; private set; }
 
         public IReadOnlyList<EntityState> Entities { get { return entities; } }
         public float Elapsed { get { return elapsed; } }
@@ -28,19 +28,23 @@ namespace DragonMoba.Domain
         public int PlayerId { get; private set; }
         public Team? Winner { get; private set; }
 
-        public GameWorld(string playerHeroId)
+        public GameWorld(string playerHeroId, ArenaLayout layout = null)
         {
+            Layout = layout ?? ArenaLayout.Classic;
             if (Catalog.Hero(playerHeroId) == null) throw new ArgumentException("Unknown hero: " + playerHeroId);
-            SpawnStructure(EntityKind.Core, Team.Blue, 0, new V2(0, -38), 1500);
-            SpawnStructure(EntityKind.Core, Team.Red, 0, new V2(0, 38), 1500);
-            for (var lane = 0; lane < laneX.Length; ++lane)
+            SpawnStructure(EntityKind.Core, Team.Blue, 0, Layout.Core(Team.Blue), 1500);
+            SpawnStructure(EntityKind.Core, Team.Red, 0, Layout.Core(Team.Red), 1500);
+            for (var lane = 0; lane < Layout.Lanes.Length; ++lane)
             {
-                SpawnStructure(EntityKind.Tower, Team.Blue, lane, new V2(laneX[lane], -19), 850);
-                SpawnStructure(EntityKind.Tower, Team.Red, lane, new V2(laneX[lane], 19), 850);
+                for(var tier=0;tier<Layout.TowerTiers;tier++)
+                {
+                    SpawnStructure(EntityKind.Tower, Team.Blue, lane, Layout.Tower(Team.Blue,lane,tier), 850);
+                    SpawnStructure(EntityKind.Tower, Team.Red, lane, Layout.Tower(Team.Red,lane,tier), 850);
+                }
             }
-            var player = SpawnHero(Team.Blue, playerHeroId, new V2(0, -29));
+            var player = SpawnHero(Team.Blue, playerHeroId, Layout.HeroSpawn(Team.Blue));
             PlayerId = player.Id;
-            SpawnHero(Team.Red, playerHeroId == "CELL_Z" ? "GKU_SUPER" : "CELL_Z", new V2(0, 29));
+            SpawnHero(Team.Red, playerHeroId == "CELL_Z" ? "GKU_SUPER" : "CELL_Z", Layout.HeroSpawn(Team.Red));
             SpawnWave();
         }
 
@@ -135,7 +139,7 @@ namespace DragonMoba.Domain
                     hero.ChargeSeconds = 0;
                     hero.AttackTargetId = 0;
                     hero.AttackMoveActive = false;
-                    hero.Destination = ClampWalkable(hero, V2.Clamp(cmd.Position));
+                    hero.Destination = ClampWalkable(hero, Layout.Clamp(cmd.Position));
                     return true;
                 case CommandKind.Attack:
                     var target = Find(cmd.TargetId);
@@ -173,7 +177,7 @@ namespace DragonMoba.Domain
                     hero.ChargeSeconds = 0f;
                     hero.AttackTargetId = 0;
                     hero.AttackMoveActive = true;
-                    hero.Destination = ClampWalkable(hero,V2.Clamp(cmd.Position));
+                    hero.Destination = ClampWalkable(hero,Layout.Clamp(cmd.Position));
                     return true;
                 default:
                     return false;
@@ -205,14 +209,14 @@ namespace DragonMoba.Domain
 
         private void SpawnWave()
         {
-            for (var lane = 0; lane < laneX.Length; ++lane)
+            for (var lane = 0; lane < Layout.Lanes.Length; ++lane)
             {
                 foreach (Team team in new[] { Team.Blue, Team.Red })
                 {
-                    var spawnY = team == Team.Blue ? -32f : 32f;
+                    // Spawn offsets are perpendicular to each actual lane.
                     for (var index = 0; index < 3; ++index)
                     {
-                        var pos = new V2(laneX[lane] + (index - 1) * 1.3f, spawnY);
+                        var pos = Layout.MinionSpawn(team,lane,index);
                         entities.Add(new EntityState {
                             Id = nextId++, Team = team, Kind = EntityKind.Minion, Lane = lane,
                             DisplayName = "Robo de Treinamento", Position = pos, Destination = pos,
@@ -389,7 +393,7 @@ namespace DragonMoba.Domain
                 if (length >= clearance) continue;
                 if (length < 0.0001f) { away = Minus(mover.Position, obstacle.Position); length = Length(away); }
                 if (length < 0.0001f) { away = new V2(1f, 0f); length = 1f; }
-                desired = V2.Clamp(Plus(obstacle.Position, Scale(away, clearance / length)));
+                desired = Layout.Clamp(Plus(obstacle.Position, Scale(away, clearance / length)));
             }
             return desired;
         }
@@ -400,7 +404,7 @@ namespace DragonMoba.Domain
         {
             if (maxStep <= 0f) return mover.Position;
             var start = mover.Position;
-            var proposed = V2.Clamp(V2.MoveTowards(start, destination, maxStep));
+            var proposed = Layout.Clamp(V2.MoveTowards(start, destination, maxStep));
             EntityState blocker = null;
             var nearest = float.MaxValue;
             foreach (var obstacle in entities)
@@ -434,14 +438,14 @@ namespace DragonMoba.Domain
                 : (cross > 0f ? 1f : -1f);
             var tangent = new V2(-radial.Y * side, radial.X * side);
             var step = Math.Min(maxStep, Length(desired));
-            var result = V2.Clamp(Plus(start, Scale(tangent, step)));
+            var result = Layout.Clamp(Plus(start, Scale(tangent, step)));
             // Project back onto the outside boundary if rounding or teleporting
             // brought the actor inside the structure's solid circle.
             var fromCenter = Minus(result, blocker.Position);
             var minimum = BodyRadius(mover) + BodyRadius(blocker) + 0.02f;
             var resultLength = Length(fromCenter);
             if (resultLength < minimum)
-                result = V2.Clamp(Plus(blocker.Position, Scale(fromCenter, minimum / Math.Max(resultLength, 0.0001f))));
+                result = Layout.Clamp(Plus(blocker.Position, Scale(fromCenter, minimum / Math.Max(resultLength, 0.0001f))));
             return IsStructureCollision(mover, result) ? start : result;
         }
 
@@ -475,7 +479,8 @@ namespace DragonMoba.Domain
             if (victim != null && victim.Alive && victim.Team != entity.Team)
             {
                 if (InRange(entity, victim, entity.AttackRange)) return;
-                destination = victim.Position;
+                destination = entity.Kind == EntityKind.Minion && (victim.Kind == EntityKind.Tower || victim.Kind == EntityKind.Core)
+                    ? Layout.RouteDestination(entity,victim) : victim.Position;
             }
             var speed = entity.MoveSpeed;
             if (entity.TrainingBootsRemaining > 0) speed *= 0.92f;
@@ -870,7 +875,7 @@ namespace DragonMoba.Domain
         {
             return V2.Distance(a.Position, b.Position) <= range;
         }
-        private static V2 BasePosition(Team team) { return team == Team.Blue ? new V2(0, -34) : new V2(0, 34); }
-        private static bool NearBase(EntityState hero) { return V2.Distance(hero.Position, BasePosition(hero.Team)) < BaseRadius; }
+        private V2 BasePosition(Team team) { return Layout.Base(team); }
+        private bool NearBase(EntityState hero) { return V2.Distance(hero.Position, BasePosition(hero.Team)) < BaseRadius; }
     }
 }

@@ -57,6 +57,8 @@ namespace DragonMoba.Runtime
                     model.transform.localPosition=new Vector3(0,.18f,0);
                     model.transform.localRotation=Quaternion.Euler(0,160,0);
                     model.transform.localScale=Vector3.one*(i==0?2.15f:1.80f);
+                    HeroVisualIdentity.Apply(model,i==0?"GKU_KID":i==1?"GKU_SUPER":"CELL_Z",
+                        i==0?"kid_base":i==1?"super_base":"cell_imperfect");
                     foreach(var collider in model.GetComponentsInChildren<Collider>())
                         collider.enabled=false;
                     foreach(var rigid in model.GetComponentsInChildren<Rigidbody>())
@@ -83,6 +85,7 @@ namespace DragonMoba.Runtime
         {
             var camera=Camera.main;
             if(camera==null)return;
+            camera.orthographic=true;
             // Isolate the existing models from battlefield rocks and bridge geometry.
             camera.orthographicSize=7.5f;
             camera.transform.rotation=Quaternion.Euler(12f,0,0);

@@ -13,7 +13,7 @@ namespace DragonMoba.Runtime
         public string[] formIds;
         public GameObject[] characterForms;
         public bool startDemo = true;
-        public const string Version = "VISUAL TEST 01 - Organic Arena";
+        public const string Version = "VISUAL TEST 02 - Diagonal Arena";
         public int PlantCount { get; private set; }
         public int TerrainVertices { get; private set; }
         readonly List<Mesh> meshes = new List<Mesh>();
@@ -27,19 +27,9 @@ namespace DragonMoba.Runtime
             int index=Array.IndexOf(formIds,entity.FormId);
             return index>=0&&index<characterForms.Length ? characterForms[index] : null;
         }
-        public static float RiverCenter(float x) { return .65f*Mathf.Sin(x*.14f); }
-        public static float RiverWidth(float x) { return 2.5f+.35f*Mathf.Sin(x*.23f+1); }
-        public static float RoadDistance(float x,float z)
-        {
-            float best=100;
-            foreach(float lane in new[]{-17f,0f,17f})
-            {
-                float curve=.75f*Mathf.Sin(z*.15f+lane*.1f)*Mathf.Sin((z+44)/88*Mathf.PI);
-                best=Mathf.Min(best,Mathf.Abs(x-lane-curve)-3.1f);
-            }
-            best=Mathf.Min(best,new Vector2(x,z+35).magnitude-7.1f);
-            return Mathf.Min(best,new Vector2(x,z-35).magnitude-7.1f);
-        }
+        public static float RiverCenter(float x) { return -x+.65f*Mathf.Sin(x*.09f); }
+        public static float RiverWidth(float x) { return 4.5f+.35f*Mathf.Sin(x*.13f+1); }
+        public static float RoadDistance(float x,float z) { return ArenaLayout.Classic.RoadDistance(new V2(x,z)); }
         public void Build(List<GameObject> old)
         {
             foreach(var item in old) { var renderer=item.GetComponent<Renderer>(); if(renderer!=null) renderer.enabled=false; }
@@ -49,14 +39,14 @@ namespace DragonMoba.Runtime
             CreateVisualMaterials();
             CreateTerrain();
             CreateRiver();
-            foreach(float lane in new[]{-17f,0f,17f}) Bridge(lane);
+            foreach(float lane in new[]{-54f,0f,54f}) Bridge(lane);
             foreach(int side in new[]{-1,1}) Base(side);
             AddArchitecturalLandmarks();
             var random=new System.Random(621016);
             int count=0;
-            for(int attempt=0;attempt<1800&&count<125;attempt++)
+            for(int attempt=0;attempt<5000&&count<360;attempt++)
             {
-                float x=(float)random.NextDouble()*63-31.5f,z=(float)random.NextDouble()*80-40;
+                float x=(float)random.NextDouble()*136-68,z=(float)random.NextDouble()*136-68;
                 if(RoadDistance(x,z)<1.3f || Mathf.Abs(z-RiverCenter(x))<RiverWidth(x)+1.1f) continue;
                 var prefab=count%5==0?rock:count%3==0?bush:tree;
                 if(prefab==null) continue;
@@ -66,10 +56,10 @@ namespace DragonMoba.Runtime
                 count++;
             }
             PlantCount=count;
-            for(int i=0;i<38;i++)
+            for(int i=0;i<76;i++)
             {
-                float x=-34+i*1.84f;
-                if(Mathf.Min(Mathf.Abs(x),Mathf.Min(Mathf.Abs(x-17),Mathf.Abs(x+17)))<4.7f) continue;
+                float x=-68+i*1.81f;
+                if(Mathf.Min(Mathf.Abs(x),Mathf.Min(Mathf.Abs(x-54),Mathf.Abs(x+54)))<4.7f) continue;
                 foreach(float side in new[]{-1f,1f})
                     if(rock!=null)
                     {
@@ -116,17 +106,17 @@ namespace DragonMoba.Runtime
         }
         void CreateTerrain()
         {
-            const int nx=145,nz=177;
+            const int nx=241,nz=241;
             var vertices=new Vector3[nx*nz]; var colors=new Color[vertices.Length];
             var uv=new Vector2[vertices.Length]; var triangles=new int[(nx-1)*(nz-1)*6];
             for(int z=0;z<nz;z++) for(int x=0;x<nx;x++)
             {
-                int index=z*nx+x; float wx=-36+x*.5f,wz=-44+z*.5f;
+                int index=z*nx+x; float wx=-72+x*.6f,wz=-72+z*.6f;
                 float road=1-Mathf.SmoothStep(-.55f,.8f,RoadDistance(wx,wz)+(Mathf.PerlinNoise(wx*.6f+50,wz*.6f+50)-.5f)*.9f);
                 float bank=Mathf.Abs(wz-RiverCenter(wx))-RiverWidth(wx);
                 float height=-.07f;
                 // Relief is outside the logical movement rectangle. Walking/hitboxes remain flat.
-                float rim=Mathf.Max(Mathf.Abs(wx)-32,Mathf.Abs(wz)-41);
+                float rim=Mathf.Max(Mathf.Abs(wx)-69,Mathf.Abs(wz)-69);
                 if(rim>0) height+=Mathf.SmoothStep(0,3,rim)*(1.1f+Mathf.PerlinNoise(wx*.25f+20,wz*.25f+20)*1.8f);
                 if(bank<0) height-=.45f;
                 float noise=Mathf.PerlinNoise(wx*.12f+100,wz*.12f+100);
@@ -166,8 +156,8 @@ namespace DragonMoba.Runtime
             for(var ty=0;ty<texH;ty++)
             for(var tx=0;tx<texW;tx++)
             {
-                var wx=-36f+72f*tx/(texW-1f);
-                var wz=-44f+88f*ty/(texH-1f);
+                var wx=-72f+144f*tx/(texW-1f);
+                var wz=-72f+144f*ty/(texH-1f);
                 pixels[ty*texW+tx]=PaintSurface(wx,wz);
             }
             terrainPaint.SetPixels(pixels);
@@ -222,7 +212,7 @@ namespace DragonMoba.Runtime
             var vertices=new Vector3[count*2];var uv=new Vector2[vertices.Length];var indices=new int[(count-1)*6];
             for(int i=0;i<count;i++)
             {
-                float x=-36+i*.5f,z=RiverCenter(x),width=RiverWidth(x);
+                float x=-72+i*1f,z=RiverCenter(x),width=RiverWidth(x);
                 vertices[i*2]=new Vector3(x,-.025f,z-width);vertices[i*2+1]=new Vector3(x,-.025f,z+width);
                 uv[i*2]=new Vector2(i*.08f,0);uv[i*2+1]=new Vector2(i*.08f,1);
                 if(i<count-1){int t=i*6,a=i*2;indices[t]=a;indices[t+1]=a+1;indices[t+2]=a+2;indices[t+3]=a+1;indices[t+4]=a+3;indices[t+5]=a+2;}
@@ -250,6 +240,7 @@ namespace DragonMoba.Runtime
         {
             var root=new GameObject("Bridge lane "+x).transform;root.SetParent(scenery,false);
             root.localPosition=new Vector3(x,0,RiverCenter(x));
+            root.localRotation=Quaternion.Euler(0,45,0);
             for(int i=0;i<12;i++) Piece(root,"Timber deck",PrimitiveType.Cube,new Vector3(0,.035f,-3.4f+i*.62f),new Vector3(6.5f,.12f,.55f),wood);
             foreach(float side in new[]{-1f,1f})
             {
@@ -262,11 +253,11 @@ namespace DragonMoba.Runtime
         {
             // A few distinctive landmarks make the silhouette of the battlefield
             // readable without imposing invisible walls on the domain.
-            foreach(var lane in new[]{-17f,0f,17f})
+            foreach(var lane in new[]{-28f,28f})
             {
                 foreach(var side in new[]{-1f,1f})
                 {
-                    var z=side*8f;
+                    var z=side*18f;
                     var x=lane+(lane==0?6.8f:(lane<0?-6.4f:6.4f));
                     var root=new GameObject("Ancient lookout at "+lane+" "+side).transform;
                     root.SetParent(scenery,false);
@@ -306,7 +297,7 @@ namespace DragonMoba.Runtime
         void Base(int side)
         {
             var root=new GameObject(side<0?"Blue sanctuary":"Red sanctuary").transform;root.SetParent(scenery,false);
-            root.localPosition=new Vector3(0,-.1f,side*35);
+            root.localPosition=new Vector3(side*64,-.1f,side*64);
             Piece(root,"Circular sanctuary paving",PrimitiveType.Cylinder,Vector3.zero,new Vector3(13,.1f,13),stone);
             Circle(root,"Team energy sigil",5.3f,.04f,side<0?new Color(.12f,.85f,1):new Color(1,.25f,.2f));
             Circle(root,"Inner sanctuary ring",4.65f,.05f,new Color(.4f,.65f,.62f));

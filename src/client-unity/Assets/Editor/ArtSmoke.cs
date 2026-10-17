@@ -251,7 +251,7 @@ namespace DragonMoba.Editor
                     Check(art.EffectCount<=ArtPresentation.EffectLimit,"Bounded effect pool");
                     Check(art.panel!=null&&art.bar!=null&&art.keys.All(k=>k!=null),"HUD assets");
                     var cameraController=Camera.main.GetComponent<ArenaCameraController>();
-                    Check(Camera.main.orthographic,"Orthographic camera");
+                    Check(!Camera.main.orthographic&&Mathf.Abs(Camera.main.fieldOfView-40f)<.1f,"Strategic perspective camera");
                     VisualStageChecks.CameraControls(cameraController,new Vector3(hero.Position.X,0,hero.Position.Y));
                     if(game.GetComponent<OrganicArena>()!=null)
                     {

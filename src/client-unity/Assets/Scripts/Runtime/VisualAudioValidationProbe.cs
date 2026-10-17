@@ -18,6 +18,8 @@ namespace DragonMoba.Runtime
         string directory, stage = "startup";
         float nextSnapshot, recordingEnd;
         ValidationAudioCapture audioCapture;
+        bool overview;
+        float savedZoom;
         static readonly BindingFlags Flags = BindingFlags.Instance | BindingFlags.NonPublic;
 
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
@@ -70,11 +72,22 @@ namespace DragonMoba.Runtime
                             float.Parse(fields[2], CultureInfo.InvariantCulture)), true);
                     }
                 }
+                else if(fields[0]=="overview"&&fields.Length==2&&Camera.main!=null)
+                {
+                    if(fields[1]=="1"&&!overview){savedZoom=Camera.main.orthographicSize;overview=true;}
+                    else if(fields[1]=="0"){overview=false;Camera.main.orthographicSize=savedZoom;RenderSettings.fog=true;}
+                }
                 Debug.Log("ART002 PRESENTATION COMMAND | " + command);
                 nextSnapshot = 0;
             }
             if (recordingEnd > 0 && Time.realtimeSinceStartup >= recordingEnd && audioCapture != null)
             { audioCapture.Finish(); recordingEnd = 0; }
+            if(overview&&Camera.main!=null)
+            {
+                Camera.main.orthographic=true;Camera.main.orthographicSize=81;
+                Camera.main.transform.SetPositionAndRotation(new Vector3(0,180,0),Quaternion.Euler(90,0,0));
+                RenderSettings.fog=false;
+            }
             if (Time.realtimeSinceStartup < nextSnapshot) return;
             nextSnapshot = Time.realtimeSinceStartup + 1;
             var sorted = frameMs.OrderBy(v => v).ToArray();
@@ -97,6 +110,9 @@ namespace DragonMoba.Runtime
                 galleryHeights = GalleryHeights(),
                 audioSources = sources.Length, playingSources = sources.Count(s => s.isPlaying), mutedSources = sources.Count(s => s.mute),
                 audioSampleRate = AudioSettings.outputSampleRate,
+                cameraPerspective=Camera.main!=null&&!Camera.main.orthographic,
+                mapHalfWidth=world==null?0:world.Layout.HalfWidth,
+                mapHalfHeight=world==null?0:world.Layout.HalfHeight,
                 lastAudio = audioCapture == null ? null : audioCapture.LastResult
             };
             File.WriteAllText(Path.Combine(directory, "state.json"), JsonUtility.ToJson(result, true));
@@ -136,6 +152,8 @@ namespace DragonMoba.Runtime
             public double seconds;
             public float averageFps, medianFrameMs, p95FrameMs, p99FrameMs, textureEnabled;
             public float[] galleryHeights;
+            public bool cameraPerspective;
+            public float mapHalfWidth,mapHalfHeight;
             public ValidationAudioCapture.Result lastAudio;
         }
     }
