@@ -2,7 +2,7 @@
 
 **Versão:** 1.0 (pesquisa e proposta) · **Data de corte:** 16/10/2026 · **Idioma:** PT-BR  
 **Estado:** documento técnico para revisão; **não representa funções já implementadas**.  
-**Projeto ativo:** \`src/client-unity\`, Unity 6000.6.6f1, Built-in, Input Manager legado.  
+**Projeto ativo:** `src/client-unity`, Unity 6000.6.6f1, Built-in, Input Manager legado.  
 **Documentos relacionados:** [GAME_DESIGN.md](GAME_DESIGN.md), [TECH_ARCHITECTURE.md](TECH_ARCHITECTURE.md), [ART_PIPELINE.md](ART_PIPELINE.md), [coordenação](../coordination/README.md).
 
 > **Tese de implementação:** preservar o protótipo e a simulação pura C# enquanto construímos, em etapas verificáveis, uma experiência completa de MOBA. O objetivo é reproduzir a **profundidade sistêmica** e a legibilidade de um MOBA do nível de League of Legends, não copiar seu código proprietário, mapa exato, arte, interface protegida ou balanceamento atual. Dragon Ball também é propriedade intelectual de terceiros: prototipagem privada não concede licença para publicação comercial.
@@ -14,7 +14,7 @@
 3. A prioridade é uma partida offline completa, com **3 heróis distintos, combate estável, progressão visível, loja de receitas e mapa navegável**, antes de 15 personagens, fusão e multiplayer.
 4. **DBM-001 foi mesclada à main**: pontos/ranks de habilidades, requisito R 6/11/16 e autoataque de um clique. **DBM-002 é apenas PR #2 em rascunho**, contendo colisões de torres/núcleos e aggro provisório; não considerá-la concluída antes dos testes locais.
 5. Para o Ki em C: hoje o código gera **1,8 XP/s após Ki cheio, caindo para 0,99 XP/s após 30 s contínuos**, fora da fonte. Como os requisitos de XP aumentam por nível, o benefício fica cada vez menos perceptível. Precisamos medir e mostrar XP/s, comparar com farming, e recalibrar — sem criar um botão de evolução AFK dominante.
-6. O código atual inicia por uma tela simples de **3 botões**, mas o componente visual pode iniciar automaticamente conforme configuração de cena (\`OrganicArena.startDemo\`). A seleção deve tornar-se um **estado obrigatório antes da partida**, com retratos, kit, funções e prévia das formas, não apenas botões.
+6. O código atual inicia por uma tela simples de **3 botões**, mas o componente visual pode iniciar automaticamente conforme configuração de cena (`OrganicArena.startDemo`). A seleção deve tornar-se um **estado obrigatório antes da partida**, com retratos, kit, funções e prévia das formas, não apenas botões.
 7. Toda afirmação sobre LoL deve ser entendida **no patch referenciado**. Em 2026, a Riot alterou missões de posição e recompensas; por exemplo, a atualização 26.1 prevê aumento do teto de nível do top para 20 após uma missão. Não congelar as regras do nosso jogo por números desatualizados de LoL.
 
 ## 1. Fontes, metodologia e limites da pesquisa
@@ -68,18 +68,18 @@
 
 Separar em quatro grupos, exibidos no painel de estatísticas (tecla a definir):
 
-- **Sobrevivência:** \`MaxHP\`, \`HPRegenPer5\`, \`Armor\`, \`KiResist\`, \`Shield\`, \`ShieldPower\`, \`Tenacity\`, \`HealAmplification\`.
-- **Ataque básico:** \`PhysicalAttack\`, \`AttackSpeed\`, \`AttackRange\`, \`CritChance\`, \`CritMultiplier\`, \`ArmorPenFlat\`, \`ArmorPenPercent\`, \`LifeSteal\`, \`OnHitEffects\`.
-- **Técnicas:** \`KiPower\`, \`AbilityHaste\`, \`KiPenFlat\`, \`KiPenPercent\`, \`SpellVamp\`, \`CooldownModifiers\`.
-- **Mobilidade/recursos:** \`MoveSpeed\`, \`MoveAcceleration\`, \`TurnRate\`, \`MaxKi\`, \`KiRegenPer5\`, \`VisionRange\`, \`BodyRadius\`, \`ResourceType\`.
+- **Sobrevivência:** `MaxHP`, `HPRegenPer5`, `Armor`, `KiResist`, `Shield`, `ShieldPower`, `Tenacity`, `HealAmplification`.
+- **Ataque básico:** `PhysicalAttack`, `AttackSpeed`, `AttackRange`, `CritChance`, `CritMultiplier`, `ArmorPenFlat`, `ArmorPenPercent`, `LifeSteal`, `OnHitEffects`.
+- **Técnicas:** `KiPower`, `AbilityHaste`, `KiPenFlat`, `KiPenPercent`, `SpellVamp`, `CooldownModifiers`.
+- **Mobilidade/recursos:** `MoveSpeed`, `MoveAcceleration`, `TurnRate`, `MaxKi`, `KiRegenPer5`, `VisionRange`, `BodyRadius`, `ResourceType`.
 
 **Dois tipos principais de dano**: físico (socos/espadas/bastão) e energético (Ki, equivalente funcional ao dano mágico). Dano verdadeiro deve ser raro, explicitamente sinalizado e não mitigado por Armor/KiResist. **Roubo de vida** aplica cura após **dano efetivamente causado** por ataques básicos elegíveis; **vampirismo de técnicas** aplica após dano elegível de habilidades, com coeficientes separados para área. Escudo absorve antes do HP; itens com passivas exclusivas não acumulam sem declaração.
 
 ### 4.2 Crescimento e pipeline de atributos (proposta)
 
-A fórmula simples inicial deve ser \`baseStat + growthPerLevel × (level - 1)\`; não alegar que replica exatamente todos os campeões/patches do LoL. O resultado total por tick deve ser **recalculado a partir de fontes** — nunca adicionar o mesmo bônus por item duas vezes:
+A fórmula simples inicial deve ser `baseStat + growthPerLevel × (level - 1)`; não alegar que replica exatamente todos os campeões/patches do LoL. O resultado total por tick deve ser **recalculado a partir de fontes** — nunca adicionar o mesmo bônus por item duas vezes:
 
-\`\`\`text
+```text
 Base (ChampionDefinition, nível)
  → FormModifiers (transformação atual)
  → ItemFlat / ItemPercent
@@ -87,27 +87,27 @@ Base (ChampionDefinition, nível)
  → TemporaryBuffs / Debuffs / Auras
  → Caps, clamps, rounding policy
  → DerivedStatsSnapshot
-\`\`\`
+```
 
 Exemplo ilustrativo de **Goku Criança** (não é dado Riot): HP base 570, +82 HP/nível, regen base 6 HP/5s, +0,65 HP/5s por nível, ataque 55 +3,2/nível; velocidade base baixa/média, range curto. No nível 6, antes de itens: HP = 980; regen = 9,25 HP/5s ≈ 1,85 HP/s; ataque = 71. **Esses valores precisam de testes de TTK, não estão balanceados.** Diferenciar crescimento de HP máximo de cura: subir nível não deve necessariamente restaurar toda a vida, a menos que regra explícita.
 
 ### 4.3 Regeneração de vida base
 
-\`\`\`text
+```text
 regenHpPerSecond = (HPRegenPer5 / 5) × (1 + percentRegenBonus)
 heal = max(0, regenHpPerSecond × deltaTime)
 HP = min(MaxHP, HP + heal)
-\`\`\`
+```
 
 - HP regen existe **desde nível 1**, inclusive sem item e sem voltar à fonte; não equivale a cura explosiva.
 - Fonte aplica regeneração própria muito superior e regras de loja/segurança.
-- Opcional: \`OutOfCombatRegen\` somente após N segundos sem dano (para itens específicos), separado da regeneração base.
-- Cura recebida, passivas, anti-cura e escudos precisam de tipos/eventos distintos; regen não deve disparar efeitos de \`OnSpellHeal\` por acidente.
-- Morte pausa a regen; respawn reseta HP conforme regra; nunca ultrapassar \`MaxHP\`.
+- Opcional: `OutOfCombatRegen` somente após N segundos sem dano (para itens específicos), separado da regeneração base.
+- Cura recebida, passivas, anti-cura e escudos precisam de tipos/eventos distintos; regen não deve disparar efeitos de `OnSpellHeal` por acidente.
+- Morte pausa a regen; respawn reseta HP conforme regra; nunca ultrapassar `MaxHP`.
 
 ### 4.4 Pipeline de dano — ordem autoritativa
 
-\`\`\`text
+```text
 AttackOrCastRequest
  → validação de alvo, visão, alcance, vivo, custo, CC, rank
  → ataque/cast windup (pode cancelar conforme tipo)
@@ -120,25 +120,25 @@ AttackOrCastRequest
  → HP efetivamente perdido
  → life steal / spell vamp / efeitos on-hit / anti-heal
  → morte, kill/assist, ouro, XP, aggro de torre, VFX e replay
-\`\`\`
+```
 
-Técnicas e passivas devem especificar \`DamageTags\` (\`BasicAttack\`, \`Ability\`, \`SingleTarget\`, \`Area\`, \`Dot\`, \`Physical\`, \`Ki\`, \`True\`, \`CanCrit\`). **Regra de roubo de vida sugerida:** se ataque básico elegível removeu 100 HP, \`LifeSteal=0.10\` restaura até 10 HP ao atacante; se escudo absorveu tudo, não cura por esse dano. \`SpellVamp=0.08\` em habilidade elegível que removeu 200 HP cura 16 HP; habilidades de área podem ter fator de efetividade próprio (a calibrar).
+Técnicas e passivas devem especificar `DamageTags` (`BasicAttack`, `Ability`, `SingleTarget`, `Area`, `Dot`, `Physical`, `Ki`, `True`, `CanCrit`). **Regra de roubo de vida sugerida:** se ataque básico elegível removeu 100 HP, `LifeSteal=0.10` restaura até 10 HP ao atacante; se escudo absorveu tudo, não cura por esse dano. `SpellVamp=0.08` em habilidade elegível que removeu 200 HP cura 16 HP; habilidades de área podem ter fator de efetividade próprio (a calibrar).
 
-**Mitigação de teste:** 100 de dano físico contra Armor 100 produz 50 antes de escudo. Se tiver 20% de penetração e 10 de penetração plana, resistência efetiva proposta \`(100 × 0.8) − 10 = 70\`; dano = \`100 × 100/170 ≈ 58,82\`. Definir ordem no código e testar para cada tipo de resistência. Resistência negativa usa a fórmula já presente em \`Catalog.Mitigate\`, com testes dedicados.
+**Mitigação de teste:** 100 de dano físico contra Armor 100 produz 50 antes de escudo. Se tiver 20% de penetração e 10 de penetração plana, resistência efetiva proposta `(100 × 0.8) − 10 = 70`; dano = `100 × 100/170 ≈ 58,82`. Definir ordem no código e testar para cada tipo de resistência. Resistência negativa usa a fórmula já presente em `Catalog.Mitigate`, com testes dedicados.
 
 ### 4.5 Cooldowns, velocidade de ataque e limites
 
-- **Aceleração de habilidade proposta:** \`CDfinal = CDbase × 100/(100 + AbilityHaste)\`; +50 haste implica cooldown × 2/3. Não acumular redução diretamente em \`SkillCooldown\` quando item é equipado: usar \`AbilityDefinition\`, \`DerivedStats\` e evento de cast.
-- \`AttackInterval = 1 / AttacksPerSecond\`; velocidade de ataque final tem limite e modificadores ordenados. Não permitir \`0\` nem número negativo; separar windup (animação antes do hit) do intervalo total.
+- **Aceleração de habilidade proposta:** `CDfinal = CDbase × 100/(100 + AbilityHaste)`; +50 haste implica cooldown × 2/3. Não acumular redução diretamente em `SkillCooldown` quando item é equipado: usar `AbilityDefinition`, `DerivedStats` e evento de cast.
+- `AttackInterval = 1 / AttacksPerSecond`; velocidade de ataque final tem limite e modificadores ordenados. Não permitir `0` nem número negativo; separar windup (animação antes do hit) do intervalo total.
 - **Crítico ilustrativo:** chance 25%, dano ×1,75 em básico elegível; o número de 1,75 é **proposta para nosso jogo**, não afirmação geral sobre cada campeão do LoL.
 - **Velocidade:** base × multiplicadores e clamp; slows múltiplos têm regra de empilhamento, limite e imunidades. Itens podem produzir desvantagens legítimas (ex.: botas de treino −8% antes do ganho), mas nunca dano/velocidade negativa por underflow.
-- **Tempo:** simulação de 30Hz atual, com \`tick\` como relógio de efeito/duração. Não utilizar \`Time.time\` da Unity para regras de domínio; usar apenas para VFX/UI.
+- **Tempo:** simulação de 30Hz atual, com `tick` como relógio de efeito/duração. Não utilizar `Time.time` da Unity para regras de domínio; usar apenas para VFX/UI.
 
 ### 4.6 Crescimento de habilidades ao evoluir
 
 DBM-001 **já adicionou** escalonamentos fixos por rank (Q +24 dano bruto, W +1 distância, E +25 escudo, R +40 dano), genéricos para três heróis. O próximo sistema deve migrar isso para **tabelas por personagem, forma e slot**, sem perder a progressão validada:
 
-\`\`\`text
+```text
 AbilityDefinition {
   id, slot, allowedFormIds, maxRank,
   baseDamagePerRank[], physicalRatioPerRank[], kiRatioPerRank[],
@@ -146,9 +146,9 @@ AbilityDefinition {
   targetingMode, castWindupTicks, projectileSpeed,
   controlEffects[], visualCueId, audioCueId, balanceVersion
 }
-\`\`\`
+```
 
-Exemplo de \`Q\` artilharia: dano-base por rank [65, 95, 125, 155, 185] + 0,60 × KiPower, cooldown [9, 8.5, 8, 7.5, 7] s, custo 35 Ki. Rank de poder **não precisa aumentar todos os eixos ao mesmo tempo**; escolher 1–2 alavancas para evitar inflação. Ao mudar para forma avançada, mudanças podem ser overrides de raio, tipo de projétil ou tags, preservando o rank atual.
+Exemplo de `Q` artilharia: dano-base por rank [65, 95, 125, 155, 185] + 0,60 × KiPower, cooldown [9, 8.5, 8, 7.5, 7] s, custo 35 Ki. Rank de poder **não precisa aumentar todos os eixos ao mesmo tempo**; escolher 1–2 alavancas para evitar inflação. Ao mudar para forma avançada, mudanças podem ser overrides de raio, tipo de projétil ou tags, preservando o rank atual.
 
 ### 4.7 Testes mínimos da fundação de stats
 
