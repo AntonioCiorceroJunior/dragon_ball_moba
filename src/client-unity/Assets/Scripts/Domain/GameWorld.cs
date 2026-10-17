@@ -312,7 +312,8 @@ namespace DragonMoba.Domain
             {
                 case EntityKind.Tower: return TowerBodyRadius;
                 case EntityKind.Core: return CoreBodyRadius;
-                case EntityKind.Hero: return HeroBodyRadius;
+                case EntityKind.Hero: return entity.FormId == "kid_oozaru" ? .95f :
+                    entity.HeroId == "GKU_KID" ? .43f : HeroBodyRadius;
                 case EntityKind.Minion: return MinionBodyRadius;
                 default: return 0f;
             }
@@ -569,7 +570,8 @@ namespace DragonMoba.Domain
                     break;
                 case AbilitySlot.W:
                     DashWithoutStructureCollision(actor, targetPoint,
-                        6f + actor.SkillRanks[i] - 1);
+                        (6f + actor.SkillRanks[i] - 1) *
+                        (actor.FormId == "kid_oozaru" ? .65f : 1f));
                     actor.Destination = actor.Position;
                     break;
                 case AbilitySlot.E:
