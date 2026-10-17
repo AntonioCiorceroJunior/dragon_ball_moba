@@ -276,6 +276,16 @@ namespace DragonMoba.Editor
             world.Tick(GameWorld.FixedStep);
             Require(tower.AttackTargetId == alliedMinion.Id && tower.TowerAggroTargetId == 0,
                 "TR-05: Tower disengages aggressor who leaves range");
+            EntityState secondMinion = null;
+            foreach (var candidate in world.Entities)
+                if (candidate.Kind == EntityKind.Minion && candidate.Team == Team.Blue &&
+                    candidate.Id != alliedMinion.Id && candidate.Lane == 1)
+                { secondMinion = candidate; break; }
+            Require(secondMinion != null, "TR-06: Another minion exists");
+            secondMinion.Position = secondMinion.Destination = new V2(2f,19f);
+            world.Tick(GameWorld.FixedStep);
+            Require(tower.AttackTargetId == alliedMinion.Id,
+                "TR-06: Tower retains living minion despite a nearer minion arriving");
         }
 
         private static void TestStructureCollision()
