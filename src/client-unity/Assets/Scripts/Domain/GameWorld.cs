@@ -237,6 +237,8 @@ namespace DragonMoba.Domain
                     hero.Hp = hero.MaxHp;
                     hero.Ki = hero.MaxKi;
                     hero.Shield = 0;
+                    hero.HealingReductionSeconds = 0f;
+                    hero.HealingReductionRate = 0f;
                     hero.Position = BasePosition(hero.Team);
                     hero.Destination = hero.Position;
                     hero.AttackTargetId = 0;
@@ -265,7 +267,11 @@ namespace DragonMoba.Domain
                 if (hero.ShieldLifetime == 0f) hero.Shield = 0f;
             }
             // Base regeneration applies anywhere; the fountain adds a separate burst.
-            hero.Hp = Math.Min(hero.MaxHp, hero.Hp + (hero.HpRegenPer5 / 5f + (NearBase(hero) ? 80f : 0f)) * dt);
+            hero.HealingReductionSeconds = Math.Max(0f,hero.HealingReductionSeconds-dt);
+            if(hero.HealingReductionSeconds <= 0f) hero.HealingReductionRate = 0f;
+            var healingFactor = 1f - hero.HealingReductionRate;
+            hero.Hp = Math.Min(hero.MaxHp, hero.Hp +
+                (hero.HpRegenPer5 / 5f + (NearBase(hero) ? 80f : 0f)) * healingFactor * dt);
             hero.TrainingSeconds = Math.Max(0, hero.TrainingSeconds - (hero.Charging ? 0f : dt * 0.25f));
             if (hero.TrainingBootsRemaining > 0 && !NearBase(hero))
             {
@@ -696,7 +702,15 @@ namespace DragonMoba.Domain
             if (actor.Kind == EntityKind.Hero && lostHp > 0f)
             {
                 var vamp = basicAttack ? actor.LifeSteal : kiDamage ? actor.SpellVamp : 0f;
-                if (vamp > 0f) actor.Hp = Math.Min(actor.MaxHp, actor.Hp + lostHp * vamp);
+                if (vamp > 0f)
+                    actor.Hp = Math.Min(actor.MaxHp, actor.Hp +
+                        lostHp * vamp * (1f - actor.HealingReductionRate));
+            }
+            if (actor.Kind == EntityKind.Hero && victim.Kind == EntityKind.Hero &&
+                lostHp > 0f && actor.AntiHealOnHit > 0f)
+            {
+                victim.HealingReductionRate = Math.Max(victim.HealingReductionRate,actor.AntiHealOnHit);
+                victim.HealingReductionSeconds = 3f;
             }
             if (actor.Kind == EntityKind.Hero && victim.Kind == EntityKind.Hero && amount > 0f)
             {
