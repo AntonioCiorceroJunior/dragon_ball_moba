@@ -393,6 +393,26 @@ namespace DragonMoba.Editor
                 hero.SkillCooldown[0]>3.6f && hero.SkillCooldown[0]<3.7f,
                 "SK-07: +10 ability haste reduces base 4s cooldown correctly");
 
+            var antiWorld = new GameWorld("GKU_KID");
+            var buyer = antiWorld.Player;
+            buyer.Zeni = 4000;
+            Require(antiWorld.Submit(new GameCommand {ActorId=buyer.Id, Kind=CommandKind.Buy,
+                ItemId="ANTI_HEAL_BLADE"}) && buyer.AntiHealOnHit > .34f,
+                "COUNTER-01: Anti-heal item grants damage debuff");
+            EntityState affected=null;
+            foreach (var e in antiWorld.Entities)
+                if(e.Kind==EntityKind.Hero && e.Team==Team.Red) { affected=e;break; }
+            Require(affected!=null,"COUNTER-01: Enemy exists");
+            affected.Position=affected.Destination=new V2(30,-36);
+            affected.MoveSpeed=affected.PhysicalAttack=affected.AttackRange=0;
+            affected.Hp=250f;
+            Require(antiWorld.DealDamage(buyer,affected,40f,false,true) &&
+                affected.HealingReductionRate>.34f && affected.HealingReductionSeconds==3f,
+                "COUNTER-01: Damaging enemy hero reduces healing for three seconds");
+            for (var j=0;j<115;++j) antiWorld.Tick(GameWorld.FixedStep);
+            Require(affected.HealingReductionSeconds==0f && affected.HealingReductionRate==0f,
+                "COUNTER-02: Anti-heal debuff expires without ghost modifiers");
+
             var apeWorld = new GameWorld("GKU_KID");
             var kid = apeWorld.Player;
             kid.Position = kid.Destination = new V2(0,-17.2f); // fits Kid, not giant form.
