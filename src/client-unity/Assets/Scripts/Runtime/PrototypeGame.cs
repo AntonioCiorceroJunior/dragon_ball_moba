@@ -583,7 +583,7 @@ namespace DragonMoba.Runtime
             for (var i = 0; i < 4; ++i)
             {
                 var name = hero.HeroId == "GKU_KID" ?
-                    new[] { "Q Bastao", "W Salto", "E Defesa", "R Oozaru" }[i] :
+                    new[] { "Q Bastao", "W Salto", "E Defesa", "R Impacto" }[i] :
                     hero.HeroId == "CELL_Z" ?
                     new[] { "Q Absorcao", "W Avanco", "E Carapaca", "R Explosao" }[i] :
                     new[] { "Q Rajada", "W Transmissao", "E Barreira", "R Explosao" }[i];
