@@ -38,8 +38,12 @@ foreach ($asset in $imported) {
     if ((Get-FileHash -LiteralPath (Join-Path $project $asset.path) -Algorithm SHA256).Hash -ne $asset.sha256) { throw "Imported asset changed: $($asset.path)" }
 }
 if (-not $DomainBaseline) {
-    $approved = Join-Path $repo 'docs/coordination/evidence/DBM-001/DOMAIN_BASELINE.csv'
-    $DomainBaseline = if (Test-Path -LiteralPath $approved) { $approved } else { Join-Path $project 'docs/art/DOMAIN_BASELINE.csv' }
+    $candidates = @(
+        (Join-Path $repo 'docs/coordination/evidence/DBM-002/DOMAIN_BASELINE.csv'),
+        (Join-Path $repo 'docs/coordination/evidence/DBM-001/DOMAIN_BASELINE.csv'),
+        (Join-Path $project 'docs/art/DOMAIN_BASELINE.csv')
+    )
+    $DomainBaseline = $candidates | Where-Object { Test-Path -LiteralPath $_ } | Select-Object -First 1
 }
 foreach ($baseline in Import-Csv -LiteralPath $DomainBaseline) {
     $fileName = Split-Path $baseline.Path -Leaf
