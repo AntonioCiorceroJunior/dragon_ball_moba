@@ -157,12 +157,23 @@ namespace DragonMoba.Editor
                     if(Wait(90)) return;
                     Check(victim.Hp<beforeHp,"Attack deals damage");
                     var hp=victim.Hp;
+                    // This smoke validates the unlocked ability effects, not bypassing
+                    // the new level requirements. Level 6 grants access to all slots.
+                    while(hero.Level<6)
+                        world.GrantExperience(hero,Catalog.ExperienceForNextLevel(hero.Level)-hero.Experience+.01f);
+                    foreach(var slot in new[]{AbilitySlot.Q,AbilitySlot.W,AbilitySlot.E,AbilitySlot.R})
+                        Check(world.Submit(new GameCommand{ActorId=hero.Id,Kind=CommandKind.UpgradeAbility,Slot=slot}),
+                            "Unlock "+slot+" legally");
+                    hero.Ki=hero.MaxKi;
                     Check(world.Submit(new GameCommand{ActorId=hero.Id,Kind=CommandKind.Cast,Slot=AbilitySlot.Q,Position=victim.Position}),"Q accepted");
                     Check(victim.Hp<hp,"Q damages target");
+                    hero.Ki=hero.MaxKi;
                     Check(world.Submit(new GameCommand{ActorId=hero.Id,Kind=CommandKind.Cast,Slot=AbilitySlot.E,Position=hero.Position})&&hero.Shield>0,"E shield");
                     var rHp=victim.Hp;
+                    hero.Ki=hero.MaxKi;
                     Check(world.Submit(new GameCommand{ActorId=hero.Id,Kind=CommandKind.Cast,Slot=AbilitySlot.R,Position=victim.Position})&&victim.Hp<rHp,"R damage");
                     var wStart=hero.Position;
+                    hero.Ki=hero.MaxKi;
                     Check(world.Submit(new GameCommand{ActorId=hero.Id,Kind=CommandKind.Cast,Slot=AbilitySlot.W,Position=new V2(hero.Position.X+5,hero.Position.Y)})&&V2.Distance(wStart,hero.Position)>1,"W displacement");
                     tower=world.Entities.First(e=>e.Kind==EntityKind.Tower&&e.Team==Team.Blue);
                     victim.Position=new V2(tower.Position.X+1,tower.Position.Y); victim.Destination=victim.Position;
