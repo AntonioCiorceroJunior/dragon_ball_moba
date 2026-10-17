@@ -15,6 +15,7 @@ namespace DragonMoba.Domain
         public int Level = 1;
         public float Experience;
         public int Zeni;
+        public float PassiveZeniRemainder;
         public V2 Position;
         public V2 Destination;
         public int AttackTargetId;
