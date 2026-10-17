@@ -4,8 +4,8 @@ Use somente uma tarefa ativa de cada vez. ChatGPT publica a instrução concreta
 
 | ID | Prioridade | Tarefa | Situação | Aceitação resumida |
 |---|---|---|---|---|
-| DBM-000 | P0 | Publicar projeto Unity local no GitHub com segurança | ATIVA | Código-fonte e cenas versionados, licenças verificadas, relatório e testes |
-| DBM-001 | P0 | Progressão de habilidades e autoataque | PENDENTE | Pontos por nível, QWE/R desbloqueadas, perseguição/ataque contínuo, testes |
+| DBM-000 | P0 | Publicar projeto Unity local no GitHub com segurança | CONCLUÍDA — commit 0c13080 | Código-fonte e cenas versionados, licenças verificadas, relatório e testes |
+| DBM-001 | P0 | Progressão de habilidades e autoataque | ATIVA — aguardando Codex | Pontos por nível, QWE/R desbloqueadas, perseguição/ataque contínuo, testes |
 | DBM-002 | P0 | Torres, aggro, limites de ataque e colisões | PENDENTE | Alcance verificável, prioridade de alvo, dano real, navegação sem atravessar |
 | DBM-003 | P0 | Loja, inventário, modificadores e botas | PENDENTE | Ouro e slots coerentes; atributos/aplicação e restrições testadas |
 | DBM-004 | P1 | Ki, XP por treino e efeitos com regras completas | PENDENTE | Custos, recuperação, vulnerabilidade e exploração controlados |
