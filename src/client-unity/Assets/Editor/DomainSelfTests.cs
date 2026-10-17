@@ -67,6 +67,7 @@ namespace DragonMoba.Editor
             TestPersistentAttack();
             TestTowerRangeAndAggro();
             TestStructureCollision();
+            TestDerivedStatsAndEquipment();
             Debug.Log("DBM001 DOMAIN PASSED | locked skills, point conservation, rank gates, repeated attacks, cast resume and respawn persistence");
             Debug.Log("DBM002 DOMAIN PASSED | tower targeting, aggro, range, collision and detour");
         }
@@ -318,6 +319,74 @@ namespace DragonMoba.Editor
             redTower.Hp = 0f; // Controlled fixture only: destroy the blocker for walkability check.
             Require(!world.IsStructureCollision(hero, redTower.Position),
                 "COL-05: Destroyed tower footprint is no longer solid");
+        }
+
+        private static void TestDerivedStatsAndEquipment()
+        {
+            var world = new GameWorld("GKU_KID");
+            var hero = world.Player;
+            Require(hero.HpRegenPer5 >= 6f && Catalog.Item("CAPSULE_SWORD") != null,
+                "STAT-01: Regeneration and expanded item catalog");
+            hero.Position = hero.Destination = new V2(30,-36);
+            hero.Hp = 250f;
+            for (var t=0; t<30; ++t) world.Tick(GameWorld.FixedStep);
+            Require(hero.Hp > 251f && hero.Hp < 252f,
+                "STAT-02: 6 HP per five seconds regenerates outside fountain");
+
+            hero.Position = hero.Destination = new V2(0,-34);
+            hero.Zeni = 20000;
+            Require(world.Submit(new GameCommand{ActorId=hero.Id,Kind=CommandKind.Buy,
+                ItemId="GLOVES"}), "ITEM-01: first glove");
+            Require(world.Submit(new GameCommand{ActorId=hero.Id,Kind=CommandKind.Buy,
+                ItemId="GLOVES"}), "ITEM-01: second glove");
+            Require(world.Submit(new GameCommand{ActorId=hero.Id,Kind=CommandKind.Buy,
+                ItemId="HEALTH_GEM"}), "ITEM-01: crystal");
+            Require(hero.Inventory.Count == 3 && Math.Abs(hero.PhysicalAttack-85f)<.01f,
+                "STAT-03: Both components add their attributes once");
+            Require(world.RemainingItemCost(hero,"DRAGON_GLOVES")==1700,
+                "ITEM-02: Missing combine cost is 1700");
+            Require(world.Submit(new GameCommand{ActorId=hero.Id,Kind=CommandKind.Buy,
+                ItemId="DRAGON_GLOVES"}), "ITEM-03: full recipe purchase");
+            Require(hero.Inventory.Count==1 && hero.Inventory[0]=="DRAGON_GLOVES" &&
+                hero.Zeni==17200 && Math.Abs(hero.PhysicalAttack-100f)<.01f &&
+                hero.MaxHp==770f,
+                "ITEM-03: Recipe consumes ingredients and no ghost bonuses remain");
+            Require(world.Submit(new GameCommand{ActorId=hero.Id,Kind=CommandKind.Sell,
+                ItemId="DRAGON_GLOVES"}), "ITEM-04: Sell finished item");
+            Require(hero.Inventory.Count==0 && hero.PhysicalAttack==55f &&
+                hero.MaxHp==570f && hero.Zeni==19160,
+                "ITEM-04: Selling removes modifiers and credits 70 percent");
+
+            hero.Zeni=20000;
+            Require(world.Submit(new GameCommand{ActorId=hero.Id,Kind=CommandKind.Buy,
+                ItemId="VAMP_ESSENCE"}), "DMG-01: Equip lifesteal");
+            Require(world.Submit(new GameCommand{ActorId=hero.Id,Kind=CommandKind.Buy,
+                ItemId="HASTE_SHARD"}), "SK-07: Equip ability haste");
+            EntityState enemy = null;
+            foreach (var e in world.Entities)
+                if (e.Kind==EntityKind.Hero && e.Team==Team.Red) { enemy=e; break; }
+            Require(enemy!=null, "DMG-01: Enemy fixture exists");
+            hero.Hp=100f;
+            Require(world.DealDamage(hero,enemy,100,false,true) && hero.Hp>104f,
+                "DMG-01: Basic attack lifesteal heals for actual HP damage");
+            enemy.Shield=1000;
+            hero.Hp=100f;
+            Require(world.DealDamage(hero,enemy,100,false,true) && hero.Hp==100f,
+                "DMG-02: Fully shielded damage never grants lifesteal");
+            Require(world.Submit(new GameCommand{ActorId=hero.Id,Kind=CommandKind.UpgradeAbility,
+                Slot=AbilitySlot.Q}), "SK-07: Learn Q");
+            hero.Ki=hero.MaxKi;
+            Require(world.Submit(new GameCommand{ActorId=hero.Id,Kind=CommandKind.Cast,
+                Slot=AbilitySlot.Q,Position=hero.Position}) &&
+                hero.SkillCooldown[0]>3.6f && hero.SkillCooldown[0]<3.7f,
+                "SK-07: +10 ability haste reduces base 4s cooldown correctly");
+
+            var apeWorld = new GameWorld("GKU_KID");
+            var kid = apeWorld.Player;
+            apeWorld.GrantExperience(kid,99999);
+            Require(kid.Level==18 && kid.FormId=="kid_oozaru" &&
+                apeWorld.BodyRadius(kid)>.9f && kid.MoveSpeed<6f,
+                "FORM-01: Oozaru grows body radius and slows movement");
         }
 
         private static void Require(bool condition, string label)
