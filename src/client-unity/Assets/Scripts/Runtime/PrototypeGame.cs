@@ -262,6 +262,8 @@ namespace DragonMoba.Runtime
                 if (asset == null) asset = Resources.Load<GameObject>("CharacterForms/" + state.HeroId + "/" + state.FormId);
                 if (asset != null) visual = Instantiate(asset);
             }
+            if (visual == null && state.Kind == EntityKind.Hero)
+                visual = PrimitiveHeroVisual.Create(state);
             if (visual == null)
             {
                 var primitive = state.Kind == EntityKind.Hero ? PrimitiveType.Capsule :
@@ -677,7 +679,11 @@ namespace DragonMoba.Runtime
             foreach (var e in world.Entities)
             {
                 if (!e.Alive || (e.Kind != EntityKind.Hero && e.Kind != EntityKind.Tower && e.Kind != EntityKind.Core)) continue;
-                var p = gameCamera.WorldToScreenPoint(Position(e.Position, e.Kind) + Vector3.up * (e.Kind == EntityKind.Hero ? 1.6f : 2.4f));
+                var body = e.Kind == EntityKind.Hero && views.TryGetValue(e.Id, out var view) ?
+                    view.GetComponentInChildren<Collider>() : null;
+                var height = body != null ? body.bounds.max.y + .38f :
+                    (e.Kind == EntityKind.Hero ? 3.2f : 4.5f);
+                var p = gameCamera.WorldToScreenPoint(new Vector3(e.Position.X,height,e.Position.Y));
                 if (p.z < 0) continue;
                 var rect = new Rect(p.x - 54, Screen.height - p.y - 12, 108, 9);
                 if (rect.x < 0 || rect.x > Screen.width || rect.y < 0 || rect.y > Screen.height) continue;
