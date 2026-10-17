@@ -14,6 +14,7 @@ namespace DragonMoba.Runtime
         private GameWorld world;
         private ArtPresentation art;
         private OrganicArena organic;
+        private CharacterGallery heroGallery;
         private bool visualMovePending;
         private V2 visualMoveStart;
         private Camera gameCamera;
@@ -39,6 +40,12 @@ namespace DragonMoba.Runtime
             Time.fixedDeltaTime = GameWorld.FixedStep;
             Application.targetFrameRate = 60;
             CreateCamera(); // A selection menu must render before a match starts.
+            // Show the actual 3D battlefield and existing character rigs before
+            // loading a match, rather than an empty background behind GUI boxes.
+            BuildEnvironment();
+            heroGallery=GetComponent<CharacterGallery>();
+            if(heroGallery==null)heroGallery=gameObject.AddComponent<CharacterGallery>();
+            heroGallery.Show();
         }
 
         private void Start()
@@ -52,6 +59,7 @@ namespace DragonMoba.Runtime
 
         private void StartMatch(string championId)
         {
+            heroGallery?.Hide();
             world = new GameWorld(championId);
             art?.Confirm();
             BuildEnvironment();
@@ -489,6 +497,7 @@ namespace DragonMoba.Runtime
             foreach (var go in views.Values) if (go != null) Destroy(go);
             views.Clear(); lastForm.Clear();
             world = null; shopOpen = false;
+            heroGallery?.Show();
             lastMessage = "Selecione um personagem para iniciar.";
         }
 
@@ -532,35 +541,7 @@ namespace DragonMoba.Runtime
             EnsureStyles();
             if (world == null)
             {
-                var width = Mathf.Min(620, Screen.width - 30);
-                var left = (Screen.width - width) * 0.5f;
-                var top = Mathf.Max(16, (Screen.height - 430) * 0.5f);
-                GUI.Box(new Rect(left, top, width, 430), "");
-                GUI.Label(new Rect(left+12, top+12, width-24, 45), "ESCOLHA SEU GUERREIRO", titleStyle);
-                GUI.Label(new Rect(left+24, top+55, width-48, 32),
-                    "Selecione um personagem, conheca seu estilo e confirme antes da partida.", smallStyle);
-                var heroes = new[] { "GKU_KID", "GKU_SUPER", "CELL_Z" };
-                var roles = new[] { "Lutador agil | corpo a corpo", "Guerreiro de Ki | longa distancia",
-                    "Tanque / sustentacao | corpo a corpo" };
-                for (var i=0; i<3; ++i)
-                {
-                    var id = heroes[i];
-                    var def = Catalog.Hero(id);
-                    var y = top + 94 + i*83;
-                    var selected = selectedChampionId == id;
-                    GUI.Box(new Rect(left+22,y,width-44,78),
-                        (selected ? "✓ " : "") + def.Name + "  |  " + roles[i]);
-                    GUI.Label(new Rect(left+42,y+29,width-205,42),
-                        "HP " + (int)def.MaxHp + "  •  Ki " + (int)def.MaxKi +
-                        "  •  Ataque " + (int)def.BaseAttack, smallStyle);
-                    if (GUI.Button(new Rect(left+width-170,y+30,128,35),
-                        selected ? "Selecionado" : "Selecionar"))
-                        selectedChampionId = id;
-                }
-                GUI.Label(new Rect(left+25,top+350,width-50,26),
-                    "Selecionado: " + Catalog.Hero(selectedChampionId).Name, normalStyle);
-                if (GUI.Button(new Rect(left+width-225,top+378,203,40), "CONFIRMAR E JOGAR"))
-                    StartMatch(selectedChampionId);
+                DrawCharacterSelection();
                 return;
             }
             var hero = world.Player;
@@ -616,6 +597,73 @@ namespace DragonMoba.Runtime
         // Map coordinates use the same bounds as the current domain V2.Clamp.
         // This is a truthful minimap of the current three-lane prototype; the
         // original diagonal MOBA layout remains a separate map/navigation project.
+        private void DrawCharacterSelection()
+        {
+            // Restrained UI leaves the 3D gallery visible. Card layout is
+            // resolution-adaptive and selections remain explicit.
+            var maxWidth=Mathf.Min(920f,Screen.width-34f);
+            var center=Screen.width*.5f;
+            var header=new Rect(center-maxWidth*.5f,18,maxWidth,83);
+            GUI.Box(header,"");
+            GUI.Label(new Rect(header.x+15,header.y+6,header.width-30,33),
+                "CAPSULE CORP    /    ARENA DOS GUERREIROS",titleStyle);
+            GUI.Label(new Rect(header.x+18,header.y+44,header.width-36,28),
+                "ESCOLHA O SEU CAMINHO • DOMINE O KI • CONTROLE O CAMPO DE BATALHA",smallStyle);
+            var cardGap=10f;
+            var cardWidth=(maxWidth-cardGap*2f)/3f;
+            var cardY=Mathf.Max(115f,Screen.height-249f);
+            var cardHeight=153f;
+            var ids=new[]{"GKU_KID","GKU_SUPER","CELL_Z"};
+            var subtitles=new[]{
+                "ARTES MARCIAIS  •  AGIL",
+                "KI E TRANSFORMACOES",
+                "RESISTENCIA E ABSORCAO"
+            };
+            var marks=new[]{"I","II","III"};
+            var colors=new[]{
+                new Color(1f,.71f,.38f),
+                new Color(.30f,.78f,1f),
+                new Color(.66f,.94f,.42f)
+            };
+            for(var i=0;i<3;i++)
+            {
+                var id=ids[i];
+                var def=Catalog.Hero(id);
+                var selected=selectedChampionId==id;
+                var card=new Rect(center-maxWidth*.5f+i*(cardWidth+cardGap),cardY,
+                    cardWidth,cardHeight);
+                GUI.Box(card,"");
+                var c=GUI.color;
+                GUI.color=selected?new Color(1f,.83f,.46f):colors[i];
+                GUI.DrawTexture(new Rect(card.x+9,card.y+8,5,card.height-17),
+                    Texture2D.whiteTexture);
+                GUI.color=c;
+                GUI.Label(new Rect(card.x+22,card.y+8,36,33),marks[i],titleStyle);
+                var nameStyle=normalStyle;
+                GUI.Label(new Rect(card.x+60,card.y+11,card.width-69,28),
+                    def.Name,nameStyle);
+                GUI.Label(new Rect(card.x+22,card.y+47,card.width-38,24),
+                    subtitles[i],smallStyle);
+                GUI.Label(new Rect(card.x+22,card.y+76,card.width-40,23),
+                    "HP "+(int)def.MaxHp+"   KI "+(int)def.MaxKi+
+                    "   ATAQUE "+(int)def.BaseAttack,smallStyle);
+                var button=new Rect(card.x+21,card.y+107,card.width-42,34);
+                if(GUI.Button(button,selected?"GUERREIRO SELECIONADO":"SELECIONAR"))
+                {
+                    selectedChampionId=id;
+                    art?.Confirm();
+                }
+            }
+            var actionW=Mathf.Min(370f,maxWidth*.5f);
+            var bottom=cardY+cardHeight+9f;
+            if(GUI.Button(new Rect(center-actionW*.5f,bottom,actionW,44f),
+                "INICIAR PARTIDA   →"))
+                StartMatch(selectedChampionId);
+            GUI.Label(new Rect(center-maxWidth*.5f,Screen.height-28,maxWidth,21),
+                "VISUAL EM DESENVOLVIMENTO • 3 HERÓIS • PROTÓTIPO OFFLINE",
+                smallStyle);
+        }
+
         private static Vector2 MapPixel(V2 pos, Rect bounds)
         {
             return new Vector2(bounds.xMin + Mathf.Clamp01((pos.X+32f)/64f)*bounds.width,
