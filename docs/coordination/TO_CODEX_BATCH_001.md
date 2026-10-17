@@ -4,6 +4,19 @@
 **GitHub:** [PR #4](https://github.com/AntonioCiorceroJunior/dragon_ball_moba/pull/4), branch `chatgpt/moba-integrated-systems-2026-10-17`, empilhado sobre [PR #2](https://github.com/AntonioCiorceroJunior/dragon_ball_moba/pull/2).
 **Instrução operacional substituta SOMENTE nesta validação:** após acionamento pelo usuário, leia `AGENTS.md`, este arquivo da branch, relatório `reports/2026-10-17_BATCH_001_chatgpt.md` e diff do PR #4. **Não reimplemente sistemas** e **não faça merge**.
 
+## Protocolo econômico de tokens — aplicar antes de qualquer comando
+
+**Objetivo:** validar o trabalho já implementado, não refazer a investigação/arquitetura. Use poucos ciclos de leitura, execute os scripts existentes e retorne apenas a evidência que o ChatGPT precisa para revisar e corrigir.
+
+1. **Contexto estritamente mínimo:** ler `AGENTS.md`, **este arquivo** e a relação dos arquivos alterados via `git diff --name-only`. O relatório `reports/2026-10-17_BATCH_001_chatgpt.md` é **consulta sob demanda**, não o reproduza integralmente. Não ler os sete dossiês, GDD inteiro, todos os fontes nem histórico antigo.
+2. **Não pesquisar nem reprogramar o que já passou:** conferir o **head atual** do PR e o resultado GitHub Actions correspondente. Se compilação e smoke C# do mesmo commit estiverem verdes, **não gastar tokens reanalisando o código nem repetindo o smoke .NET**, salvo alteração posterior do domínio.
+3. **Executar os comandos de validação existentes** (publicação, Unity Prepare/Play/Build e smoke Windows); redirecionar saída detalhada a `logs/` local ignorado ou outro caminho **fora do commit**. Inspecionar apenas `ERROR`, `FAIL`, exceções, contagem de testes e últimos 20–40 registros relevantes. Não colar logs inteiros no chat.
+4. **Gate sequencial:** se falhar importação/compilação, **interromper Play/Build/nativo**, corrigir apenas o primeiro erro raiz e repetir o gate que falhou. Se tudo passar, ir direto aos testes visuais de maior risco; não recompilar três vezes sem alteração de código.
+5. **UI manual por risco, não por volume de texto:** verificar obrigatoriamente seleção, loja/receita/venda, HP/regen/dano, Oozaru, Ki, câmera/minimapa, colisão/torres. Aproveitar scripts/sondas para as demais verificações. Marcar explicitamente `não verificado` onde não houver evidência; nunca declarar teste executado só porque existe no checklist.
+6. **Consertar só defeitos reproduzidos**, no menor número de arquivos possível, preservando APIs e `.meta`. Evitar refatoração ampla, novo framework, reorganização, novos assets e “polimento” não solicitado. Após duas tentativas sem resolver a mesma falha, **parar e reportar** logs curtos, comando e arquivo/linha para o ChatGPT assumir a análise.
+7. **Handoff compacto:** até aproximadamente uma página, contendo `branch+SHA`, comandos e resultado (PASS/FAIL/NOT TESTED), 3–5 falhas de maior prioridade, arquivos/commits de correção e links/caminhos dos logs completos. Não repetir requisitos, roadmap, bibliografia nem código no relatório.
+8. **Não fazer merge.** Todos os comandos locais ficam em uma rodada de execução do Codex; isso reduz releituras, mas não garante consumo específico de tokens.
+
 ## 1. Preparação e integridade (PC do usuário)
 
 1. Usar exclusivamente o clone ativo em `Repositorio/dragon_ball_moba`; registrar `git status` e preservar alterações locais.
