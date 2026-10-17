@@ -160,3 +160,302 @@ Exemplo de `Q` artilharia: dano-base por rank [65, 95, 125, 155, 185] + 0,60 × 
 6. Rank 2 de uma habilidade aumenta dano/efeito mensuravelmente em cenário fixo.
 7. Equipar, vender e recombinar item recalcula todos os stats, sem bônus fantasma.
 8. Transformação e treino aplicam buff UMA vez; morrer/renascer preserva somente buffs permanentes previstos.
+
+
+## 5. Economia, equipamentos e loja — o principal sistema que falta
+
+### 5.1 Princípios de economia e estratégia
+
+Um MOBA gera decisões a partir de **custo de oportunidade**:
+
+- Fazer last hit concede Zeni ao responsável e XP aos aliados elegíveis próximos; não conceder ouro total a quem não finalizou o golpe, salvo regras explícitas de suporte.
+- Ouro passivo impede estagnação absoluta; farm de tropas, jungle, assistências e objetivos oferecem rotas de renda diferentes.
+- Itens têm **picos de poder**: um componente de 350–900 Zeni dá estatística pequena; um item completo de 2500–3400 pode dar bônus único. **A receita usa os componentes já comprados**, cobrando somente a diferença.
+- A compra só é permitida na base (salvo habilidade/regra explícita); loja aberta fora da base pode exibir catálogo, mas não executar compra.
+- O inventário básico possui **6 slots**; consumíveis/wards precisam de slots e limites definidos; itens ativos disparados nas teclas 1–6.
+- Ouro deve ser registrado num `GoldLedger`: `LastHit`, `Assist`, `Kill`, `Objective`, `PassiveIncome`, `Buy`, `Sell`, `Undo`, com ID de transação, tick e saldo auditável.
+- **Counterbuild** deve ser real: armadura é a resposta a ataque físico; resistência de Ki a burst energético; anti-cura reduz sustain; penetração responde a resistências; mobilidade ajuda contra zonas; escudos ajudam contra explosão inicial.
+
+Não copiar passivas específicas da Riot ou ícones originais. O que copiamos é a **lógica das escolhas**. A Riot já retirou o sistema de itens míticos por interferir na identidade de campeões [R3/R4], então evitaremos item universal obrigatório que derrote a especialização dos heróis.
+
+### 5.2 Catálogo mínimo jogável — preços e números PROPOSTOS
+
+**Esta tabela complementa o catálogo amplo do GAME_DESIGN §16, não substitui seus nomes nem sua direção temática.** Valores para protótipo, a confirmar com testes de TTK/tempo para primeiro item e renda média.
+
+| ID | Item | Custo total | Atributos/efeito indicativo | Ingredientes |
+|---|---|---:|---|---|
+| `IT_C01` | Luvas Reforçadas | 350 | +12 Ataque | — |
+| `IT_C02` | Célula de Ki | 350 | +80 Ki máximo | — |
+| `IT_C03` | Placa de Armadura | 400 | +25 Armor | — |
+| `IT_C04` | Núcleo Isolante | 400 | +25 KiResist | — |
+| `IT_C05` | Cristal de Vida | 400 | +150 HP | — |
+| `IT_C06` | Engrenagem Ágil | 350 | +12% AttackSpeed | — |
+| `IT_C07` | Semente Revigorante | 400 | +3 HP/5s | — |
+| `IT_C08` | Condutor de Ki | 500 | +20 KiPower | — |
+| `IT_C09` | Essência Vampírica | 600 | +6% LifeSteal | — |
+| `IT_C10` | Fragmento de Aceleração | 500 | +10 AbilityHaste | — |
+| `IT_B01` | Botas Comuns | 300 | +mobilidade plana definida no MovementProfile | — |
+| `IT_B03` | Botas de Armadura Saiyajin | 1200 | velocidade +30 Armor | Botas + Placa + 500 |
+| `IT_B04` | Botas de Ki | 1200 | velocidade +30 KiResist | Botas + Núcleo + 500 |
+| `IT_O01` | Luvas do Dragão | 2800 | +45 Ataque, +200 HP, bônus de dano em ataques repetidos | 2× Luvas + Cristal de Vida + 1700 |
+| `IT_O04` | Cristal de Kaiô | 3000 | +70 KiPower, +20 Haste, bônus moderado às técnicas | Condutor + Fragmento + Célula + 1650 |
+| `IT_O07` | Braçadeira de Precisão | 2700 | +35 Ataque, +25% crítico | Luvas + Engrenagem + 2000 |
+| `IT_O08` | Lentes de Energia | 2800 | +60 KiPower, +15% penetração de Ki | 2× Condutor + 1800 |
+| `IT_D01` | Colete do Exército de Freeza | 2800 | +500 HP, +55 Armor | Cristal de Vida + Placa + 2000 |
+| `IT_D03` | Barreira Namekuseijin | 3000 | +350 HP, +55 KiResist, escudo em resposta a Ki (CD interno) | Cristal de Vida + Núcleo + 2200 |
+| `IT_D05` | Núcleo de Regeneração | 3100 | +500 HP, +8 HP/5s, regen extra após sair de combate | Cristal de Vida + Semente + 2300 |
+| `IT_O09` | Espada da Corporação Cápsula | 3000 | +50 Ataque, +10% LifeSteal; ataque básico cura pelo dano real | Luvas + Essência Vampírica + 2050 |
+| `IT_U04` | Pulso de Interferência | 2800 | +40 KiPower, aplica anti-cura por técnica elegível por tempo limitado | 2× Condutor + 1800 |
+| `IT_U02` | Amplificador de Escudos | 2700 | +30 KiPower, +15% potência de curas/escudos em aliados | Condutor + Fragmento + 1700 |
+
+**Checagem de soma:** todas as receitas acima fecham no preço informado (ex.: Luvas do Dragão: 700+400+1700=2800). Efeitos ativos, venda e passivas únicas terão IDs próprios e cooldown interno. Se itens menores tiverem valores muito altos por Zeni investido, calibrar pelo desempenho observado, não por opinião.
+
+### 5.3 Receitas por grafo acíclico e compra atômica
+
+Exemplo: `IT_O01` requer 2 `IT_C01` + 1 `IT_C05` + 1700 Zeni. Comprando as duas luvas e o cristal anteriormente, o jogador deve pagar **1700**, consumir exatamente os três componentes e ganhar um item pronto; não manter os bônus dos ingredientes **mais** os do item final.
+
+Fluxo recomendado:
+
+```text
+BuyRequest(itemId, transactionId, tick)
+ → verificar jogador vivo/permissão de loja/proximidade/base
+ → verificar definição e receita
+ → escolher multiconjunto de componentes no inventário
+ → custoEfetivo = preçoFinal − soma(preço dos componentes já possuídos e consumíveis na receita)
+ → validar custo, espaço resultante e restrições (único, categoria)
+ → transação atômica: debitar Zeni, remover componentes, adicionar item
+ → RecalculateDerivedStats e emitir PurchaseEvent
+ → snapshot HUD + ledger + telemetria
+```
+
+O termo "consumíveis na receita" aqui significa componentes equipados/elegíveis, não poções já utilizadas. Em compras avançadas, permitir **compra direta do item final** se o jogador tiver dinheiro e slots, usando automaticamente ingredientes disponíveis. **Undo:** só enquanto não saiu da área de compra e não houve ação invalidante (combate/uso de item/consumível/transformação relevante), com restauração exata de inventário e Zeni. Venda: 70% do valor base pago, arredondamento consistente; itens temporários com regra específica.
+
+**Banco de dados de itens:** arquivo de conteúdo JSON ou ScriptableObject serializado para authoring, compilado para uma tabela/manifesto em runtime; o domínio C# lê dados **imutáveis e versionados**. O mesmo `ItemCatalog` alimenta HUD, loja, validador e dano. Não manter preços duplicados em `ShopPanel`.
+
+Exemplo de dado autoral:
+
+```json
+{
+  "id": "IT_O09",
+  "name_ptbr": "Espada da Corporação Cápsula",
+  "icon": "items/it_o09",
+  "totalCost": 3000,
+  "components": ["IT_C01", "IT_C09"],
+  "combineCost": 2050,
+  "stats": {"physicalAttack": 50, "lifeSteal": 0.10},
+  "uniqueEffects": [],
+  "maxOwned": 6,
+  "dataVersion": 1
+}
+```
+
+**Validações de CI:** IDs sem repetição, receitas sem ciclo, referências existentes, preços fechando, ícone existente/licenciado, mínimo e máximo de números válidos, passivas únicas com grupo e ausência de conteúdo protegido sem licença.
+
+### 5.4 Design visual da loja e ícones
+
+Regras de UI extraídas das decisões da Riot sobre a loja [R7]:
+
+- Tamanho de ícone constante e reconhecível; silhouette distinta para espada, escudo, luva, armadura, botas e energia.
+- Cores por **categoria**, mas nunca somente pela cor (acessibilidade).
+- Busca em português, filtros "Todos", "Recomendados", "Ataque", "Ki", "Defesa", "Sustento", "Mobilidade", "Visão".
+- Tooltip: estatísticas líquidas e **comparativo antes/depois**, cooldown, passiva, receita, custo restante, dificuldade e counter pretendido.
+- **Árvore de construção** clicável: tocar numa espada final mostra os componentes; item no inventário realça caminho restante.
+- Comprar/combinar/vender altera atributos de fato; HUD nunca deve mostrar ícone de item sem instância correspondente no inventário.
+- Criar arte própria/CC0 para todos os ícones, usando atlas para reduzir draw calls; não copiar ícones originais do LoL.
+
+### 5.5 Botas de treinamento — trade-off e ganho
+
+Manter o contrato do GAME_DESIGN §16.4: débito 1100, **−8% velocidade enquanto o tempo elegível de 300 segundos corre vivo fora da fonte**, depois +8% permanente até o fim da partida, item desaparece e libera slot. Morte pausa. Não permitir vender botas e manter bônus. Indicador na HUD "Treinamento 02:41 | −8% velocidade", depois aviso de recompensa. Testar alternância de compra e mortes para impedir farm infinito de buffs.
+
+## 6. Segurar C: a proposta para Ki e treinamento realmente relevantes
+
+### 6.1 Diagnóstico do código atual — não é impressão
+
+Em `GameWorld.TickHeroTimers`, após `C` por pelo menos 0,15 s:
+
+- Se Ki **não está cheio**, recupera aproximadamente `15 + KiRegen` unidades por segundo (além da regeneração passiva aplicada antes).
+- Quando Ki **fica cheio**, e o personagem está **fora da fonte**, passa a ganhar `GrantExperience(hero, 1.8 × multiplier × dt)`.
+- O multiplicador após 30 s de treinamento contínuo cai a 0,55. Portanto, após 30 s, o ganho nominal é **0,99 XP/s**.
+- A XP necessária para o próximo nível hoje é `90 + 40×(nível−1)`; ao nível 1, 90 XP; ao nível 16, 690 XP. Sozinho com treino tardio de 0,99 XP/s, esse último nível levaria **mais de 11 minutos** na fase penalizada, desconsiderando outras fontes de XP e crescimento temporário. Isso explica por que parece não valer a pena.
+- Não existe HUD com barra separada "Treinando XP", XP/s, tempo até próximo nível por C nem feedback suficientemente diferenciado quando Ki está cheio.
+
+### 6.2 Máquina de estados proposta
+
+```text
+Idle
+  └─ C pressionado por >= 0,15s ─> ChargingKi
+      ├─ Ki chegou ao máximo ─> TrainingXP
+      ├─ C solto ─> Idle
+      └─ dano/ação/movimento/CC/morte ─> Interrupted ─> Idle
+TrainingXP
+  ├─ C mantido, fora da fonte, não atordoado ─> XP por tick
+  └─ mesma lista de interrupções ─> Interrupted ─> Idle
+```
+
+**Treinar deve poder subir de nível, mas deve ter custo estratégico de oportunidade**: perder last hits, visão, pressão e ficar parado exposto. Regra de anti-AFK, decaimento após janelas longas e proibição de XP na fonte. Se o personagem treina escondido em brush, o som/aura podem oferecer sinal observável a inimigos próximos *que teriam acesso legítimo à informação* — não violar fog of war.
+
+### 6.3 Regra de XP proposta para playtest
+
+Não fixar XP/s sem comparar o farm real. Começar com:
+
+```text
+targetTrainingXpPerSec(level) = 0.25 × ExpectedCompetentFarmXpPerSec(level)
+trainingXp = targetTrainingXpPerSec × (1 - fatiguePenalty) × deltaTime
+fatiguePenalty = 0 até 20s contínuos,
+                 aumenta gradualmente até 0.45 após 60s
+```
+
+Uma base numérica provisória de simulação, **a ser aferida e não copiada de LoL**:
+
+| Nível | Farm competitivo esperado (XP/s) | Treino alvo (XP/s) | Uso |
+|---:|---:|---:|---|
+| 1–3 | 7 | 1,75 | Regenerar Ki e preparar primeiros níveis sem abandonar farm |
+| 4–7 | 12 | 3,0 | Treinar entre ondas ou enquanto espera objetivo |
+| 8–11 | 18 | 4,5 | Escolha de risco vs. giro e pressão do mapa |
+| 12–15 | 24 | 6,0 | Evoluir parado continua possível, porém mais lento |
+| 16–18 | 28 | 7,0 | Completar evolução tardia é possível sem incentivo AFK excessivo |
+
+Esses valores são **targets de experimento**: se o jogo de fato gera 4 XP/s por farm real no início, então 1,75/s treinando seria forte demais. O comportamento desejado define a proporção; a tabela não substitui telemetria.
+
+**Obrigatório na HUD quando C é mantido:** `KI 120/120 • TREINANDO • +3,0 XP/s • Próximo nível em ≈ 42s • vulnerável`. Ganho verde/amarelo visível na barra de XP, animação de aura (não bolas primitivas), vocalização curta com loop/disparo de áudio controlado, efeitos localizados e baixo ruído visual. Deve haver um toggle de volume e intensidade audiovisual, sem repetição irritante de gritos.
+
+### 6.4 Testes anti-exploit e UX
+
+- Treinar na fonte dá 0 XP.
+- C com Ki cheio dá XP mensurável; o jogador vê a barra aumentar.
+- Dano, morte, ataque e movimentação interrompem imediatamente; não renderizar aura/áudio depois do estado cancelado.
+- C pressionado e solto repetidamente não zera penalidade acumulada de treino.
+- Treino após 30 s e nível 17 continua possível; tempo para próximo nível bate com fórmula.
+- Treinar Ki não cura HP por padrão: regen base de vida é sistema separado.
+- Instinto Superior/Oozaru/Android 18 podem ter overrides por variante, nunca uma regra universal de C que quebra identidades de personagem.
+
+## 7. Fluxo de partida, seleção, personagens e identidade de forma
+
+### 7.1 O que já existe versus o que precisa mudar
+
+`PrototypeGame.DrawGui()` já contém uma tela básica com botões `Iniciar com Goku Criança`, `Goku Super` e `Cell Z`. Porém não é o **draft** do produto: falta selecionar posição, ver prévia de modelo, skins/formas, papel, dificuldade, descrição de P/Q/W/E/R, loadout, confirmação e tela de carregamento. O componente `OrganicArena` tem `startDemo`, que pode iniciar o jogo automaticamente dependendo da cena. **Averiguar esta configuração na cena real antes de afirmar que o jogo não tem seleção.**
+
+Novo fluxo de estados:
+
+```text
+Boot → Home/Play → SoloVsBots (primeiro)
+ → ChampionSelection (3 heróis, posição, forma preview, kit, role)
+ → ConfirmedLoadout → Loading → PreGameSpawn → InMatch
+ → Victory/Defeat → Results → Home
+```
+
+Na seleção, desabilitar "Iniciar" até personagem ser escolhido; obrigar o botão confirmar; não criar mundo nem disparar timer competitivo antes da confirmação. Ao reiniciar pela UI, voltar à seleção opcionalmente com o mesmo personagem pré-selecionado. Primeiro será um **cliente offline**; lobby, bans, partidas online, reconexão e matchmaking permanecem posteriores.
+
+### 7.2 Heróis: diferentes kits, tamanhos e silhuetas
+
+**Regra rígida:** `ChampionDefinition` define kit e stats; `FormDefinition` define aparência, modelo, hitbox autorizada, buffs e alterações de habilidade; `CharacterView` desenha isso. Trocar prefab não altera por si só o estado do domínio.
+
+| Personagem/forma | Papel estratégico | Tamanho visual relativo | Colisão relativa | Movimento | Counterplay |
+|---|---|---:|---:|---|---|
+| Goku Criança base | lutador móvel melee | 0,70 do adulto | 0,85 da base humana | rápido/agilidade, sem voo | perde duelo longo para bruiser robusto |
+| Goku Criança Nuvem | rotas/engage pontual | 0,70 + nuvem | 0,85 | animação flutuante, mas respeita terreno, exceto passagens explícitas | CC ou previsão de deslocamento |
+| Goku Criança Oozaru | transformação temporária de cerco/área | 2,6–3,2 × altura adulta | 1,5–1,8 × raio base (limitado ao mapa) | −20% a −30% deslocamento; animação pesada | hitbox maior, tempo de resposta e DPS de longo alcance |
+| Goku Super base | assassino/lutador técnico | 1,0 | 1,0 | dashes curtos e controle fino | stun, zoneamento, erros de Ki |
+| Goku Super Blue/UI | lutador móvel avançado | 1,0 | 1,0 | auras/cadência próprias | controle e janelas de cooldown |
+| Cell Imperfeito | lutador/absorção | 1,05 | 1,05 | ritmo médio | poke persistente, anti-sustain |
+| Cell Perfeito | duelista de poder de Ki | 1,10 | 1,05 | animação diferente, ataque legível | kite, janelas de ultimate |
+
+**Todos os números desta tabela são proposta nossa**, não escalas canônicas de Dragon Ball ou LoL. O Oozaru deve ter rig/modelo gigante **diferente** e hitbox adequada ao gameplay; não escalar uma cápsula ou mesh humanoide e fingir que está resolvido. Transformação só ocorre num ponto navegável; se não couber no corredor, bloquear transformação ou reposicionar em local válido predeterminado — **nunca dentro de parede ou torre**.
+
+**Cuidado com Goku Criança e R:** o GAME_DESIGN §14.2 prevê uma R antes do nível 16 e Oozaru a partir do nível 16. Isso exige um `AbilityOverride` por nível/forma: `R` rank 1/2 não pode assumir a forma gigante cedo demais só por ter sido desbloqueada no nível 6.
+
+### 7.3 P, QWER, classes e counters — matriz de kit
+
+O protótipo atualmente dá a todos os heróis Q Rajada/W Impulso/E Escudo/R Explosão semelhantes. Substituir por três kits **funcionalmente distintos** antes de ampliar o roster:
+
+| Herói | Passiva P | Q | W | E | R |
+|---|---|---|---|---|---|
+| Goku Criança | treino do Mestre Kame: velocidade de ataque moderada por rank | Bastão Mágico: skillshot físico curto | Salto Ágil: dash com regra clara de parede | Kamehameha Inicial: cast com aviso e dano Ki | Sequência do Torneio; nível16 habilita Oozaru temporário |
+| Goku Super | Instinto de Batalha: janela de bônus após esquiva válida | Golpe Veloz: engage com alvo | Barreira Divina: escudo temporizado | Transmissão: teleporte condicionado à visão/alcance | Feixe de Ki evolutivo com aviso, muda por forma |
+| Cell Z | Absorção limitada: cura condicionada a dano causado | Golpe drenante: dano + sustain pequeno | Passo oportunista: mobilidade curta | Barreira biológica: defesa curta | Explosão celular canalizada: AoE anunciada |
+
+Os kits específicos de Goku seguem a direção do GAME_DESIGN §14; o exemplo de Cell é **proposta de prototipagem** e deve ser reconciliado com a ficha definitiva do documento mestre antes de implementar. Toda habilidade tem cast range, hitbox, custo, rank, tempo de preparação e recuperação, CC aplicável, tags de dano e contrajogo claro [R8]. Personagem com melhor mobilidade deve pagar preço em dano/sustentação/alcance para preservar **power budget** [R3/R8].
+
+### 7.4 Identidade visual e áudio de cada personagem
+
+- Nome + variante + barra de HP + nível + equipe sobre cabeça, a altura correta em todas as formas, sem poluição excessiva.
+- Modelos com materiais **licenciados** e rigs válidos; idle, walk/run, básico, receber dano, morte, Ki, Q/W/E/R, transformação e indicador de virada. Nunca trocar skin provocando deslize de pés (`root motion` vs simulação).
+- **Goku pequeno realmente pequeno** na comparação lado a lado; Cell diferente em todas as formas; Oozaru escala grande e passos lentos, partículas proporcionais.
+- Retargeting humanoid onde viável; Oozaru pode exigir `Generic Rig` e clips próprios, com `AnimatorOverrideController` ou equivalente; modelo visual e radius de colisão não devem derivar um do outro implicitamente.
+- Sons: `AudioCueId` por personagem/ação e forma, mixer com categorias e limites de repetição; vocalização durante C deve interromper ao soltar, receber dano ou morrer. Criar/gravar áudio original ou usar áudio com licença apropriada; não ripar vozes oficiais do anime.
+
+## 8. Mapa, câmera, movimentação e ritmo
+
+### 8.1 Formato: inspirar-se na TOPOLOGIA, não copiar Summoner's Rift
+
+O protótipo hoje usa coordenadas lógicas aproximadamente `X=-32..32` e `Y=-41..41`, com três rotas em `X=-17/0/+17` e rio horizontal. A especificação mestre propõe um **mapa novo e maior**, simétrico competitivamente, 2D lógico/3D visual, com desenho inspirado na topologia de três rotas.
+
+**Novo mapa original Dragon Ball MOBA (sem copiar o arquivo exato de Summoner's Rift):**
+
+- **Formato global:** arena aproximadamente quadrada (alvo inicial: 240–300 unidades por lado, a aprovar por playtest), com **base azul ao sudoeste** e vermelha ao nordeste, cada uma contendo fonte, núcleo, dois guardiões finais e acessos de rotas.
+- **Top:** caminho pela borda oeste e depois pelo extremo norte; **Bot:** pela borda sul e depois leste; **Mid:** diagonal central conectando bases diretamente, com curvas curtas.
+- **Selvas simétricas por rotação de 180°:** dois quadrantes com trilhas internas e acampamentos de monstros, rotas de gank e escape calculáveis.
+- **Rio diagonal** cruzando o mid e separando metades; margens, pontes/vãos e arbustos criam zonas de disputa.
+- **Objetivo alto:** dinossauro/arauto e dragão voador/barão no quadrante norte do rio. **Objetivo baixo:** guardião elemental/dragão temático próximo do sul do rio. Monstros devem ter silhuetas originais/licenciadas.
+- **Três torres por rota**, gerador/inibidor no interior, **duas torres finais** protegendo o núcleo; requer abrir uma rota para conseguir vencer. Ordem e vulnerabilidade explícitas. **O código atual possui só uma torre por rota/equipe e núcleo**; não confundir adicionar modelos com mudar a estrutura competitiva.
+- Arbustos com ocultação de visão, paredes realmente intransponíveis, entradas múltiplas nas arenas de objetivo, cruzamentos e pontos de ward.
+- Simetria competitiva (comprimento de rota, acessos, tempo a objetivos e espaços de gank), não simetria estética perfeita. Medir diferenças de vitória por lado; pesquisas sobre fairness e atualizações de mapa sugerem testar viés lateral [R5, A1].
+
+**Plano de topologia (texto):**
+
+```text
+      canto noroeste  ─── ROTA TOP ─── canto nordeste [BASE VERMELHA]
+            |    jungle N / objetivo maior    /     |
+            |        rio diagonal      MID   /      |
+            |       / arbustos e entradas  /         |
+            |      / objetivo menor      /           |
+ [BASE AZUL] ── ROTA BOT ───────── canto sudeste
+       sudoeste
+```
+
+O desenho final será um **grafo de corredores e regiões** definido em dados, antes de qualquer arte: `LaneGraph`, `CampNode`, `ObjectivePit`, `VisionBrushPolygon`, `WallPolygon`, `TowerAnchor`, `SpawnAnchor`, `Waypoint`. Fazer testes de conectividade, distâncias e saídas de cavernas. Não importar uma réplica não licenciada do mapa LoL.
+
+### 8.2 Engenharia de navegação e microjogo
+
+**Ordens fundamentais:** `Move(point)`, `AttackTarget(entityId)`, `AttackMove(point)`, `Stop`, `HoldPosition`, `Cast`, `Recall`, `ChargeKi`. Cada ordem tem regras de interrupção. Mouse direito é ação primária; `A` é ataque-movimento e `S` é parar. A tecla `H` atualmente é ajuda no protótipo: implementar rebinding/configuração antes de assumir `H = Hold`.
+
+- Clique no chão: escolher ponto navegável; sem atravessar paredes ou modelos sólidos. Desviar e contornar, evitando jitter em obstáculos ou cantos agudos.
+- Clique em inimigo: seguir até distância `AttackRange + radii`, parar/virar, iniciar windup e repetir ataque; permitir **orbwalking/kiting**: após disparo, mover durante recovery sem disparar golpes extras.
+- Clique em alvo móvel: recálculo de rota periódico com limite; `attack-move` escolhe alvos seguindo prioridade configurada (não atacar invisíveis).
+- `Dash/Blink`: checar caminho, raio de saída e áreas proibidas; dash é movimento rápido e colisão contínua; blink pode cruzar obstáculos **somente se a habilidade permitir**.
+- Separar `NavService` (caminho) do `MovementSystem` (integração por tick), e de `EntityPresentation` (interpolação/rotação/animator).
+- Unity 6 oferece NavMeshAgent/NavMeshObstacle para pathfinding e carving [T2]; mas como o domínio atual é C# independente do Unity, decidir explicitamente entre: (A) navegação derivada de malha e **caminho calculado na Unity, validado por domínio** para offline; (B) pathfinding 2D puro autoritativo no domínio, usado também pelo futuro servidor. **Para o multiplayer futuro, a autoridade de caminho/colisão NÃO pode viver exclusivamente no cliente Unity.**
+- A colisão circular da DBM-002 resolve torres/núcleos como etapa intermediária; **não pode ser declarada substituto de NavMesh/A***.
+
+### 8.3 Câmera LoL-like
+
+Uma câmera MOBA é ferramenta de **informação e controle**, não só um objeto seguindo o personagem.
+
+| Controle/regra | Proposta técnica |
+|---|---|
+| Projeção | ortográfica inclinada com ângulo experimental entre 45° e 55°; evitar câmera totalmente vertical |
+| Follow | pan suave e recenter `Space`; modo livre permanece quando usuário navega |
+| Pan | arrastar botão central e opcional edge-scroll com dead zone e velocidade calibrada |
+| Zoom | scroll com limites para preservar legibilidade de combate e evitar vantagem injusta de informação |
+| Clamp | respeitar limites do mapa considerando área visível, não só posição central |
+| Input | cliques no terreno continuam precisos em 1280×720, 1920×1080 e ultra-wide |
+| Mira | indicadores 3D projetados no chão e cursor não desviam com altura do mesh/efeitos |
+| Fights | não recentralizar automaticamente a cada habilidade, flash ou transformação |
+| Acessibilidade | reduzir shake, velocidade do pan, desativar edge-scroll, teclas remapeáveis |
+
+Testes: orbwalking/click precisão, visão da rota na borda do mapa, transformação Oozaru sem cortar o personagem, minimapa alterando foco, 60 FPS com frame pacing adequado. **Valores de ângulo/zoom são alvos nossos**, não dados internos da câmera LoL.
+
+### 8.4 Nome, barra e minimapa
+
+Implementar `WorldSpaceNameplate` com nome do herói, variante opcional curta, level badge, HP e escudo separados, condições (CC, charge/transform) e marcação de aliado/inimigo. UI deve fazer `billboarding`/projeção correta e ocultar nomeplates de entidades não visíveis por regras de fog. Em Oozaru, deslocar nameplate por referência ao topo do collider/rig, não `y=1.6` fixo.
+
+Minimapa gerado do **grafo real do mapa**: torres, bases, objetivos, unidades visíveis, região de visão, pings, viewport da câmera; não apenas imagem decorativa.
+
+### 8.5 Minions, waves, torres, objetivos e macroestratégia
+
+- Quatro tipos de tropa: melee/tanque, ranged, cerco e super (após queda do gerador/inibidor). Rotas com waypoints, prioridade de alvos, alcance e cadência. Last hit/CS e XP distribuídos conforme regras separadas.
+- Wave spawn em intervalos de relógio fixo; escalonamento do tempo de partida por `MatchPhase`: inicial (farm/laning), intermediária (roaming/objetivos), tardia (inibidores/cerco). **Primeiro ajustar tempos de rotação e sobrevivência, depois spawn de objetivos.**
+- Torre dá aviso e usa regras autoritativas de seleção/agressão: minions normalmente na frente, punição a herói atacando aliado sob torre, distância exata, dano/cadência escaláveis, reset e invulnerabilidade durante janelas definidas. O PR DBM-002 iniciou esta lógica, mas ainda não implementa todos os casos do LoL.
+- Visão: cones/áreas circulares + obstrução, brush como regra de ocultação, wards com duração, detecção, minimapa, pings e neblina de guerra. Bots jamais usam posições de inimigos não revelados.
+- Selva: acampamentos, HP/armor, leash/reset, XP/Zeni, buffs, pathing e respawn; jungler decide gank vs farm; risco/benefício dos objetivos.
+- Objetivos maiores dão vantagem significativa **temporária** (buff, empowerment de minions, cerco), sem eliminar a chance de counterplay. Em 2026, a Riot também usou missões de posição para incentivar funções; só adaptar essa camada após métricas sólidas de renda e XP [R2].
