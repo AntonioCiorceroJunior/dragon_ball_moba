@@ -203,6 +203,10 @@ namespace DragonMoba.Runtime
                 var placeholder = go.GetComponent<PlaceholderVisual>() != null;
                 go.transform.position = placeholder ? Position(e.Position, e.Kind) : new Vector3(e.Position.X, 0, e.Position.Y);
                 if (presentation != null) presentation.Sync(e);
+                var threat = go.GetComponent<TowerRangeVisual>();
+                if (threat != null && world.Player != null)
+                    threat.Show(e.Team != world.Player.Team && world.Player.Alive &&
+                        V2.Distance(e.Position, world.Player.Position) <= e.AttackRange + 3.5f);
                 if (placeholder)
                 {
                     go.transform.localScale = Scale(e);
@@ -254,6 +258,11 @@ namespace DragonMoba.Runtime
                 visual.AddComponent<CapsuleCollider>();
             if (organic != null) organic.DecorateEntity(visual, state);
             else art?.DecorateEntity(visual, state);
+            if (state.Kind == EntityKind.Tower)
+            {
+                var danger = visual.AddComponent<TowerRangeVisual>();
+                danger.Initialize(state, organic != null ? organic.ring : null);
+            }
             return visual;
         }
 
@@ -556,6 +565,51 @@ namespace DragonMoba.Runtime
             GUI.DrawTexture(new Rect(rect.x + 2, rect.y + 2, (rect.width - 4) * Mathf.Clamp01(fraction), rect.height - 4), art != null && art.bar != null ? art.bar : Texture2D.whiteTexture);
             GUI.color = original;
             if (!string.IsNullOrEmpty(label)) GUI.Label(rect, label);
+        }
+    }
+
+    // World-space tower radius, shown only while the local hero is near an enemy tower.
+    // Visual only: targeting and distance checks remain authoritative in GameWorld.
+    public sealed class TowerRangeVisual : MonoBehaviour
+    {
+        private LineRenderer circle;
+        private Material ownedMaterial;
+
+        public void Initialize(EntityState turret, Material sharedMaterial)
+        {
+            var root = new GameObject("Tower range warning");
+            root.transform.SetParent(transform, false);
+            circle = root.AddComponent<LineRenderer>();
+            if (sharedMaterial == null)
+            {
+                ownedMaterial = new Material(Shader.Find("Sprites/Default"));
+                circle.sharedMaterial = ownedMaterial;
+            }
+            else circle.sharedMaterial = sharedMaterial;
+            circle.useWorldSpace = true;
+            circle.loop = true;
+            circle.positionCount = 96;
+            circle.startWidth = circle.endWidth = 0.075f;
+            circle.startColor = circle.endColor = turret.Team == Team.Red
+                ? new Color(1f, 0.32f, 0.20f, 0.9f)
+                : new Color(0.25f, 0.7f, 1f, 0.9f);
+            for (var i = 0; i < circle.positionCount; ++i)
+            {
+                var theta = i * 2f * Mathf.PI / circle.positionCount;
+                circle.SetPosition(i, new Vector3(turret.Position.X + Mathf.Cos(theta) * turret.AttackRange,
+                    0.16f, turret.Position.Y + Mathf.Sin(theta) * turret.AttackRange));
+            }
+            circle.enabled = false;
+        }
+
+        public void Show(bool visible)
+        {
+            if (circle != null) circle.enabled = visible;
+        }
+
+        private void OnDestroy()
+        {
+            if (ownedMaterial != null) Destroy(ownedMaterial);
         }
     }
 

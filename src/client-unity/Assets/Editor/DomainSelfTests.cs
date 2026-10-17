@@ -65,7 +65,10 @@ namespace DragonMoba.Editor
             Require(Catalog.Mitigate(100, 100) == 50, "Mitigacao com resistencia 100");
             TestSkillProgression();
             TestPersistentAttack();
+            TestTowerRangeAndAggro();
+            TestStructureCollision();
             Debug.Log("DBM001 DOMAIN PASSED | locked skills, point conservation, rank gates, repeated attacks, cast resume and respawn persistence");
+            Debug.Log("DBM002 DOMAIN PASSED | tower targeting, aggro, range, collision and detour");
         }
 
 
@@ -227,6 +230,94 @@ namespace DragonMoba.Editor
                 TargetId = target.Id }), "AA-03: Target can be reacquired");
             Require(world.Submit(new GameCommand { ActorId = hero.Id, Kind = CommandKind.Charge,
                 Pressed = true }) && hero.AttackTargetId == 0, "AA-03: Charging cancels target");
+        }
+
+
+        private static void TestTowerRangeAndAggro()
+        {
+            var world = new GameWorld("GKU_SUPER");
+            var hero = world.Player;
+            EntityState tower = null, enemy = null, alliedMinion = null;
+            foreach (var e in world.Entities)
+            {
+                if (e.Kind == EntityKind.Tower && e.Team == Team.Red && e.Lane == 1) tower = e;
+                if (e.Kind == EntityKind.Hero && e.Team == Team.Red) enemy = e;
+                if (e.Kind == EntityKind.Minion && e.Team == Team.Blue && e.Lane == 1) alliedMinion = e;
+            }
+            Require(tower != null && enemy != null && alliedMinion != null, "DBM-002: arena has combat fixtures");
+            enemy.MoveSpeed = enemy.Ki = enemy.KiRegen = enemy.PhysicalAttack = 0;
+            enemy.AttackRange = 0;
+
+            hero.Position = hero.Destination = new V2(8, 19);
+            var beforeHp = hero.Hp;
+            world.Tick(GameWorld.FixedStep);
+            Require(tower.AttackTargetId == hero.Id && hero.Hp < beforeHp,
+                "TR-01: Tower hits opposing hero inside documented range");
+            hero.Position = hero.Destination = new V2(8, 1);
+            world.Tick(GameWorld.FixedStep);
+            Require(tower.AttackTargetId == 0, "TR-02: Tower releases targets outside range");
+
+            hero.Position = hero.Destination = new V2(4, 19);
+            alliedMinion.Position = alliedMinion.Destination = new V2(10, 19);
+            world.Tick(GameWorld.FixedStep);
+            Require(tower.AttackTargetId == alliedMinion.Id,
+                "TR-03: Tower prioritizes enemy minion even if hero is closer");
+
+            Require(world.DealDamage(hero, enemy, 25, false),
+                "TR-04: Hero damages enemy hero defended by tower");
+            world.Tick(GameWorld.FixedStep);
+            Require(tower.AttackTargetId == hero.Id && tower.TowerAggroSeconds > 0f,
+                "TR-04: Tower prioritizes hero aggressor over minions");
+
+            hero.Position = hero.Destination = new V2(0, -25);
+            world.Tick(GameWorld.FixedStep);
+            Require(tower.AttackTargetId == alliedMinion.Id && tower.TowerAggroTargetId == 0,
+                "TR-05: Tower disengages aggressor who leaves range");
+        }
+
+        private static void TestStructureCollision()
+        {
+            var world = new GameWorld("GKU_KID");
+            var hero = world.Player;
+            EntityState blueTower = null, redTower = null;
+            foreach (var e in world.Entities)
+            {
+                if (e.Kind == EntityKind.Tower && e.Lane == 1)
+                {
+                    if (e.Team == Team.Blue) blueTower = e;
+                    if (e.Team == Team.Red) redTower = e;
+                }
+            }
+            Require(blueTower != null && redTower != null, "COL-01: Towers located");
+            hero.Position = hero.Destination = new V2(0, -24);
+            Require(!world.IsStructureCollision(hero, hero.Position), "COL-01: Starting point walkable");
+            Require(world.Submit(new GameCommand { ActorId = hero.Id, Kind = CommandKind.Move,
+                Position = new V2(0, -13) }), "COL-01: Ground movement accepted");
+            for (var i = 0; i < 150; i++)
+            {
+                world.Tick(GameWorld.FixedStep);
+                Require(!world.IsStructureCollision(hero, hero.Position),
+                    "COL-01: Swept character never enters tower footprint");
+            }
+            Require(hero.Position.Y > -18f && V2.Distance(hero.Position, new V2(0, -13)) < 1.5f,
+                "COL-02: Character navigates around tower instead of getting permanently stuck");
+
+            hero.Position = hero.Destination = new V2(0, -24);
+            Require(world.Submit(new GameCommand { ActorId = hero.Id,
+                Kind = CommandKind.UpgradeAbility, Slot = AbilitySlot.W }), "COL-03: W unlocked");
+            Require(world.Submit(new GameCommand { ActorId = hero.Id, Kind = CommandKind.Cast,
+                Slot = AbilitySlot.W, Position = new V2(0, -13) }), "COL-03: W dash cast");
+            Require(!world.IsStructureCollision(hero, hero.Position),
+                "COL-03: Dash does not end inside a living tower");
+
+            hero.Position = hero.Destination = new V2(0, -25);
+            Require(world.Submit(new GameCommand { ActorId = hero.Id, Kind = CommandKind.Move,
+                Position = blueTower.Position }), "COL-04: Click at structure center accepted");
+            Require(!world.IsStructureCollision(hero, hero.Destination),
+                "COL-04: Destination projected outside solid structure");
+            redTower.Hp = 0f; // Controlled fixture only: destroy the blocker for walkability check.
+            Require(!world.IsStructureCollision(hero, redTower.Position),
+                "COL-05: Destroyed tower footprint is no longer solid");
         }
 
         private static void Require(bool condition, string label)
