@@ -560,23 +560,45 @@ namespace DragonMoba.Domain
             actor.Ki -= cost;
             actor.SkillCooldown[i] = cooldown * 100f / (100f + actor.AbilityHaste);
             // Casting a skill must not discard the basic-attack order.
-            var abilityName = new[] { "Rajada de Ki", "Impulso", "Barreira", "Explosao Suprema" }[i];
+            var names = actor.HeroId == "GKU_KID" ?
+                new[] { "Bastao Magico", "Salto do Torneio", "Defesa do Kame", "Golpe do Grande Macaco" } :
+                actor.HeroId == "CELL_Z" ?
+                new[] { "Absorcao Celular", "Investida Biologica", "Carapaca", "Explosao Perfeita" } :
+                new[] { "Rajada de Ki", "Transmissao Curta", "Barreira Divina", "Explosao Suprema" };
+            var abilityName = names[i];
             switch (slot)
             {
                 case AbilitySlot.Q:
                     var hit = NearestToPoint(actor.Team, targetPoint, 2.7f, actor.Position, 12f);
-                    if (hit != null) DealDamage(actor, hit,
-                        60f + actor.KiPower * 0.85f + 24f * (actor.SkillRanks[i] - 1), true);
+                    if (hit != null)
+                    {
+                        var bonus = 24f * (actor.SkillRanks[i]-1);
+                        if (actor.HeroId == "GKU_KID")
+                            DealDamage(actor,hit,45f+actor.PhysicalAttack*1.15f+bonus,false);
+                        else if (actor.HeroId == "CELL_Z")
+                        {
+                            var hpBefore = hit.Hp;
+                            if (DealDamage(actor,hit,50f+actor.KiPower*.65f+bonus,true))
+                                actor.Hp=Math.Min(actor.MaxHp,actor.Hp+(hpBefore-hit.Hp)*.16f);
+                        }
+                        else
+                            DealDamage(actor,hit,60f+actor.KiPower*.85f+bonus,true);
+                    }
                     break;
                 case AbilitySlot.W:
                     DashWithoutStructureCollision(actor, targetPoint,
                         (6f + actor.SkillRanks[i] - 1) *
-                        (actor.FormId == "kid_oozaru" ? .65f : 1f));
+                        (actor.FormId == "kid_oozaru" ? .65f :
+                         actor.HeroId == "CELL_Z" ? .85f :
+                         actor.HeroId == "GKU_KID" ? 1.15f : 1f));
                     actor.Destination = actor.Position;
                     break;
                 case AbilitySlot.E:
                     actor.Shield = Math.Min(actor.MaxHp * 0.5f,
-                        actor.Shield + 80f + actor.KiPower * 0.5f + 25f * (actor.SkillRanks[i] - 1));
+                        actor.Shield + (actor.HeroId == "CELL_Z" ? 105f :
+                            actor.HeroId == "GKU_KID" ? 65f : 80f) +
+                        actor.KiPower * (actor.HeroId == "CELL_Z" ? .3f : .5f) +
+                        25f * (actor.SkillRanks[i] - 1));
                     actor.ShieldLifetime = 5f;
                     break;
                 case AbilitySlot.R:
@@ -584,8 +606,17 @@ namespace DragonMoba.Domain
                     foreach (var e in targets)
                         if (e.Alive && e.Team != actor.Team && e.Team != Team.Neutral &&
                             V2.Distance(targetPoint, e.Position) <= 4f && V2.Distance(actor.Position, e.Position) <= 12f)
-                            DealDamage(actor, e, 105f + actor.KiPower * 1.3f +
-                                40f * (actor.SkillRanks[i] - 1), true);
+                        {
+                            var raw = actor.HeroId == "GKU_KID" ?
+                                100f + actor.PhysicalAttack*1.2f + 40f*(actor.SkillRanks[i]-1) :
+                                actor.HeroId == "CELL_Z" ?
+                                115f + actor.KiPower*1.1f + 40f*(actor.SkillRanks[i]-1) :
+                                105f + actor.KiPower*1.3f + 40f*(actor.SkillRanks[i]-1);
+                            var hpBefore=e.Hp;
+                            if (DealDamage(actor,e,raw,actor.HeroId!="GKU_KID") &&
+                                actor.HeroId=="CELL_Z")
+                                actor.Hp=Math.Min(actor.MaxHp,actor.Hp+(hpBefore-e.Hp)*.06f);
+                        }
                     break;
             }
             events.Add(new GameEvent(EventKind.Ability, actor.Id, targetPoint, abilityName, 0, actor.Id));
