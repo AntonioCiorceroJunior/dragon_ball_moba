@@ -31,3 +31,5 @@ Proveniência e hashes originais: [IMPORT_SOURCES.csv](IMPORT_SOURCES.csv). Font
 ## Pesquisa de referência e roadmap (16/10/2026)
 
 - **[MOBA_RESEARCH_BLUEPRINT_2026.md](MOBA_RESEARCH_BLUEPRINT_2026.md)** — pesquisa técnica e científica do League of Legends, evolução de mecânicas, fórmulas de stats/dano/regeneração, itens e receitas, treinamento de Ki, seleção e kits de personagens, Oozaru, topologia do mapa, câmera, arquitetura modular, testes e ordem de implementação. **Documento de proposta, não código já implementado.** Complementa o GAME_DESIGN; respeitar o PR DBM-002 pendente antes de iniciar DBM-003.
+
+**Revisão posterior:** [Pesquisa MOBA v2 — auditoria de fontes, especificação de mecânicas e arquitetura testável](../research/README.md). Ela complementa o documento mestre e sinaliza limites de evidência do blueprint inicial.
