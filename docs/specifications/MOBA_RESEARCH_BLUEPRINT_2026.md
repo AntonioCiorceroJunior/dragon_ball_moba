@@ -1,5 +1,8 @@
 # Dragon Ball MOBA — Pesquisa de LoL, arquitetura de sistemas e plano de produção
 
+> **Aviso de revisão (16/10/2026):** este é um **blueprint preliminar**. A auditoria de fontes, a correção de escopo dos papers e o plano arquitetural mais rigoroso estão em [Pesquisa MOBA v2](../research/README.md). Este documento permanece disponível como histórico de propostas; **não** interpretar suas referências ou números de protótipo como prova de revisão acadêmica integral, regra vigente do LoL ou implementação concluída.
+
+
 **Versão:** 1.0 (pesquisa e proposta) · **Data de corte:** 16/10/2026 · **Idioma:** PT-BR  
 **Estado:** documento técnico para revisão; **não representa funções já implementadas**.  
 **Projeto ativo:** `src/client-unity`, Unity 6000.6.6f1, Built-in, Input Manager legado.  
