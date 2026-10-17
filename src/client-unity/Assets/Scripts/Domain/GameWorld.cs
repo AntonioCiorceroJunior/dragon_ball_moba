@@ -313,7 +313,7 @@ namespace DragonMoba.Domain
                 case EntityKind.Tower: return TowerBodyRadius;
                 case EntityKind.Core: return CoreBodyRadius;
                 case EntityKind.Hero: return entity.FormId == "kid_oozaru" ? .95f :
-                    entity.HeroId == "GKU_KID" ? .43f : HeroBodyRadius;
+                    entity.HeroId == "GKU_KID" ? .32f : HeroBodyRadius;
                 case EntityKind.Minion: return MinionBodyRadius;
                 default: return 0f;
             }
