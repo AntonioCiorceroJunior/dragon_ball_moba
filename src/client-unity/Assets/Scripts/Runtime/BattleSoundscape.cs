@@ -162,6 +162,11 @@ namespace DragonMoba.Runtime
             {
                 muted=!muted;
                 if(music!=null)music.mute=muted;
+                if(effects!=null)
+                {
+                    effects.mute=muted;
+                    if(muted)effects.Stop();
+                }
             }
             if(music!=null)music.volume=muted?0:musicVolume;
         }

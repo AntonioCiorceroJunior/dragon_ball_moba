@@ -157,7 +157,7 @@ namespace DragonMoba.Runtime
             // original shader already supports vertex colors; the new optional
             // color map introduces stone seams, worn paths and grass variation
             // without changing collision or mesh density.
-            const int texW=320,texH=400;
+            const int texW=960,texH=1200;
             terrainPaint=new Texture2D(texW,texH,TextureFormat.RGB24,true);
             terrainPaint.name="Original detailed arena ground paint";
             terrainPaint.wrapMode=TextureWrapMode.Clamp;

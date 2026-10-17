@@ -266,6 +266,7 @@ namespace DragonMoba.Editor
                     {
                         typeof(PrototypeGame).GetMethod("ReturnToSelection",Flags).Invoke(game,null);
                         Check(typeof(PrototypeGame).GetField("world",Flags).GetValue(game)==null,"Return to character selection");
+                        VisualStageChecks.SelectionGallery();
                         typeof(PrototypeGame).GetMethod("StartMatch",Flags).Invoke(game,new object[]{"GKU_SUPER"});
                         Check(((GameWorld)typeof(PrototypeGame).GetField("world",Flags).GetValue(game)).Player.HeroId=="GKU_SUPER","Restart after selection");
                         Debug.Log("SELECTION RESTART PASSED");

@@ -12,6 +12,7 @@ namespace DragonMoba.Runtime
         private GameObject root;
         public void Show()
         {
+            FrameCamera();
             if(root!=null) {root.SetActive(true);return;}
             root=new GameObject("Capsule Corp — character selection gallery");
             root.transform.SetParent(transform,false);
@@ -27,10 +28,10 @@ namespace DragonMoba.Runtime
             };
             for(int i=0;i<3;i++)
             {
-                var x=(i-1)*8.6f;
+                var x=(i-1)*6.4f;
                 var anchor=new GameObject("Hero showcase "+i).transform;
                 anchor.SetParent(root.transform,false);
-                anchor.position=new Vector3(x,.1f,-4f);
+                anchor.position=new Vector3(x,100.1f,-4f);
                 var material=new Material(Shader.Find("Standard"));
                 material.color=new Color(.11f,.18f,.22f);
                 material.EnableKeyword("_EMISSION");
@@ -44,6 +45,11 @@ namespace DragonMoba.Runtime
                 pad.GetComponent<Renderer>().sharedMaterial=material;
                 Destroy(pad.GetComponent<Collider>());
                 var prefab=Resources.Load<GameObject>(ids[i]);
+                // Match the Super prefab actually wired into the active arena.
+                var arena=GetComponent<OrganicArena>();
+                var formIndex=arena==null||arena.formIds==null?-1:System.Array.IndexOf(arena.formIds,"super_base");
+                if(i==1 && formIndex>=0 && formIndex<arena.characterForms.Length && arena.characterForms[formIndex]!=null)
+                    prefab=arena.characterForms[formIndex];
                 if(prefab!=null)
                 {
                     var model=Instantiate(prefab,anchor);
@@ -72,6 +78,15 @@ namespace DragonMoba.Runtime
         public void Hide()
         {
             if(root!=null)root.SetActive(false);
+        }
+        private static void FrameCamera()
+        {
+            var camera=Camera.main;
+            if(camera==null)return;
+            // Isolate the existing models from battlefield rocks and bridge geometry.
+            camera.orthographicSize=7.5f;
+            camera.transform.rotation=Quaternion.Euler(12f,0,0);
+            camera.transform.position=new Vector3(0,100.9f,-4f)-camera.transform.forward*30f;
         }
         private void Update()
         {

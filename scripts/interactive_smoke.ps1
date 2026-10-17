@@ -2,7 +2,7 @@ param(
  [ValidateSet('Launch','Capture','Click','Key','Wheel')][string]$Action='Capture',
  [ValidateSet('VisualTest','ArtWindows')][string]$Game='VisualTest',
  [int]$X=0,[int]$Y=0,[ValidateSet('Left','Right')][string]$Button='Left',
- [ValidateSet('Q','W','E','R','C','P','H','Y','SPACE','UP','DOWN','LEFT','RIGHT','ENTER')][string]$Key='H',
+ [ValidateSet('Q','W','E','R','C','P','H','Y','M','ESC','SPACE','UP','DOWN','LEFT','RIGHT','ENTER')][string]$Key='H',
  [ValidateRange(1,1920)][int]$Width=1280,[ValidateRange(1,1080)][int]$Height=720,
  [ValidateRange(-8,8)][int]$WheelSteps=1,
  [ValidateRange(80,3000)][int]$HoldMs=120,
@@ -135,7 +135,7 @@ try {
   try { Start-Sleep -Milliseconds 100 } finally { [GameWindowInput]::MouseButton($hwnd,($Button -eq 'Right'),$true) }
  }
  if($Action -eq 'Key'){
-  $codes=@{ENTER=13;SPACE=32;LEFT=37;UP=38;RIGHT=39;DOWN=40}
+  $codes=@{ENTER=13;ESC=27;SPACE=32;LEFT=37;UP=38;RIGHT=39;DOWN=40}
   $code=if($codes.ContainsKey($Key)){$codes[$Key]}else{[int][char]$Key}
   [GameWindowInput]::Key($hwnd,$code,$false); $keyDown=$true
   Start-Sleep -Milliseconds $HoldMs

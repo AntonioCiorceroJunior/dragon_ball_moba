@@ -8,6 +8,22 @@ namespace DragonMoba.Editor
 {
     public static class VisualStageChecks
     {
+        public static void SelectionGallery()
+        {
+            var camera=Camera.main;
+            Check(camera!=null,"Selection camera exists");
+            var planes=GeometryUtility.CalculateFrustumPlanes(camera);
+            for(var i=0;i<3;i++)
+            {
+                var anchor=GameObject.Find("Hero showcase "+i);
+                Check(anchor!=null&&anchor.GetComponentsInChildren<SkinnedMeshRenderer>().Any(
+                    r=>r.enabled&&GeometryUtility.TestPlanesAABB(planes,r.bounds)),
+                    "Selection hero remains visible after returning from a match: "+i);
+                if(i==1)Check(anchor.GetComponentInChildren<PlayableCharacterVisual>()!=null,
+                    "Gallery uses the actual Super arena model");
+            }
+            Debug.Log("SELECTION GALLERY PASSED | three visible heroes and arena Super prefab");
+        }
         public static void CellRespawn()
         {
             var world = new GameWorld("CELL_Z");
@@ -57,7 +73,7 @@ namespace DragonMoba.Editor
                 "Minimap click sets exact free-camera focus");
             controller.Recenter(hero,true);
             Check(Math.Abs(camera.transform.eulerAngles.x-55.5f)<.1f,"55.5 degree strategic camera");
-            Debug.Log("ARENA CAMERA PASSED | orthographic 43 degrees, zoom bounds, pan, map bounds, recenter and follow");
+            Debug.Log("ARENA CAMERA PASSED | orthographic 55.5 degrees, zoom bounds, pan, map bounds, recenter and follow");
         }
         static void Check(bool ok,string message) { if(!ok) throw new Exception(message); }
     }

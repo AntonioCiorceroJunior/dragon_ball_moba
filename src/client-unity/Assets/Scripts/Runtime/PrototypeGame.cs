@@ -65,6 +65,12 @@ namespace DragonMoba.Runtime
             BuildEnvironment();
             CreateCamera();
             RefreshViews();
+            var cameraController=gameCamera.GetComponent<ArenaCameraController>();
+            if(cameraController!=null)
+            {
+                gameCamera.orthographicSize=cameraController.defaultZoom;
+                cameraController.Recenter(new Vector3(world.Player.Position.X,0,world.Player.Position.Y),true);
+            }
             lastMessage = "Partida iniciada. Clique direito para mover; C carrega Ki.";
             messageUntil = Time.time + 6f;
         }
