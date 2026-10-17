@@ -56,7 +56,7 @@ namespace DragonMoba.Editor
                 Vector3.Distance(controller.Focus,controller.ClampFocus(minimapFocus))<.001f,
                 "Minimap click sets exact free-camera focus");
             controller.Recenter(hero,true);
-            Check(Math.Abs(camera.transform.eulerAngles.x-43)<.1f,"Less vertical angle");
+            Check(Math.Abs(camera.transform.eulerAngles.x-55.5f)<.1f,"55.5 degree strategic camera");
             Debug.Log("ARENA CAMERA PASSED | orthographic 43 degrees, zoom bounds, pan, map bounds, recenter and follow");
         }
         static void Check(bool ok,string message) { if(!ok) throw new Exception(message); }
