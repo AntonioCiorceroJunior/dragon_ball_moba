@@ -68,6 +68,7 @@ namespace DragonMoba.Editor
             TestTowerRangeAndAggro();
             TestStructureCollision();
             Debug.Log("DBM001 DOMAIN PASSED | locked skills, point conservation, rank gates, repeated attacks, cast resume and respawn persistence");
+            Debug.Log("DBM002 DOMAIN PASSED | tower targeting, aggro, range, collision and detour");
         }
 
 
